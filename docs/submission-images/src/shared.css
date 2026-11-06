@@ -1,0 +1,132 @@
+@font-face {
+  font-family: "Geist";
+  src: url("../../../web/node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+}
+
+/* Good Night's palette (web/src/lib/themes.ts) and the footer's graveyard sky */
+:root {
+  --ink: #e7eefb;
+  --muted: #c3b4c8;
+  --faint: rgba(231, 238, 251, 0.14);
+  --amber: #ffc03d;
+  --orange: #ff7a3d;
+  --pink: #ff3d5a;
+  --snooze: #c9b8ff;
+  --late: #ffc03d;
+  --on-color: #2e1535;
+  --sky: #12081a;
+  --plum: #241b45;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { background: transparent; }
+
+body {
+  font-family: "Geist", system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.canvas {
+  position: relative;
+  width: 1200px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(90% 70% at 50% 0%, #2a1946 0%, rgba(42, 25, 70, 0) 70%),
+    linear-gradient(180deg, #1b1033 0%, var(--sky) 70%);
+}
+
+/* Sky dressing, all behind the content */
+.stars { position: absolute; inset: 0; z-index: -2; }
+.stars i { position: absolute; border-radius: 50%; background: #fff3d6; }
+.moon {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  background: #ffe6a8;
+  box-shadow: 0 0 60px 18px rgba(255, 214, 140, 0.22), inset -8px -6px 0 rgba(214, 160, 90, 0.25);
+}
+.moon::before, .moon::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(233, 200, 138, 0.6);
+}
+.moon::before { top: 28%; left: 22%; width: 18%; height: 18%; }
+.moon::after { top: 56%; left: 48%; width: 22%; height: 22%; }
+.graveyard {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1200px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Header: logo top left, Kiroween credit top right */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 40px 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.logo svg { width: 22px; height: 22px; }
+.logo .tld { font-weight: 500; color: var(--muted); }
+
+.kiro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 8px 14px 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px var(--faint);
+}
+.kiro svg { height: 18px; width: auto; filter: drop-shadow(0 0 6px rgba(201, 184, 255, 0.7)); }
+
+h1 {
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+.lede {
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* A crop of the dial from an iPhone screenshot (1206 × 2622) */
+.dial {
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(231, 238, 251, 0.18);
+}
+
+/* An iPhone screenshot in a simple device frame */
+.phone {
+  border-radius: 28px;
+  padding: 5px;
+  background: #050308;
+  box-shadow: 0 0 0 1px rgba(231, 238, 251, 0.14), 0 24px 50px rgba(0, 0, 0, 0.55);
+}
+.phone img {
+  display: block;
+  width: 100%;
+  border-radius: 23px;
+}

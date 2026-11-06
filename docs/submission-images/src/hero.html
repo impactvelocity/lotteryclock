@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+<style>
+  /* Night on the left, warming into Día de Muertos on the right */
+  .canvas {
+    height: 250px;
+    background:
+      radial-gradient(42% 110% at 76% 50%, rgba(140, 40, 100, 0.5) 0%, rgba(140, 40, 100, 0) 75%),
+      linear-gradient(90deg, #120a22 0%, #1b1033 34%, #2c1340 58%, #3d1645 100%);
+  }
+  .stars { -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 40%, transparent 70%); }
+  .text {
+    position: absolute;
+    left: 56px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+  }
+  .text .logo { font-size: 18px; }
+  .text .logo svg { width: 18px; height: 18px; }
+  .text h1 { font-size: 52px; line-height: 1.04; font-weight: 500; letter-spacing: -0.035em; }
+  .accent { color: #ffc23d; }
+
+  /* Día de Muertos at 40 minutes, captured from lotteryclock.app, cut out round the marigold ring */
+  .dial-scene {
+    position: absolute;
+    left: 666px;
+    top: 10px;
+    width: 500px;
+    -webkit-mask-image: radial-gradient(circle 119px at 250px 115px, #000 93%, transparent 100%);
+            mask-image: radial-gradient(circle 119px at 250px 115px, #000 93%, transparent 100%);
+  }
+
+  /* The site's own Día de Muertos art (web/src/components/scenes/art/muertos) */
+  .art { position: absolute; }
+  .tint { position: absolute; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; }
+  .flag { position: absolute; width: 20px; height: 25px; transform-origin: 50% 0; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center; }
+  .string { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .string path { fill: none; stroke: rgba(255, 236, 210, 0.45); stroke-width: 1; }
+  .glow { filter: drop-shadow(0 0 6px rgba(255, 150, 60, 0.8)); }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div id="sky"></div>
+  <svg class="string" id="strings"></svg>
+  <div id="flags"></div>
+  <img class="dial-scene" src="assets/muertos-scene.png">
+  <div id="art"></div>
+  <div class="text">
+    <div class="logo" id="logo"></div>
+    <h1>The alarm you<br><span class="accent">can't trust</span></h1>
+  </div>
+</div>
+<script>
+  document.getElementById("logo").innerHTML = `${CLOCK}<span>LotteryClock<span class="tld">.app</span></span>`;
+  document.getElementById("sky").innerHTML = sky({ graveyard: null, stars: 60 });
+
+  const ART = "../../../web/src/components/scenes/art/muertos/";
+  const FLAG_COLORS = ["#F0306E", "#FFC23D", "#2FB8A6", "#FF7A1F", "#8E4CE0", "#3FA9F5"];
+  const FLAG_SHAPES = ["skull", "heart", "flower", "star"];
+
+  // Papel picado: two strings drooping across the top of the Muertos side
+  const strings = [
+    { x1: 690, y1: -6, x2: 830, y2: -8, sag: 30, n: 5 },
+    { x1: 1030, y1: -8, x2: 1210, y2: -4, sag: 34, n: 7 },
+  ];
+  let flags = "", paths = "", c = 0;
+  for (const s of strings) {
+    const cx = (s.x1 + s.x2) / 2, cy = Math.max(s.y1, s.y2) + s.sag * 2;
+    paths += `<path d="M${s.x1} ${s.y1} Q${cx} ${cy} ${s.x2} ${s.y2}"/>`;
+    for (let i = 1; i <= s.n; i++) {
+      const t = i / (s.n + 1);
+      const x = (1 - t) ** 2 * s.x1 + 2 * (1 - t) * t * cx + t * t * s.x2;
+      const y = (1 - t) ** 2 * s.y1 + 2 * (1 - t) * t * cy + t * t * s.y2;
+      const dy = 2 * (1 - t) * (cy - s.y1) + 2 * t * (s.y2 - cy);
+      const dx = 2 * (1 - t) * (cx - s.x1) + 2 * t * (s.x2 - cx);
+      const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+      const shape = FLAG_SHAPES[c % 4];
+      flags += `<div class="flag" style="left:${x - 10}px;top:${y}px;background:${FLAG_COLORS[c % 6]};transform:rotate(${deg}deg);-webkit-mask-image:url(${ART}papel-picado-${shape}.svg)"></div>`;
+      c++;
+    }
+  }
+  document.getElementById("strings").innerHTML = paths;
+  document.getElementById("flags").innerHTML = flags;
+
+  // Marigolds, candles, monarchs, petals and a calaverita round the dial
+  const img = (name, x, y, w, extra = "") => `<img class="art ${extra}" src="${ART}${name}.svg" style="left:${x}px;top:${y}px;width:${w}px">`;
+  const candle = (x, h) => `<img class="art" src="${ART}candle-body.svg" style="left:${x}px;top:${250 - h}px;width:${h * 0.3}px">` +
+    `<img class="art glow" src="${ART}candle-flame.svg" style="left:${x + h * 0.05}px;top:${250 - h - h * 0.38}px;width:${h * 0.2}px">`;
+  const petal = (x, y, deg, col) => `<div class="tint" style="left:${x}px;top:${y}px;width:9px;height:13px;background:${col};transform:rotate(${deg}deg);-webkit-mask-image:url(${ART}petal.svg)"></div>`;
+  document.getElementById("art").innerHTML = [
+    // Candles either side of the dial
+    candle(720, 46), candle(744, 34), candle(1090, 40), candle(1114, 52), candle(1140, 32),
+    // Marigolds along the bottom
+    img("marigold", 690, 222, 40), img("marigold", 772, 228, 34), img("marigold", 1050, 226, 36), img("marigold", 1168, 220, 44),
+    img("calaverita", 800, 214, 26),
+    // Monarchs in the air
+    img("monarch", 660, 92, 34), img("monarch", 1060, 60, 28), img("monarch", 1130, 150, 30), img("monarch", 610, 176, 24),
+    // Petals drifting down
+    petal(700, 150, 20, "#FFC23D"), petal(1010, 120, -30, "#F0306E"), petal(1180, 96, 60, "#FF7A1F"),
+    petal(820, 196, -10, "#F0306E"), petal(1160, 196, 35, "#FFC23D"), petal(640, 60, 80, "#FF7A1F"),
+  ].join("");
+</script>
+</body>
+</html>

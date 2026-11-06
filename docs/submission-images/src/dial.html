@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+<style>
+  .canvas { height: 800px; }
+  .intro { padding: 22px 40px 0; text-align: center; }
+
+  /* Good Night's dial at 28 minutes, captured from lotteryclock.app, centred like the site's hero */
+  .stage { position: absolute; left: 380px; top: 130px; width: 440px; height: 440px; }
+  .stage img {
+    width: 100%;
+    -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 71%);
+            mask-image: radial-gradient(circle, #000 58%, transparent 71%);
+  }
+
+  /* Either side of the dial, like "Set your alarm" and "Add some doubt" on the site */
+  .side { position: absolute; top: 312px; width: 300px; }
+  .side.left { left: 70px; text-align: right; }
+  .side.right { left: 830px; }
+  .side h3, .under h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  .side p, .under p { font-size: 15px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+  .under { position: absolute; top: 592px; left: 0; right: 0; text-align: center; }
+  .rail { display: block; margin: 22px auto 0; overflow: visible; }
+  .rail text { font-family: "Geist", sans-serif; font-size: 14px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div id="sky"></div>
+  <div id="header"></div>
+  <div class="intro">
+    <h1>How the dial works</h1>
+  </div>
+
+  <div class="stage"><img src="assets/night-dial-28.png"></div>
+
+  <div class="side left">
+    <h3>Set your alarm</h3>
+    <p>Tap the time to change it</p>
+  </div>
+  <div class="side right">
+    <h3>Add some doubt</h3>
+    <p>Drag the bell to add more</p>
+  </div>
+
+  <div class="under">
+    <h3>It rings at a random minute in the window</h3>
+    <p>Anywhere from 7:02 to 7:58. You don't know which.</p>
+    <svg class="rail" id="rail" width="760" height="100"></svg>
+  </div>
+</div>
+<script>
+  document.getElementById("header").innerHTML = header();
+  document.getElementById("sky").innerHTML = sky({ graveyard: null, stars: 90 });
+
+  // The window as the site's timeline: 7:30 ± 40 minutes, one tick per minute, the 28-minute
+  // window lit (early in moonlight, late in amber) and tapering at its edges
+  const W = 760, SPAN = 40, DOUBT = 28, BASE = 32;
+  const x = (m) => W / 2 + (m / SPAN) * (W / 2 - 4);
+  let rail = `<line x1="0" y1="${BASE}" x2="${W}" y2="${BASE}" stroke="rgba(231,238,251,.3)" stroke-width="1.5"/>`;
+  for (let m = -SPAN; m <= SPAN; m++) {
+    const lit = Math.abs(m) <= DOUBT;
+    const long = m % 5 === 0;
+    const taper = lit ? Math.min(1, (DOUBT - Math.abs(m) + 1) / 4) : 0;
+    const len = m === 0 ? 38 : (long ? 13 : 8) * (1 + taper);
+    const col = m === 0 ? "#e7eefb" : !lit ? "rgba(231,238,251,.28)" : m < 0 ? "#c9b8ff" : "#ffc03d";
+    rail += `<line x1="${x(m)}" y1="${BASE}" x2="${x(m)}" y2="${BASE + len}" stroke="${col}" stroke-width="${m === 0 ? 2.5 : long ? 2 : 1.5}" stroke-linecap="round"/>`;
+  }
+  rail += `<text x="${x(-DOUBT)}" y="${BASE + 50}" text-anchor="middle" fill="#c3b4c8">7:02</text>` +
+    `<text x="${x(0)}" y="${BASE + 58}" text-anchor="middle" fill="#e7eefb">7:30</text>` +
+    `<text x="${x(DOUBT)}" y="${BASE + 50}" text-anchor="middle" fill="#c3b4c8">7:58</text>` +
+    `<text x="${x(-DOUBT / 2)}" y="${BASE - 13}" text-anchor="middle" fill="#c9b8ff">Early: back to sleep till 7:30</text>` +
+    `<text x="${x(DOUBT / 2)}" y="${BASE - 13}" text-anchor="middle" fill="#ffc03d">Late: rise and shine. Now</text>`;
+  document.getElementById("rail").innerHTML = rail;
+</script>
+</body>
+</html>

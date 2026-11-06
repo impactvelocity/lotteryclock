@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+<style>
+  .canvas { height: 690px; }
+  .grid {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    top: 110px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  /* The first cell holds the title, so the seven costumes fill the rest of the grid */
+  .title { display: flex; flex-direction: column; justify-content: center; padding: 0 10px 0 4px; }
+  .title h1 { font-size: 38px; line-height: 1.05; }
+  .title p { font-size: 20px; color: var(--muted); margin-top: 18px; line-height: 1.4; }
+
+  /* Each costume, zoomed in on its dial and scene from the iPhone screenshot */
+  .card {
+    position: relative;
+    height: 256px;
+    border-radius: 20px;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 0 1px rgba(231, 238, 251, 0.14), 0 24px 50px rgba(0, 0, 0, 0.5);
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 80px;
+    background: linear-gradient(180deg, rgba(10, 4, 14, 0) 0%, rgba(10, 4, 14, 0.78) 100%);
+  }
+  .card h3 {
+    position: absolute;
+    left: 16px;
+    bottom: 13px;
+    z-index: 1;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div id="sky"></div>
+  <div id="header"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+  document.getElementById("header").innerHTML = header();
+  document.getElementById("sky").innerHTML = sky({ graveyard: null, stars: 160 });
+
+  // Each theme at 42 minutes, captured from lotteryclock.app with the scene round the dial
+  const crop = (id) => `background-image:url(assets/costumes/${id}.png);background-size:cover;background-position:center top`;
+
+  document.getElementById("grid").innerHTML =
+    `<div class="title"><h1>Seven costumes for your alarm clock</h1></div>` +
+    THEMES.map((t) => `<div class="card" style="${crop(t.id)}"><h3>${t.name}</h3></div>`).join("");
+</script>
+</body>
+</html>
