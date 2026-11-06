@@ -27,6 +27,8 @@ const PIXEL: FontKey = "pixel";
 if (s === src) throw new Error('Font constants not found; update sync-themes.mjs');
 s = s
   .replace('import { scallop } from "@/lib/scallop";', 'import { scallop } from "@/lib/scallop";\nimport type { FontKey } from "./fonts";')
+  // Hidden themes stay reachable for the scene preview
+  .replace('const ALL_THEMES: Theme[] = [', 'export const ALL_THEMES: Theme[] = [')
   .replace(/titleFont: string;/, 'titleFont: FontKey;')
   .replace(/timeFont: string;/, 'timeFont: FontKey;')
   // Any other inline font stack: the first Geist variable names the family

@@ -1,34 +1,20 @@
 import type { ReactNode } from 'react';
-import { View, type ViewStyle } from 'react-native';
+import { Text, type StyleProp, type ViewStyle } from 'react-native';
 
-import { Text } from '@/components/ui/text';
-import { colors } from '@/theme';
+import { Glass } from '@/components/theme-picker';
+import { sans } from '@/themes/fonts';
+import { useTheme } from '@/themes/use-theme';
 
-/** Rounded glass-ish card used across screens. */
-export function Panel({ children, style, glow }: { children: ReactNode; style?: ViewStyle; glow?: string }) {
-  return (
-    <View
-      style={[
-        {
-          backgroundColor: 'rgba(23,17,42,0.85)',
-          borderRadius: 24,
-          borderWidth: 1,
-          borderColor: glow ?? colors.border,
-          padding: 20,
-          gap: 16,
-        },
-        glow ? { shadowColor: glow, shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 0 } } : null,
-        style,
-      ]}
-    >
-      {children}
-    </View>
-  );
+/** A glass card tinted with the theme. */
+export function Panel({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const { theme } = useTheme();
+  return <Glass theme={theme} style={[{ borderRadius: 26, padding: 18, gap: 14 }, style]}>{children}</Glass>;
 }
 
 export function SectionLabel({ children }: { children: ReactNode }) {
+  const { theme: t } = useTheme();
   return (
-    <Text className="text-xs font-semibold uppercase text-muted-foreground" style={{ letterSpacing: 2 }}>
+    <Text style={{ color: t.muted, fontFamily: sans(700), fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase' }}>
       {children}
     </Text>
   );

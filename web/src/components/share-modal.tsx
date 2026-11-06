@@ -3,7 +3,14 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { KiroGhost } from "@/components/kiro-ghost";
-import { LINE_ICON, MAKER_AVATAR, MAKER_LINKS, MAKER_NAME, MAKER_SITE, X_LOGO } from "@/components/maker";
+import {
+  LINE_ICON,
+  MAKER_AVATAR,
+  MAKER_LINKS,
+  MAKER_NAME,
+  MAKER_SITE,
+  X_LOGO,
+} from "@/components/maker";
 import { Swatch } from "@/components/theme-picker";
 import { sfx } from "@/lib/sfx";
 import type { Theme } from "@/lib/themes";
@@ -21,10 +28,18 @@ export function themeLink(theme: Theme) {
 }
 
 /** A sheet for sharing the page in the current theme: copy the link, or send it somewhere. */
-export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () => void }) {
+export function ShareModal({
+  theme: t,
+  onClose,
+}: {
+  theme: Theme;
+  onClose: () => void;
+}) {
   const [link] = useState(() => themeLink(t));
   const [copied, setCopied] = useState(false);
-  const [canShare] = useState(() => typeof navigator !== "undefined" && "share" in navigator);
+  const [canShare] = useState(
+    () => typeof navigator !== "undefined" && "share" in navigator,
+  );
   const copyRef = useRef<HTMLButtonElement>(null);
   const text = `The alarm clock you can't quite trust, in ${t.name}`;
 
@@ -55,7 +70,9 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
     } catch {
       // Clipboard API blocked (some embedded browsers): copy from the selected field instead,
       // and if even that fails, leave the link selected so it can be copied by hand
-      const field = document.getElementById("lc-share-link") as HTMLInputElement | null;
+      const field = document.getElementById(
+        "lc-share-link",
+      ) as HTMLInputElement | null;
       field?.select();
       if (!document.execCommand("copy")) return;
     }
@@ -72,12 +89,22 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
   };
 
   const enc = encodeURIComponent;
-  const targets: { label: string; href?: string; onClick?: () => void; icon: ReactNode }[] = [
+  const targets: {
+    label: string;
+    href?: string;
+    onClick?: () => void;
+    icon: ReactNode;
+  }[] = [
     {
       label: "Post on X",
       href: `https://x.com/intent/post?text=${enc(text)}&url=${enc(link)}`,
       icon: (
-        <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="currentColor"
+        >
           <path d={X_LOGO} />
         </svg>
       ),
@@ -98,7 +125,12 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
             label: "More",
             onClick: nativeShare,
             icon: (
-              <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" {...LINE_ICON}>
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                {...LINE_ICON}
+              >
                 <circle cx="5.5" cy="12" r="1.4" />
                 <circle cx="12" cy="12" r="1.4" />
                 <circle cx="18.5" cy="12" r="1.4" />
@@ -112,7 +144,10 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
   const tile = "bg-current/[0.06] transition-colors hover:bg-current/[0.12]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6" style={{ fontFamily: SANS }}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+      style={{ fontFamily: SANS }}
+    >
       <motion.button
         type="button"
         aria-label="Close share"
@@ -131,13 +166,21 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
         style={{ background: t.sheet, color: t.ink }}
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.15 } }}
+        exit={{
+          opacity: 0,
+          y: 16,
+          scale: 0.98,
+          transition: { duration: 0.15 },
+        }}
         transition={spring}
       >
         <div className="flex items-start gap-4">
           <Swatch theme={t} size={48} />
           <div className="min-w-0 flex-1">
-            <h2 id="lc-share-title" className="text-xl leading-tight font-bold sm:text-2xl">
+            <h2
+              id="lc-share-title"
+              className="text-xl leading-tight font-bold sm:text-2xl"
+            >
               Share {t.name}
             </h2>
             <p className="mt-1 text-sm leading-snug opacity-70 sm:text-base">
@@ -150,7 +193,15 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
             aria-label="Close"
             className="-mt-1 -mr-2 grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full transition-colors hover:bg-current/10"
           >
-            <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.4}
+              strokeLinecap="round"
+            >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
@@ -180,7 +231,9 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
         </div>
 
         {/* Elsewhere */}
-        <div className={`mt-3 grid gap-2 ${targets.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+        <div
+          className={`mt-3 grid gap-2 ${targets.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}
+        >
           {targets.map((target) => {
             const cls = `flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl text-sm font-semibold ${tile}`;
             const inner = (
@@ -190,11 +243,22 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
               </>
             );
             return target.href ? (
-              <a key={target.label} href={target.href} target="_blank" rel="noopener noreferrer" className={cls}>
+              <a
+                key={target.label}
+                href={target.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cls}
+              >
                 {inner}
               </a>
             ) : (
-              <button key={target.label} type="button" onClick={target.onClick} className={cls}>
+              <button
+                key={target.label}
+                type="button"
+                onClick={target.onClick}
+                className={cls}
+              >
                 {inner}
               </button>
             );
@@ -214,7 +278,9 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
               style={{ boxShadow: "0 0 0 2px currentColor" }}
             />
             <div className="min-w-0">
-              <div className="text-xs font-semibold tracking-wide uppercase opacity-60">Built by</div>
+              <div className="text-xs font-semibold tracking-wide uppercase opacity-60">
+                Built by
+              </div>
               <a
                 href={MAKER_SITE}
                 target="_blank"
@@ -225,7 +291,7 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
               </a>
             </div>
             <div className="ml-1 flex items-center gap-1.5">
-              {MAKER_LINKS.map((l) => (
+              {MAKER_LINKS.filter((l) => l.id === "linkedin").map((l) => (
                 <a
                   key={l.href}
                   href={l.href}
@@ -249,8 +315,12 @@ export function ShareModal({ theme: t, onClose }: { theme: Theme; onClose: () =>
           >
             <KiroGhost className="h-7 w-auto shrink-0" />
             <div>
-              <div className="text-xs font-semibold tracking-wide uppercase opacity-60">Built for</div>
-              <div className="text-base leading-tight font-bold underline-offset-4 group-hover:underline">Kiroween</div>
+              <div className="text-xs font-semibold tracking-wide uppercase opacity-60">
+                Built for
+              </div>
+              <div className="text-base leading-tight font-bold underline-offset-4 group-hover:underline">
+                Kiroween
+              </div>
             </div>
           </a>
         </div>

@@ -201,7 +201,7 @@ export type Theme = {
   };
 };
 
-const ALL_THEMES: Theme[] = [
+export const ALL_THEMES: Theme[] = [
   {
     id: "classic",
     name: "Good Morning",
@@ -1176,6 +1176,7 @@ const ALL_THEMES: Theme[] = [
   {
     id: "digital",
     name: "Digital",
+    hidden: true,
     tagline: "Insert coin, press snooze",
     ink: "#E9FFF2",
     muted: "#9CCFB2",
@@ -1307,6 +1308,7 @@ const ALL_THEMES: Theme[] = [
   {
     id: "eightball",
     name: "Magic 8 Ball",
+    hidden: true,
     tagline: "Ask again in the morning",
     // Unlike the illustrated themes, a glossy studio product shot: one hue (cobalt) on black and
     // white, no warm colours anywhere, set in Geist Mono
@@ -1426,6 +1428,7 @@ const ALL_THEMES: Theme[] = [
   {
     id: "cafe",
     name: "Caffè",
+    hidden: true,
     tagline: "Espresso in the Tuscan sun",
     // A vintage Italian travel poster: espresso-brown ink on a morning sky that warms from pale
     // sage to apricot as the coffee gets stronger (ink 8:1 or better, muted 4.6:1 or better)

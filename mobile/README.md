@@ -1,37 +1,67 @@
 # LotteryClock mobile app
 
-Expo (SDK 58) + React Native + Expo Router, UI with [gluestack-ui](https://gluestack.io/) (UniWind / Tailwind) plus custom casino-style components.
+The iPhone app: the website's themes, drawn natively, with real alarms.
+
+Expo SDK 58, React Native 0.88 (new architecture), Expo Router, Reanimated 4 (CSS animations),
+react-native-svg. Real alarms use Apple's AlarmKit (iOS 26+) through a small local Expo module,
+so it needs a development build, not Expo Go.
 
 ```bash
 npm install
-npx expo start      # press i for the iOS simulator. Expo Go works (alarms are mocked)
-npx tsc --noEmit    # typecheck
-npx eslint src      # lint
+npx expo run:ios      # builds the app and installs it on the simulator (or a device with -d)
+npx expo start        # Metro, if the app is already installed
+npx tsc --noEmit      # typecheck
+npx eslint src        # lint
 ```
 
-## Screens
+## How it plays
 
-- **Play** (`src/app/(tabs)/index.tsx`): target time shown as reel windows, bet chips (±5 to ±45 min), odds, and "Place bet". After betting it shows a ticket with the window and a countdown.
-- **Reveal** (`src/app/reveal.tsx`): the alarm moment. Three slot reels spin and land on the result. Early gives you Snooze; late gives you "I'm up!" with a 60-second hustle timer.
-- **History** (`src/app/(tabs)/history.tsx`): stats, a 14-morning bar chart, and a list of every morning.
-- **Settings** (`src/app/(tabs)/settings.tsx`): outcome sounds, haptics, the scoring rules, and developer tools (show the hidden ring time, load demo history, reset).
+1. **Play**: pick a theme (arrows, or tap the name for the list), tap the time to change your
+   target, drag the bell round the dial to add doubt (0 to 45 minutes either side).
+2. **Set Alarm** schedules a real alarm at a random moment in that window. The offset stays
+   hidden; the screen shows the bedside clock, your target and doubt, and the window it rings in.
+3. When it rings, the system alarm says how it went ("Snooze until 7:30 AM", "No snooze. Up you
+   get", "Jackpot. Right on time") in the theme's words. Rang early? Its Snooze button counts down
+   the minutes you won (from when you press it) and rings again, so you're up at your target.
+4. Open the app and the bedside clock rolls and lands on when it really rang, with the theme's
+   verdict. **I'm Up** (or **Snooze**) scores the morning into History.
+
+To try it without waiting until morning, Settings → Developer → "Real alarm in ~1 min" (or
+"Early ring + snooze") schedules a real alarm a minute out.
+
+## Themes
+
+Each theme is the web theme (`web/src/lib/themes.ts`) ported natively: Good Morning, Good Night,
+Día de Muertos, Prize wheel, Poker, Ouija and Tarot. Digital, Magic 8 Ball and Caffè are ported
+too but hidden, because the web marks them `hidden`; un-hide one there, re-run the sync, and it
+shows up in the app.
+
+- `src/themes/themes.ts` is generated from the web file: `node scripts/sync-themes.mjs`.
+- `src/scenes/art.generated.ts` holds the web's SVG art: `node scripts/sync-art.mjs`.
+- `src/scenes/<theme>/` is each theme's kit: background scene, the effect behind the dial, dial
+  ornaments, roll and result flourishes, mascot. The contract is `src/scenes/types.ts`, and
+  `docs/porting-scenes.md` explains how to port one.
+- Fonts are Geist (Sans, Mono, Serif, Serif Triangle, Serif Heart, Pixel Square), bundled from
+  `assets/fonts` by the expo-font config plugin.
+- Sounds are the web's recordings (`assets/sfx`): latch, beeps, each theme's draw song, and the
+  win / lose / jackpot stings.
 
 ## Code
 
-- `src/lib/lottery.ts` alarm plan: random offset, outcome, snooze length.
-- `src/lib/points.ts` scoring and stats. See `../docs/points.md`.
-- `src/lib/store.ts` persisted state (AsyncStorage): settings, the armed bet, history.
-- `src/lib/alarm-service.ts` `AlarmService` interface plus a mock. Real AlarmKit / AlarmManager code plugs in here.
-- `src/lib/demo.ts` fake history for testing.
-- `src/components/` chips, reel time, slot reels, chart, panels. `src/components/ui/` holds gluestack components.
-- `src/theme.ts` hex colors and fonts. Tailwind tokens are in `src/global.css`.
+- `src/app/(tabs)/index.tsx` Play: the dial, Set Alarm, the armed clock and the reveal.
+- `src/app/(tabs)/history.tsx`, `settings.tsx` themed History and Settings.
+- `src/app/preview.tsx` developer harness for theme scenes
+  (`scripts/preview-scene.sh <udid> "theme=night&range=30&mood=idle" out.png`).
+- `src/components/` the dial, rail and push button, seven-segment clock, theme picker, status line.
+- `src/lib/alarm-service.ts` AlarmKit (via `modules/lottery-alarm`) with a local-notification
+  fallback where AlarmKit isn't available.
+- `src/lib/lottery.ts` the plan: random offset, outcome, snooze length. `src/lib/points.ts` scoring.
+- `src/lib/store.ts` persisted state: settings (theme, time, doubt), the armed bet, history.
+- `modules/lottery-alarm/` the Swift AlarmKit bridge (`ios/LotteryAlarmModule.swift`).
 
-## Testing without real alarms
+## Before shipping to a phone
 
-1. Settings → Load demo history, to fill the History tab.
-2. Play → Place bet → "Test: ring now", to simulate the ring and score it.
-3. Settings → Show hidden ring time, to see which outcome is coming.
-
-## Status
-
-Alarms are mocked. Nothing rings yet. See `../docs/feasibility.md` for the AlarmKit plan.
+- AlarmKit needs iOS 26 or later; older phones fall back to notifications, which can't ring
+  through Silent mode.
+- Building for a device needs your Apple team in Xcode (or `eas build`), and the
+  time-sensitive notifications capability for the fallback.

@@ -4,7 +4,7 @@
  * Everything is laid out in the web's 358-unit square and scaled to `size`.
  */
 import * as Haptics from 'expo-haptics';
-import { type ComponentRef, type ComponentType, useRef, useState } from 'react';
+import { type ComponentRef, type ComponentType, useEffect, useRef, useState } from 'react';
 import { type GestureResponderEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Svg, { Circle, G, Line, Path, Rect } from 'react-native-svg';
@@ -18,6 +18,8 @@ import { css, cssA, MAX_RANGE, ramp, type Theme } from '@/themes/themes';
 const SIZE = 358;
 const C = SIZE / 2;
 const TRACK_R = 148;
+/** How far ornament layers may reach outside the 358 box, in dial units. */
+const OVERHANG = 24;
 /** Degrees of sweep per minute of risk: 45 min = 360°. */
 const DEG_PER_MIN = 360 / MAX_RANGE;
 
@@ -76,8 +78,11 @@ type Props = {
 export function BetDial({ theme: t, range, onRangeChange, timeLabel, ampm, onTimePress, size, haptics = true }: Props) {
   const [grabbing, setGrabbing] = useState(false);
   const origin = useRef<{ x: number; y: number } | null>(null);
+  // The latest range for the touch handlers (between renders a drag can move several minutes)
   const rangeRef = useRef(range);
-  rangeRef.current = range;
+  useEffect(() => {
+    rangeRef.current = range;
+  }, [range]);
   const viewRef = useRef<ComponentRef<typeof View>>(null);
 
   const k = size / SIZE;
@@ -235,9 +240,11 @@ export function BetDial({ theme: t, range, onRangeChange, timeLabel, ampm, onTim
             {/* Soft glow under the arc, widening with the bet */}
             {glowPx > 0 &&
               [
-                [1.7, 0.07],
-                [1.05, 0.12],
-                [0.5, 0.22],
+                [2, 0.035],
+                [1.5, 0.05],
+                [1.05, 0.08],
+                [0.65, 0.12],
+                [0.3, 0.17],
               ].map(([w, o]) => (
                 <Path
                   key={w}
@@ -246,7 +253,6 @@ export function BetDial({ theme: t, range, onRangeChange, timeLabel, ampm, onTim
                   stroke={arcColor}
                   strokeOpacity={o}
                   strokeWidth={t.trackWidth + glowPx * w}
-                  strokeLinecap="round"
                 />
               ))}
             {slices.map((s, i) => (
@@ -270,7 +276,14 @@ export function BetDial({ theme: t, range, onRangeChange, timeLabel, ampm, onTim
         </View>
       )}
 
-      <Svg pointerEvents="none" width={size} height={size} viewBox={`0 0 ${SIZE} ${SIZE}`} style={StyleSheet.absoluteFill}>
+      {/* With a margin round the box: ornaments can reach past the rim (Prize wheel's pointer) */}
+      <Svg
+        pointerEvents="none"
+        width={u(SIZE + OVERHANG * 2)}
+        height={u(SIZE + OVERHANG * 2)}
+        viewBox={`${-OVERHANG} ${-OVERHANG} ${SIZE + OVERHANG * 2} ${SIZE + OVERHANG * 2}`}
+        style={{ position: 'absolute', left: u(-OVERHANG), top: u(-OVERHANG) }}
+      >
         {DialUnder && <DialUnder range={range} p={p} theme={t} />}
 
         {/* Minute ticks; the ones inside the bet light up */}
@@ -373,7 +386,7 @@ export function BetDial({ theme: t, range, onRangeChange, timeLabel, ampm, onTim
                 flexDirection: 'row',
                 alignItems: 'center',
                 animationName: KF.popIn,
-                animationDuration: '260ms',
+                animationDuration: '220ms',
                 animationTimingFunction: 'ease-out',
               }}
             >

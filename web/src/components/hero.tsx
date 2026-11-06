@@ -476,7 +476,7 @@ export function Hero() {
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed font-medium tracking-wide text-balance sm:text-xl sm:leading-relaxed" style={{ color: t.muted }}>
               Set a time and choose how far off it&apos;s allowed to be. If it rings
-              early, you&apos;ve won a snooze. If it rings late, you&apos;re already late.
+              early, you&apos;ve won a snooze — if not, you&apos;re late
             </p>
 
             {/* Theme switcher */}

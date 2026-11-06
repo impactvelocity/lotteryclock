@@ -14,6 +14,7 @@
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-geist-serif);
   --font-display: var(--font-geist-sans);
+  --font-pixel: var(--font-geist-pixel-square), var(--font-geist-mono), monospace;
 }
 
 body {
@@ -55,6 +56,11 @@ body {
 @keyframes lc-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.07); }
+}
+/* The Kiro ghost in the footer banner, bobbing over its grave */
+@keyframes lc-ghost-bob {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-6px) rotate(5deg); }
 }
 @keyframes lc-blink {
   0%, 100% { opacity: 1; }

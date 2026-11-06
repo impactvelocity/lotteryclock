@@ -25,17 +25,19 @@ export type PlayLayout = {
 export const HEADER_H = 44;
 export const PICKER_H = 48;
 /** Footer: the rail's hanging ticks plus the floating tab bar. */
-export const FOOTER_H = 132;
-/** From the bottom of the dial to the rail: side labels, the tier / status, and the button's top half. */
-const BELOW_DIAL = 176;
+export const FOOTER_H = 152;
+/** From the bottom of the dial to the rail: the tier line and the button's top half. */
+const BELOW_DIAL = 104;
 
 export function playLayout(width: number, height: number, insetTop: number): PlayLayout {
   const headerTop = insetTop + 2;
   const pickerTop = headerTop + HEADER_H + 8;
   const railY = height - FOOTER_H;
-  const dialTop = pickerTop + PICKER_H + 26;
-  const room = railY - dialTop - BELOW_DIAL;
-  const dialSize = Math.round(Math.max(220, Math.min(width * 0.82, 340, room)));
+  const top = pickerTop + PICKER_H;
+  const room = railY - top - BELOW_DIAL;
+  const dialSize = Math.round(Math.max(220, Math.min(width * 0.82, 340, room - 40)));
+  // Centred in the space between the theme picker and the tier line
+  const dialTop = Math.round(top + (room - dialSize) / 2);
   return {
     width,
     height,

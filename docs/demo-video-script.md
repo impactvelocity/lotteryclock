@@ -66,13 +66,25 @@ Ouija. Let the spirits pick. The spirits say: rise.
 
 Tarot. Push your luck and the card catches fire. Upright, you sleep. Reversed, you're up.
 
-*[Quick cuts: Prize wheel, Slot machine, Poker]*
+*[Quick cuts: Prize wheel, Poker]*
 
-And for the high rollers: a prize wheel, a slot machine and a poker table. Three ways to go bust before breakfast.
+And for the high rollers: a prize wheel and a poker table. Two ways to go bust before breakfast.
 
-*[Digital: LED bedside clock]*
+## Bonus: the real alarm
 
-And Digital, for anyone who misses the clock that started all this.
+*[iPhone: same theme, drag the bell round the dial, tap Set Alarm]*
+
+One more thing. The website is the game. The iPhone app is the real thing.
+
+Same themes, same dial. But tap Set Alarm, and it schedules a real alarm with Apple's AlarmKit, at a random moment inside your window. The phone knows when. You don't.
+
+*[Lock screen: the alarm rings with the theme's verdict]*
+
+When it rings, the alarm tells you how it went. Rang early? Hit snooze, and you get exactly the minutes you won, then it rings again at your target time. Rang late? No snooze. Up you get.
+
+*[Open the app: the bedside clock rolls and lands on when it really rang, then History]*
+
+Open the app and the clock rolls to reveal when it really went off. Every morning lands in your history, so you can see exactly how many minutes of sleep you've gambled away.
 
 ## Close
 

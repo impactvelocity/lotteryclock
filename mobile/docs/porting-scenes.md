@@ -67,3 +67,19 @@ sitting on the bottom edge (the rail), things that frame the dial placed relativ
   `&clean=1` hides the labels; `&parts=roll,result,mascot` picks which kit parts show under the rail.
   Metro (port 8082) fast-refreshes every simulator on save; if a screenshot shows a red error
   box, read it and fix it. Only use your own simulator UDID.
+
+## Shared timing
+
+`@/lib/roll` exports `ROLL_MS` (the whole draw) and `ROLL_BAR_MS` (how long the progress bar
+takes to fill). Use them in roll flourishes instead of hard-coding the web's numbers.
+
+## Gotchas found while porting
+
+- Reanimated CSS keyframes on react-native-svg elements work for some props (opacity, dash
+  offset) but can stick on others (a fill flash stayed white). If one misbehaves, use
+  `useAnimatedProps` instead.
+- A view with an `entering` / `exiting` layout animation plus an `opacity` style triggers a
+  Reanimated warning: put the opacity on an inner view.
+- `animationDelay` as a template string together with `cubicBezier()` / `steps()` timing trips a
+  TypeScript overload error; pass the delay as a number of milliseconds.
+- Dial layers may reach 24 units outside the 358 box (the SVG has that margin).

@@ -3,9 +3,9 @@
  * Set Alarm button marks the target time, minute ticks hang down either side, and the ones
  * inside the bet light up. After a draw, a pin marks where the alarm really rang.
  */
-import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
-import Animated, { css } from 'react-native-reanimated';
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import Animated, { css, FadeInDown } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Line, Mask, Path, Rect, Stop } from 'react-native-svg';
 
 import { Confetti } from '@/components/confetti';
@@ -16,17 +16,19 @@ import { contrast, css as rgb, edgeColor, isDark, MAX_RANGE, mixHex, ramp, type 
 export type RailPhase = 'idle' | 'dropping' | 'blink' | 'armed' | 'rolling' | 'result';
 
 /** Tick heights in pt (unlit short / long); lit ones grow by the theme's railTicks.lit. */
-const BASE_SHORT = 9;
-const BASE_LONG = 17;
+const BASE_SHORT = 6;
+const BASE_LONG = 11;
 /** Breathing room between the button housing and minute 1. */
-const ZERO_GAP = 18;
+const ZERO_GAP = 0;
+/** The timeline starts this far under the button housing, so the ticks emerge from beneath it. */
+const UNDER = 22;
 /** Edge depth of the 3D button. */
 const EDGE = 3;
 const BUTTON_H = 56;
 const HOUSING_PAD = 6;
 
 export function tickHeight(t: Theme) {
-  return Math.ceil(BASE_LONG * (t.railTicks?.lit ?? 2)) + 2;
+  return Math.ceil(BASE_LONG * Math.min(1.8, t.railTicks?.lit ?? 2)) + 2;
 }
 
 type Props = {
@@ -48,7 +50,8 @@ type Props = {
 export function AlarmRail({ theme: t, phase, range, offset, rollId, y, width, label, busy, onPress }: Props) {
   const [buttonW, setButtonW] = useState(200);
   const latched = phase !== 'idle';
-  const sideW = (width - buttonW) / 2;
+  // Each half reaches under the housing; the button is drawn over it
+  const sideW = (width - buttonW) / 2 + UNDER;
   const pinSide = phase === 'result' && offset !== 0 ? (offset < 0 ? 'left' : 'right') : null;
 
   return (
@@ -110,7 +113,8 @@ function Ticks({
   wave: boolean;
   rollId: number;
 }) {
-  const litScale = t.railTicks?.lit ?? 2;
+  // Lit ticks grow less than on the web: they hang under the button, so they stay quiet
+  const litScale = Math.min(1.8, t.railTicks?.lit ?? 2);
   const tickH = tickHeight(t);
   const tip = t.railTicks?.tip ?? 0.15;
   // The 45 minutes run from just outside the button housing to the screen edge
@@ -152,9 +156,9 @@ function Ticks({
               y2={len}
               mask={lit ? `url(#${maskId})` : undefined}
               strokeLinecap="round"
-              strokeWidth={long ? 2.5 : 1.5}
+              strokeWidth={long ? 2 : 1.25}
               stroke={lit ? rgb(ramp(t.railTicks?.ink ?? t.arcStops, m / MAX_RANGE)) : t.rail}
-              strokeOpacity={lit ? 1 : 0.28}
+              strokeOpacity={lit ? 0.75 : 0.2}
             />
           );
         })}
@@ -261,10 +265,6 @@ function PushButton({
         ? '#1B1B1B'
         : '#FFFFFF';
   const edge = rgb(mixHex(face, '#000000', 0.35));
-  const [squash, setSquash] = useState(0);
-  useEffect(() => {
-    if (latched) setSquash((s) => s + 1);
-  }, [latched]);
 
   return (
     <View
@@ -284,7 +284,8 @@ function PushButton({
       >
         {({ pressed }) => (
           <Animated.View
-            key={squash}
+            // Remounted as it latches, so the squash plays once
+            key={latched ? 'latched' : 'rest'}
             style={{
               height: BUTTON_H,
               minWidth: 176,
@@ -299,7 +300,7 @@ function PushButton({
                 ? undefined
                 : `inset 0 2px 0 rgba(255,255,255,0.35), 0 ${pressed ? 0 : EDGE}px 0 0 ${edge}`,
               transform: [{ translateY: !latched && pressed ? EDGE : 0 }],
-              ...(latched && squash
+              ...(latched
                 ? {
                     animationName: KF_SQUASH,
                     animationDuration: '500ms',
@@ -333,19 +334,9 @@ function PushButton({
                 </Svg>
               </Animated.View>
             )}
-            <Animated.Text
-              key={label}
-              style={{
-                color: faceInk,
-                fontFamily: sans(700),
-                fontSize: 16,
-                animationName: KF_LABEL,
-                animationDuration: '260ms',
-                animationTimingFunction: 'ease-out',
-              }}
-            >
-              {label}
-            </Animated.Text>
+            <Animated.View key={label} entering={FadeInDown.duration(220)}>
+              <Text style={{ color: faceInk, fontFamily: sans(700), fontSize: 16 }}>{label}</Text>
+            </Animated.View>
           </Animated.View>
         )}
       </Pressable>
@@ -362,11 +353,6 @@ const KF_SQUASH = css.keyframes({
   '100%': { transform: [{ scaleX: 1 }, { scaleY: 1 }] },
 });
 
-const KF_LABEL = css.keyframes({
-  from: { opacity: 0, transform: [{ translateY: 12 }] },
-  to: { opacity: 1, transform: [{ translateY: 0 }] },
-});
-
 /** A small concave flare joining the 4pt rail to the button housing. */
 function Fillet({ side, color }: { side: 'left' | 'right'; color: string }) {
   const W = 22;
@@ -379,7 +365,8 @@ function Fillet({ side, color }: { side: 'left' | 'right'; color: string }) {
       style={{
         position: 'absolute',
         top: '50%',
-        marginTop: -H / 2 - EDGE / 2,
+        // Centred on the rail line
+        marginTop: -H / 2,
         width: W,
         height: H,
         [side === 'right' ? 'right' : 'left']: -W + 6,

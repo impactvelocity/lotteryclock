@@ -77,10 +77,10 @@ export const KF = {
     '3%': { opacity: 0.45 },
     '10%, 100%': { opacity: 1 },
   }),
-  /** The "+ 10 mins" under the time springs in on every change */
+  /** The "+ 10 mins" under the time gives a small nudge on every change */
   popIn: css.keyframes({
-    '0%': { transform: [{ scale: 1.45 }] },
-    '60%': { transform: [{ scale: 0.94 }] },
+    '0%': { transform: [{ scale: 1.18 }] },
+    '60%': { transform: [{ scale: 0.97 }] },
     '100%': { transform: [{ scale: 1 }] },
   }),
   /** lc-letter-wave */

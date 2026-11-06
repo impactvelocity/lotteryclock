@@ -168,11 +168,12 @@ export function ThemePicker({
       <Chip theme={t} label="Previous theme" onPress={() => onSelect((index - 1 + n) % n)}>
         <Chevron dir="left" color={t.chipInk} />
       </Chip>
+      {/* A fixed width, so the arrows stay put whatever the theme is called */}
       <Pressable
         onPress={onOpen}
         accessibilityRole="button"
         accessibilityLabel={`Theme: ${t.name}, ${index + 1} of ${n}. Choose a theme`}
-        style={{ flexShrink: 1 }}
+        style={{ flex: 1, maxWidth: 300 }}
       >
         {({ pressed }) => (
           <Glass
@@ -180,14 +181,9 @@ export function ThemePicker({
             style={[styles.pill, { transform: [{ scale: pressed ? 0.96 : 1 }] }]}
           >
             <Swatch theme={t} size={30} />
-            <Animated.Text
-              key={t.id}
-              entering={FadeIn.duration(200)}
-              numberOfLines={1}
-              style={{ color: t.chipInk, fontFamily: sans(600), fontSize: 17, flexShrink: 1 }}
-            >
+            <Text numberOfLines={1} style={{ color: t.chipInk, fontFamily: sans(600), fontSize: 17, flex: 1 }}>
               {t.name}
-            </Animated.Text>
+            </Text>
             <Text style={{ color: t.chipInk, opacity: 0.55, fontFamily: sans(500), fontSize: 12, fontVariant: ['tabular-nums'] }}>
               {index + 1}/{n}
             </Text>

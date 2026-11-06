@@ -1,27 +1,51 @@
 import type { ReactNode } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+import Svg, { Path } from 'react-native-svg';
 
-import { DisplayText } from '@/components/display-text';
 import { Panel, SectionLabel } from '@/components/panel';
 import { Screen } from '@/components/screen';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Text } from '@/components/ui/text';
-import { makeDemoHistory } from '@/lib/demo';
-import { HUSTLE_SECONDS, JACKPOT_MULTIPLIER } from '@/lib/points';
-import { actions, useAppState } from '@/lib/store';
-import { colors } from '@/theme';
+import { PillButton } from '@/components/status';
+import { Swatch } from '@/components/theme-picker';
+import { router } from 'expo-router';
 
-const RULES: { symbol: string; name: string; when: string; points: string; color: string }[] = [
-  { symbol: '🍒', name: 'Win', when: 'Rang early. Snooze ends at your target.', points: '+min early', color: colors.win },
-  { symbol: '7️⃣', name: 'Jackpot', when: 'Rang within 1 min of target.', points: `+${JACKPOT_MULTIPLIER}× window`, color: colors.gold },
-  { symbol: '⏰', name: 'Late', when: 'Rang late. No snooze.', points: '−min late', color: colors.loss },
-  { symbol: '⚡', name: 'Hustle', when: `Late, but you stopped it within ${HUSTLE_SECONDS}s.`, points: '−half', color: colors.hustle },
-  { symbol: '💀', name: 'Bust', when: 'Snoozed again past your target.', points: '−window', color: colors.loss },
-];
+import { alarmCopy } from '@/lib/alarm-copy';
+import { alarmService } from '@/lib/alarm-service';
+import { createPlan } from '@/lib/lottery';
+import { makeDemoHistory } from '@/lib/demo';
+import { actions, useAppState } from '@/lib/store';
+import { fontFor, sans } from '@/themes/fonts';
+import { useTheme } from '@/themes/use-theme';
+import { THEMES, type Theme } from '@/themes/themes';
+
+import { LotteryAlarm } from '../../../modules/lottery-alarm';
 
 export default function SettingsScreen() {
-  const { settings, history } = useAppState();
+  const { settings, history, armed } = useAppState();
+  const { theme: t, index } = useTheme();
+
+  const alarmKit = alarmService.kind === 'alarmkit';
+  const auth = LotteryAlarm?.authorizationState() ?? 'unsupported';
+  const alarmStatus = alarmKit
+    ? auth === 'authorized'
+      ? 'Real iOS alarms (AlarmKit). They ring through Silent mode and Focus, even if the app is closed.'
+      : auth === 'denied'
+        ? 'Alarms are turned off for LotteryClock. Turn them on in Settings so it can ring.'
+        : "LotteryClock will ask to schedule alarms the first time you set one."
+    : 'Alarm notifications. For real alarms that ring through Silent mode, use iOS 26 or later.';
+
+  /** A real alarm about a minute from now, with a minute of doubt: proof it rings. */
+  const testAlarm = async (early = false) => {
+    if (armed) return Alert.alert('An alarm is already set', 'Cancel it on the Play tab first.');
+    if (!(await alarmService.requestPermission())) return Alert.alert('Alarms are off', 'Allow alarms for LotteryClock in Settings.');
+    // Random within a minute either side of 90 s from now; or rigged to ring early, a minute
+    // from now, with a two-minute snooze that ends on the target
+    const target = Date.now() + (early ? 180_000 : 90_000);
+    const plan = early ? createPlan(target, 2, Date.now(), () => 0) : createPlan(target, 1);
+    const alarmId = await alarmService.schedule(plan, alarmCopy(t, plan));
+    actions.arm({ alarmId, plan, placedAtMs: Date.now(), kind: alarmService.kind });
+    router.navigate('/');
+  };
 
   const resetHistory = () =>
     Alert.alert('Reset history?', `This deletes ${history.length} mornings and your bankroll.`, [
@@ -30,92 +54,149 @@ export default function SettingsScreen() {
     ]);
 
   return (
-    <Screen>
-      <DisplayText style={{ color: colors.fg, fontSize: 28 }}>Settings</DisplayText>
-
+    <Screen title="Settings">
       <Panel>
-        <SectionLabel>Alarm</SectionLabel>
-        <SettingRow
-          title="Outcome sounds"
-          description="Different sound for win, jackpot and late. Spoils the surprise: you'll know before you look."
-        >
-          <Toggle value={settings.outcomeSounds} onChange={(v) => actions.updateSettings({ outcomeSounds: v })} />
-        </SettingRow>
-        <SettingRow title="Haptics" description="Buzz on chips, reel stops and setting alarms.">
-          <Toggle value={settings.haptics} onChange={(v) => actions.updateSettings({ haptics: v })} />
-        </SettingRow>
+        <SectionLabel>Theme</SectionLabel>
+        <View style={{ gap: 2 }}>
+          {THEMES.map((th, i) => (
+            <ThemeRow key={th.id} theme={th} current={t} selected={i === index} onPress={() => actions.updateSettings({ themeId: th.id })} />
+          ))}
+        </View>
       </Panel>
 
       <Panel>
-        <SectionLabel>How scoring works</SectionLabel>
-        <Text className="text-sm text-muted-foreground">
-          Your window is how far off the alarm can ring, in minutes. Points are chips. Get up fast when you’re late and the house can’t win.
-        </Text>
-        {RULES.map((r) => (
-          <View key={r.name} style={styles.rule}>
-            <Text style={{ fontSize: 22, width: 30 }}>{r.symbol}</Text>
-            <View style={{ flex: 1 }}>
-              <Text className="text-sm font-semibold text-foreground">{r.name}</Text>
-              <Text className="text-xs text-muted-foreground">{r.when}</Text>
+        <SectionLabel>Alarm</SectionLabel>
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: t.ink, fontFamily: sans(500), fontSize: 14, lineHeight: 20 }}>{alarmStatus}</Text>
+          {alarmKit && auth === 'denied' && (
+            <View style={{ alignSelf: 'flex-start' }}>
+              <PillButton ink={t.ink} onPress={() => Linking.openSettings()}>
+                Open Settings
+              </PillButton>
             </View>
-            <Text className="text-sm font-semibold" style={{ color: r.color }}>
-              {r.points}
+          )}
+          {armed && (
+            <Text style={{ color: t.muted, fontFamily: sans(500), fontSize: 13 }}>
+              One alarm is set. Cancel it on the Play tab.
             </Text>
-          </View>
-        ))}
+          )}
+        </View>
+        <SettingRow theme={t} title="Sound effects" description="The clicks, beeps and draw music in the app. The alarm always rings.">
+          <Toggle theme={t} value={settings.sound} onChange={(v) => actions.updateSettings({ sound: v })} />
+        </SettingRow>
+        <SettingRow theme={t} title="Haptics" description="A tick for every minute on the dial, a thump when you set it.">
+          <Toggle theme={t} value={settings.haptics} onChange={(v) => actions.updateSettings({ haptics: v })} />
+        </SettingRow>
       </Panel>
 
       <Panel>
         <SectionLabel>Developer</SectionLabel>
-        <SettingRow title="Show hidden ring time" description="Reveals the secret ring time on the alarm ticket.">
-          <Toggle value={settings.showDebug} onChange={(v) => actions.updateSettings({ showDebug: v })} />
+        <SettingRow theme={t} title="Show hidden ring time" description="Reveals when the armed alarm will really ring.">
+          <Toggle theme={t} value={settings.showDebug} onChange={(v) => actions.updateSettings({ showDebug: v })} />
         </SettingRow>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <Button
-            variant="secondary"
-            className="flex-1"
-            onPress={() => actions.setHistory(makeDemoHistory(21, settings.wakeHour, settings.wakeMinute))}
-          >
-            <ButtonText>Load demo history</ButtonText>
-          </Button>
-          <Button variant="destructive" className="flex-1" onPress={resetHistory} disabled={!history.length}>
-            <ButtonText>Reset history</ButtonText>
-          </Button>
+        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+          <PillButton ink={t.ink} onPress={() => testAlarm()}>
+            ⏰ Real alarm in ~1 min
+          </PillButton>
+          <PillButton ink={t.ink} onPress={() => testAlarm(true)}>
+            💤 Early ring + snooze
+          </PillButton>
+          <PillButton ink={t.ink} onPress={() => actions.setHistory(makeDemoHistory(21, settings.wakeHour, settings.wakeMinute))}>
+            Load demo history
+          </PillButton>
+          {history.length > 0 && (
+            <PillButton ink={t.ink} onPress={resetHistory}>
+              Reset history
+            </PillButton>
+          )}
         </View>
       </Panel>
 
-      <Text className="text-center text-xs text-muted-foreground" style={{ letterSpacing: 1 }}>
-        Idea 2002 · Built 2012 · Resurrected 2026
+      <Text style={{ color: t.muted, fontFamily: fontFor(t.titleFont, 600), fontSize: 13, textAlign: 'center' }}>
+        Built by Dylan Jones for the Kiroween hackathon
       </Text>
     </Screen>
   );
 }
 
-function SettingRow({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+/** A plain row in the current theme's colours; the swatch alone shows each theme's look. */
+function ThemeRow({ theme: th, current: t, selected, onPress }: { theme: Theme; current: Theme; selected: boolean; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected }} accessibilityLabel={th.name}>
+      {({ pressed }) => (
+        <View style={[styles.themeRow, { backgroundColor: selected || pressed ? t.faint : 'transparent' }]}>
+          <Swatch theme={th} size={30} />
+          <Text style={{ flex: 1, color: t.ink, fontFamily: sans(selected ? 700 : 500), fontSize: 16 }}>{th.name}</Text>
+          {selected && (
+            <Svg width={18} height={18} viewBox="0 0 24 24">
+              <Path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke={t.ink} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+          )}
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+function SettingRow({ theme: t, title, description, children }: { theme: Theme; title: string; description: string; children: ReactNode }) {
   return (
     <View style={styles.settingRow}>
       <View style={{ flex: 1, gap: 2 }}>
-        <Text className="text-base font-medium text-foreground">{title}</Text>
-        <Text className="text-xs text-muted-foreground">{description}</Text>
+        <Text style={{ color: t.ink, fontFamily: sans(600), fontSize: 16 }}>{title}</Text>
+        <Text style={{ color: t.muted, fontFamily: sans(500), fontSize: 12.5 }}>{description}</Text>
       </View>
       {children}
     </View>
   );
 }
 
-function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+/**
+ * A compact switch: the iOS 26 system one is long and flat, and can't be resized without
+ * squashing its knob. Same behaviour, in the theme's colours.
+ */
+function Toggle({ theme: t, value, onChange }: { theme: Theme; value: boolean; onChange: (v: boolean) => void }) {
+  const W = 46;
+  const H = 28;
+  const KNOB = 22;
   return (
-    <Switch
-      value={value}
-      onValueChange={onChange}
-      trackColor={{ false: colors.border, true: colors.gold }}
-      thumbColor="#fff"
-      ios_backgroundColor={colors.border}
-    />
+    <Pressable
+      onPress={() => onChange(!value)}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+      hitSlop={8}
+    >
+      <Animated.View
+        style={{
+          width: W,
+          height: H,
+          borderRadius: H,
+          backgroundColor: value ? t.arcStops[1] : t.faint,
+          transitionProperty: 'backgroundColor',
+          transitionDuration: 180,
+        }}
+      >
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: (H - KNOB) / 2,
+            left: (H - KNOB) / 2,
+            width: KNOB,
+            height: KNOB,
+            borderRadius: KNOB,
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+            transform: [{ translateX: value ? W - H : 0 }],
+            transitionProperty: 'transform',
+            transitionDuration: 200,
+            transitionTimingFunction: 'ease-out',
+          }}
+        />
+      </Animated.View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  rule: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  settingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  settingRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  themeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 14 },
 });

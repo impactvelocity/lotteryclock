@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.lotteryclock.app",
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "supportsTablet": false,
       "infoPlist": {
         "NSAlarmKitUsageDescription": "LotteryClock rings your gamble alarm at a random moment inside your window, even in Silent mode.",
@@ -37,9 +37,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0B0816",
+          "backgroundColor": "#EFE2F0",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 200
         }
       ],
       "@react-native-community/datetimepicker",

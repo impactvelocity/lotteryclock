@@ -1,49 +1,61 @@
 import { KiroGhost } from "@/components/kiro-ghost";
-import { MAKER_AVATAR, MAKER_LINKS, MAKER_NAME, MAKER_SITE } from "@/components/maker";
+import { MAKER_LINKS, MAKER_NAME, MAKER_SITE } from "@/components/maker";
 import { GitHubIcon, REPO_URL } from "@/components/sections/mobile-app";
 
 const KIROWEEN_URL = "https://kiroween.devpost.com/";
 
-const EXPLORE = [
-  { label: "Demo video", href: "#demo" },
-  { label: "The story", href: "#story" },
-  { label: "Why would anyone want this?", href: "#why" },
-  { label: "The iPhone app", href: "#app" },
-];
-
-const linkClass = "text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline";
+const linkClass =
+  "text-white/80 underline underline-offset-4 decoration-white/25 transition-colors hover:text-white hover:decoration-white";
 
 export function SiteFooter() {
   return (
     <footer className="bg-[#2a1530] px-6 pt-16 pb-10 text-white sm:px-10">
       <div className="mx-auto max-w-6xl">
-        {/* Hackathon banner */}
+        {/* Hackathon banner, with the Kiro ghost bobbing in a glassy tile */}
         <a
           href={KIROWEEN_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex flex-col gap-4 rounded-3xl border border-white/10 bg-gradient-to-r from-[#3d1d44] to-[#2a1530] p-6 transition-colors hover:border-[#FF6B35]/60 sm:flex-row sm:items-center sm:justify-between sm:p-8"
+          className="group relative isolate flex flex-col gap-6 overflow-hidden rounded-3xl bg-[linear-gradient(115deg,#FFC03D,#FF6B35_45%,#FF2E4D)] p-6 text-[#2a1530] shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-2px_0_rgba(42,21,48,0.12),0_0_0_1px_rgba(255,255,255,0.06),0_28px_60px_-24px_rgba(255,107,53,0.7)] ring-1 ring-white/20 ring-inset transition-shadow duration-300 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_0_rgba(42,21,48,0.12),0_0_0_1px_rgba(255,255,255,0.08),0_28px_60px_-24px_rgba(255,107,53,0.85)] sm:flex-row sm:items-center sm:justify-between sm:p-8"
         >
-          <span className="flex items-center gap-4">
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/10">
-              <KiroGhost className="h-8 w-auto text-white" />
+          {/* Gloss on the top half, and a shine that sweeps across on hover */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-1/2 bg-gradient-to-b from-white/15 to-transparent"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -inset-y-6 left-0 -z-10 w-1/4 -translate-x-[150%] skew-x-[-20deg] bg-white/15 blur-lg transition-transform duration-700 ease-out group-hover:translate-x-[500%]"
+          />
+
+          <span className="flex items-center gap-5">
+            <span
+              aria-hidden
+              className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_18px_-8px_rgba(42,21,48,0.45)] ring-1 ring-white/35 backdrop-blur-sm"
+            >
+              <KiroGhost className="h-10 w-auto text-white drop-shadow-[0_4px_6px_rgba(42,21,48,0.35)] motion-safe:animate-[lc-ghost-bob_2.4s_ease-in-out_infinite]" />
             </span>
             <span>
-              <span className="block font-mono text-xs tracking-[0.18em] text-[#FFC03D] uppercase">
+              <span className="block font-mono text-xs font-semibold tracking-[0.18em] text-[#2a1530]/70 uppercase">
                 Kiroween hackathon · Resurrection track
               </span>
-              <span className="mt-1 block text-xl font-bold sm:text-2xl">
+              <span className="mt-1 block text-xl font-extrabold tracking-tight sm:text-2xl">
                 A dead idea from 2012, brought back to life.
               </span>
             </span>
           </span>
-          <span className="shrink-0 font-semibold text-white/80 group-hover:text-white">View on Devpost →</span>
+          <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#2a1530] px-5 py-3 font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_10px_20px_-10px_rgba(42,21,48,0.8)] ring-1 ring-white/10 transition-colors group-hover:bg-black sm:self-auto">
+            View on Devpost
+            <span aria-hidden>→</span>
+          </span>
         </a>
 
-        <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
-          {/* Brand */}
+        <div className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <a href="#" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+            <a
+              href="#"
+              className="flex items-center gap-2 text-xl font-bold tracking-tight"
+            >
               <svg
                 aria-hidden
                 viewBox="0 0 15 15"
@@ -59,83 +71,71 @@ export function SiteFooter() {
               </svg>
               LotteryClock
             </a>
-            <p className="mt-3 max-w-xs text-sm text-white/60">
-              The alarm clock you can&apos;t quite trust. Early? Snooze. Late? Get up.
+            <p className="mt-2 text-sm text-white/60">
+              Built with{" "}
+              <a
+                href="https://kiro.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+              >
+                Kiro IDE
+              </a>{" "}
+              and{" "}
+              <a
+                href="https://www.anthropic.com/claude/opus"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+              >
+                Claude Opus
+              </a>
+              .
             </p>
           </div>
 
-          <FooterColumn title="Explore">
-            {EXPLORE.map((l) => (
-              <li key={l.href}>
-                <a href={l.href} className={linkClass}>
-                  {l.label}
-                </a>
-              </li>
+          {/* Source code, then my own links */}
+          <div className="flex gap-2">
+            {[
+              {
+                id: "github-repo",
+                href: REPO_URL,
+                label: "Source on GitHub",
+                icon: <GitHubIcon className="h-4 w-4" />,
+              },
+              ...MAKER_LINKS.filter((l) => l.id === "linkedin"),
+            ].map((l) => (
+              <a
+                key={l.id}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={l.label}
+                title={l.label}
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+              >
+                {l.icon}
+              </a>
             ))}
-          </FooterColumn>
-
-          <FooterColumn title="Built with">
-            <li>
-              <a href="https://www.anthropic.com/claude/opus" target="_blank" rel="noopener noreferrer" className={linkClass}>
-                Claude Opus
-              </a>
-            </li>
-            <li>
-              <a href="https://kiro.dev" target="_blank" rel="noopener noreferrer" className={linkClass}>
-                Kiro IDE
-              </a>
-            </li>
-            <li>
-              <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={`${linkClass} inline-flex items-center gap-1.5`}>
-                <GitHubIcon className="h-3.5 w-3.5" />
-                Source on GitHub
-              </a>
-            </li>
-          </FooterColumn>
-
-          <FooterColumn title="About me">
-            <li className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element -- small avatar */}
-              <img src={MAKER_AVATAR} alt="" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
-              <span>
-                <a href={MAKER_SITE} target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline">
-                  {MAKER_NAME}
-                </a>
-                <span className="block text-xs text-white/55">Recovering snoozer</span>
-              </span>
-            </li>
-            <li className="flex gap-2 pt-1">
-              {MAKER_LINKS.map((l) => (
-                <a
-                  key={l.id}
-                  href={l.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={l.label}
-                  title={l.label}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-                >
-                  {l.icon}
-                </a>
-              ))}
-            </li>
-          </FooterColumn>
+          </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row sm:justify-between">
-          <span>© 2026 {MAKER_NAME}. Started in 2012, finished in 2026.</span>
+        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row sm:justify-between">
+          <span>
+            © 2026{" "}
+            <a
+              href={MAKER_SITE}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white hover:underline"
+            >
+              {MAKER_NAME}
+            </a>
+            . Started in 2012, finished in 2026.
+          </span>
           <span>No real money is gambled. Only minutes of sleep.</span>
         </div>
       </div>
     </footer>
-  );
-}
-
-function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h3 className="font-mono text-xs font-semibold tracking-[0.18em] text-white/45 uppercase">{title}</h3>
-      <ul className="mt-4 space-y-2.5 text-sm">{children}</ul>
-    </div>
   );
 }

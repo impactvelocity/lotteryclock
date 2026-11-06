@@ -1,57 +1,50 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { DisplayText } from '@/components/display-text';
-import { KIND_COLOR } from '@/components/points-chart';
-import { Text } from '@/components/ui/text';
-import { fmtDate, fmtPoints, fmtTime } from '@/lib/format';
+import { chartColor } from '@/components/points-chart';
+import { fmtDate, fmtTime } from '@/lib/format';
 import { offsetMinutes } from '@/lib/lottery';
-import { KIND_META, type HistoryEntry } from '@/lib/points';
-import { colors } from '@/theme';
+import type { HistoryEntry } from '@/lib/points';
+import { sans } from '@/themes/fonts';
+import { contrast, css, mixHex, type Theme } from '@/themes/themes';
 
-export function HistoryRow({ entry }: { entry: HistoryEntry }) {
-  const { plan, score } = entry;
-  const meta = KIND_META[score.kind];
-  const color = KIND_COLOR[score.kind];
+/** One morning: the day and times on the left, snooze / late / on time on the right. */
+export function HistoryRow({ theme: t, entry, last }: { theme: Theme; entry: HistoryEntry; last?: boolean }) {
+  const { plan } = entry;
   const m = offsetMinutes(plan);
-  const offsetLabel =
-    plan.outcome === 'onTime' ? 'on time' : `${m} min ${plan.outcome === 'early' ? 'early' : 'late'}`;
+  const verdict = plan.outcome === 'early' ? 'Snooze' : plan.outcome === 'late' ? 'Late' : 'On time';
+  const amount = plan.outcome === 'early' ? `+${m} min` : plan.outcome === 'late' ? `${m} min` : '';
 
   return (
-    <View style={styles.row}>
-      <View style={[styles.symbol, { borderColor: color, backgroundColor: `${color}1F` }]}>
-        <Text style={{ fontSize: 20 }}>{meta.symbol}</Text>
-      </View>
+    <View style={[styles.row, { borderBottomColor: t.faint, borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth }]}>
       <View style={{ flex: 1, gap: 2 }}>
-        <Text className="text-base font-semibold text-foreground">{fmtDate(plan.targetMs)}</Text>
-        <Text className="text-xs text-muted-foreground">
-          Target {fmtTime(plan.targetMs)} · rang {fmtTime(plan.ringAtMs)} · {offsetLabel}
+        <Text style={{ color: t.ink, fontFamily: sans(600), fontSize: 16 }}>{fmtDate(plan.targetMs)}</Text>
+        <Text style={{ color: t.muted, fontFamily: sans(500), fontSize: 13 }}>
+          Target {fmtTime(plan.targetMs)} · rang {fmtTime(plan.ringAtMs)}
         </Text>
       </View>
       <View style={{ alignItems: 'flex-end', gap: 2 }}>
-        <DisplayText style={{ color, fontSize: 18 }}>{fmtPoints(score.points)}</DisplayText>
-        <Text className="text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: 1.5 }}>
-          {meta.label} · ±{plan.riskMinutes}
-        </Text>
+        <Text style={{ color: readable(t, chartColor(plan.outcome), plan.outcome === 'onTime' ? '#7A3A00' : '#000000'), fontFamily: sans(700), fontSize: 16 }}>{verdict}</Text>
+        {amount ? (
+          <Text style={{ color: t.muted, fontFamily: sans(500), fontSize: 13, fontVariant: ['tabular-nums'] }}>{amount}</Text>
+        ) : null}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  symbol: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13 },
 });
+
+/**
+ * The chart's green / red / gold, so the list matches it. Bright as they are on dark themes;
+ * deepened (towards black, or brown for the gold, so they keep their hue) until they read on a
+ * light card.
+ */
+function readable(t: Theme, color: string, deep: string) {
+  for (const k of [0, 0.2, 0.32, 0.45, 0.55]) {
+    const c = mixHex(color, deep, k);
+    if (contrast(c, t.sheet) >= 3.2) return css(c);
+  }
+  return t.ink;
+}

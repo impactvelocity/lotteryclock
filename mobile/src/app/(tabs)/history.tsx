@@ -1,82 +1,65 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { DisplayText } from '@/components/display-text';
 import { HistoryRow } from '@/components/history-row';
-import { Panel, SectionLabel } from '@/components/panel';
-import { KIND_COLOR, PointsChart } from '@/components/points-chart';
+import { Panel } from '@/components/panel';
+import { chartCard, chartColor, PointsChart } from '@/components/points-chart';
 import { Screen } from '@/components/screen';
-import { StatTile } from '@/components/stat-tile';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { fmtPoints } from '@/lib/format';
-import { computeStats } from '@/lib/points';
+import { PillButton } from '@/components/status';
+import { isLightTheme, Swatch } from '@/components/theme-picker';
 import { useAppState } from '@/lib/store';
-import { colors } from '@/theme';
+import { sans } from '@/themes/fonts';
+import { useTheme } from '@/themes/use-theme';
 
 export default function HistoryScreen() {
   const { history } = useAppState();
-  const stats = useMemo(() => computeStats(history), [history]);
+  const { theme: t } = useTheme();
 
   return (
-    <Screen>
-      <DisplayText style={{ color: colors.fg, fontSize: 28 }}>History</DisplayText>
-
+    <Screen title="History">
       {history.length === 0 ? (
-        <Panel>
-          <Text style={{ fontSize: 40, textAlign: 'center' }}>🎰</Text>
-          <Text className="text-center text-base font-semibold text-foreground">No spins yet</Text>
-          <Text className="text-center text-sm text-muted-foreground">
-            Place a bet on the Play tab. To preview this screen, load demo history in Settings.
+        <Panel style={{ alignItems: 'center', paddingVertical: 28 }}>
+          <Swatch theme={t} size={64} />
+          <Text style={{ color: t.ink, fontFamily: sans(700), fontSize: 19, textAlign: 'center' }}>No mornings yet</Text>
+          <Text style={{ color: t.muted, fontFamily: sans(500), fontSize: 14, textAlign: 'center', lineHeight: 20 }}>
+            Set an alarm on the Play tab. Every morning you play lands here: snoozed or late.
           </Text>
-          <Button variant="outline" onPress={() => router.navigate('/settings')}>
-            <ButtonText>Open Settings</ButtonText>
-          </Button>
+          <PillButton ink={t.ink} onPress={() => router.navigate('/')}>
+            Set an alarm
+          </PillButton>
         </Panel>
       ) : (
         <>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            <StatTile
-              label="Bankroll"
-              value={`🪙 ${fmtPoints(stats.bankroll)}`}
-              color={stats.bankroll >= 0 ? colors.gold : colors.loss}
-            />
-            <StatTile label="Snooze won" value={`${stats.minutesWon} min`} color={colors.win} />
-            <StatTile label="Win rate" value={`${Math.round(stats.winRate * 100)}%`} />
-            <StatTile label={`Streak · best ${stats.bestStreak}`} value={`🔥 ${stats.streak}`} color={colors.neon} />
+          {/* A dark card, whatever the theme, so the bars pop */}
+          <View style={{ backgroundColor: chartCard(t, isLightTheme(t)), borderRadius: 26, padding: 18, gap: 14 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontFamily: sans(700), fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase' }}>
+                Last 14 mornings
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                {(
+                  [
+                    ['early', 'Snooze'],
+                    ['late', 'Late'],
+                  ] as const
+                ).map(([outcome, label]) => (
+                  <View key={outcome} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: chartColor(outcome) }} />
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontFamily: sans(600), fontSize: 12 }}>{label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+            <PointsChart theme={t} entries={history} />
           </View>
 
-          <Panel>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <SectionLabel>Last 14 mornings</SectionLabel>
-              <Text className="text-xs text-muted-foreground">{stats.jackpots} jackpots</Text>
-            </View>
-            <PointsChart entries={history} />
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 14 }}>
-              <Legend color={KIND_COLOR.win} label="Win" />
-              <Legend color={KIND_COLOR.jackpot} label="Jackpot" />
-              <Legend color={KIND_COLOR.hustle} label="Hustle" />
-              <Legend color={KIND_COLOR.late} label="Late / bust" />
-            </View>
-          </Panel>
-
-          <Panel style={{ gap: 0, paddingVertical: 8 }}>
-            {history.map((e) => (
-              <HistoryRow key={e.id} entry={e} />
+          <Panel style={{ gap: 0, paddingVertical: 4 }}>
+            {history.map((e, i) => (
+              <HistoryRow key={e.id} theme={t} entry={e} last={i === history.length - 1} />
             ))}
           </Panel>
         </>
       )}
     </Screen>
-  );
-}
-
-function Legend({ color, label }: { color: string; label: string }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-      <Text className="text-[11px] text-muted-foreground">{label}</Text>
-    </View>
   );
 }

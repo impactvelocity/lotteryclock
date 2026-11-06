@@ -12,13 +12,14 @@ import { playLayout } from '@/components/play-layout';
 import { SceneOverlay, ScenePlate } from '@/components/scene-plate';
 import { kitFor, type SceneMood } from '@/scenes';
 import { sans } from '@/themes/fonts';
-import { MAX_RANGE, THEMES } from '@/themes/themes';
+import { ALL_THEMES, MAX_RANGE } from '@/themes/themes';
 
 export default function PreviewScreen() {
   const q = useLocalSearchParams<{ theme?: string; range?: string; mood?: string; parts?: string; clean?: string }>();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const t = THEMES.find((x) => x.id === q.theme) ?? THEMES[0];
+  // Hidden themes too, so they can still be worked on
+  const t = ALL_THEMES.find((x) => x.id === q.theme) ?? ALL_THEMES[0];
   const range = Math.max(0, Math.min(MAX_RANGE, Number(q.range ?? 10)));
   const mood = (q.mood ?? 'idle') as SceneMood;
   const parts = (q.parts ?? 'roll,result,mascot').split(',');
@@ -54,7 +55,12 @@ export default function PreviewScreen() {
               boxShadow: t.discShadow,
             }}
           />
-          <Svg viewBox="0 0 358 358" width={L.dialSize} height={L.dialSize} style={StyleSheet.absoluteFill}>
+          <Svg
+            viewBox="-24 -24 406 406"
+            width={(L.dialSize * 406) / 358}
+            height={(L.dialSize * 406) / 358}
+            style={{ position: 'absolute', left: (-L.dialSize * 24) / 358, top: (-L.dialSize * 24) / 358 }}
+          >
             <Circle cx={179} cy={179} r={148} fill="none" stroke={t.track} strokeWidth={t.trackWidth} />
             {DialUnder && <DialUnder range={range} p={p} theme={t} />}
             {DialOver && <DialOver range={range} p={p} theme={t} />}

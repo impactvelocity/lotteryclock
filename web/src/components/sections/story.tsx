@@ -2,19 +2,33 @@ import { MAKER_AVATAR, MAKER_NAME } from "@/components/maker";
 import { SectionHeading } from "@/components/sections/section-heading";
 
 /**
- * The 2012 email to the owner of lotteryclock.com.
- * TODO(Dylan): swap in the real wording, date and subject from your Sent folder.
+ * The real 2012 thread, from Dylan's Gmail. Email addresses are left out and the
+ * domain owner is shortened to "Russell S." for his privacy.
  */
-const EMAIL = {
-  from: "Dylan Jones",
-  to: "Owner of lotteryclock.com",
-  date: "2012",
-  subject: "Is lotteryclock.com for sale?",
-  body: [
-    "Hi,",
-    "I'm building an iPhone alarm clock app called LotteryClock and saw that you own lotteryclock.com.",
-    "Would you consider selling it? I'm a solo developer, so I can't offer a fortune, but I'd make a fair offer.",
-    "Thanks,\nDylan",
+const THREAD = {
+  subject: "LotteryClock.com - Are you using it?",
+  messages: [
+    {
+      from: "Dylan Jones",
+      to: "Russell S.",
+      date: "Thu, May 31, 2012",
+      body: [
+        "Hi Russell,",
+        "I found your info with a WHOIS search.",
+        "I was wondering if you were planning on using LotteryClock.com?",
+        "If you don't have any plans for it, would it be possible if I buy it off you?",
+        "Thanks!",
+        "- Dylan",
+      ],
+    },
+    {
+      from: "Russell S.",
+      to: "me",
+      date: "Fri, Jun 8, 2012",
+      body: [
+        "Hi Dylan - I have always had plans for it but I don't know when I will get to it. Sorry, not for sale.",
+      ],
+    },
   ],
 };
 
@@ -24,9 +38,9 @@ export function Story() {
       <div className="mx-auto max-w-6xl">
         <SectionHeading title="An idea that wouldn't stay dead" />
 
-        <div className="mt-16 grid items-start gap-14 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+        <div className="mt-16 grid items-center gap-14 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
           <Letter />
-          <div className="lg:pt-16">
+          <div>
             <Email />
           </div>
         </div>
@@ -46,35 +60,34 @@ function Letter() {
       <p className="text-xl">Hi,</p>
       <div className="mt-4 space-y-4 text-foreground/85">
         <p>
-          Sometime in the early 2000s I was cleaning my room, which was rare, and tripped over the cord of my alarm
-          clock. It went dark. I plugged it back in and forgot about it.
+          Sometime in the early 2000s I was cleaning my room, which was rare,
+          and tripped over the cord of my alarm clock. It went dark. I plugged
+          it back in and forgot about it.
         </p>
         <p>
-          The next morning it went off and my hand stopped halfway to snooze. Was that the real time? Had the clock been
-          off for five minutes or twenty? Was I already late?
+          The next morning it went off and my hand stopped halfway to snooze.
+          Was that the real time? Had the clock been off for five minutes or
+          twenty? Was I already late?
         </p>
         <p>
-          I had no idea, so I got up. I was on time for school that day, and the next few. Then I worked out the offset,
-          fixed the clock, and went straight back to being late.
+          I had no idea, so I got up. I was on time for school that day, and the
+          next few. Then I worked out the offset, fixed the clock, and went
+          straight back to being late.
         </p>
         <p>
-          That little bit of doubt stuck with me. In 2012 I built an iPhone version that looked like a slot machine and
-          emailed the owner of lotteryclock.com to ask if they&apos;d sell. They said no. The app never shipped.
+          That little bit of doubt stuck with me. In 2012 I built an iPhone
+          version that looked like a slot machine and emailed the owner of
+          lotteryclock.com to ask if he&apos;d sell. He had plans for it. The
+          app never shipped.
         </p>
         <p>
-          Kiroween&apos;s Resurrection track asks for something dead, brought back with today&apos;s tools. This idea
-          has been in the ground for fourteen years. So here it is, dug back up.
+          Kiroween&apos;s Resurrection track asks for something dead, brought
+          back with today&apos;s tools. This idea has been in the ground for
+          fourteen years. So here it is, dug back up.
         </p>
       </div>
 
-      <div className="mt-8 flex items-center gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element -- small avatar, no need for the optimiser */}
-        <img src={MAKER_AVATAR} alt="" width={44} height={44} className="h-11 w-11 rounded-full object-cover" />
-        <div>
-          <p className="text-2xl italic leading-none">Dylan</p>
-          <p className="mt-1 font-sans text-sm text-foreground/55">{MAKER_NAME}, maker of LotteryClock</p>
-        </div>
-      </div>
+      <p className="mt-8 italic">{MAKER_NAME}</p>
     </article>
   );
 }
@@ -82,46 +95,66 @@ function Letter() {
 function Email() {
   return (
     <figure className="relative">
-
       <div className="relative overflow-hidden rounded-xl border border-foreground/15 bg-white shadow-[0_20px_40px_-20px_rgba(67,35,68,0.4)] lg:rotate-[1deg]">
-        {/* Window chrome, 2012 desktop style */}
+        {/* Window chrome */}
         <div className="flex items-center gap-2 border-b border-foreground/10 bg-gradient-to-b from-[#f4f1f4] to-[#e4dee4] px-4 py-2.5">
           <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
           <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
           <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-          <span className="flex-1 text-center text-xs font-medium text-foreground/60">{EMAIL.subject}</span>
+          <span className="flex-1 text-center text-xs font-medium text-foreground/50">
+            Inbox
+          </span>
           <span className="w-[52px]" />
         </div>
 
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-b border-foreground/10 px-5 py-4 font-mono text-[13px]">
-          <dt className="text-foreground/45">From</dt>
-          <dd>{EMAIL.from}</dd>
-          <dt className="text-foreground/45">To</dt>
-          <dd>{EMAIL.to}</dd>
-          <dt className="text-foreground/45">Date</dt>
-          <dd>{EMAIL.date}</dd>
-          <dt className="text-foreground/45">Subject</dt>
-          <dd className="font-semibold">{EMAIL.subject}</dd>
-        </dl>
+        <h3 className="px-5 pt-5 text-xl font-semibold tracking-tight sm:px-6">
+          {THREAD.subject}
+        </h3>
 
-        <div className="space-y-3 px-5 py-5 text-[15px] leading-relaxed whitespace-pre-line text-foreground/85">
-          {EMAIL.body.map((line, i) => (
-            <p key={i}>{line}</p>
+        <ol className="divide-y divide-foreground/10">
+          {THREAD.messages.map((m, i) => (
+            <li key={m.date} className="flex gap-3 px-5 py-5 sm:px-6">
+              {i === 0 ? (
+                // eslint-disable-next-line @next/next/no-img-element -- small avatar, no need for the optimiser
+                <img
+                  src={MAKER_AVATAR}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#432344] text-sm font-semibold text-white"
+                >
+                  RS
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                  <p className="font-semibold">{m.from}</p>
+                  <time className="text-xs text-foreground/50">{m.date}</time>
+                </div>
+                <p className="text-xs text-foreground/50">to {m.to}</p>
+                <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-foreground/85">
+                  {m.body.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </div>
+                {/* The answer, stamped under the reply */}
+                {i === THREAD.messages.length - 1 && (
+                  <div className="mt-5 flex justify-end">
+                    <span className="pointer-events-none rotate-[-8deg] rounded-md border-[3px] border-[#FF2E4D] px-3 py-1 font-mono text-base font-bold tracking-[0.12em] text-[#FF2E4D] uppercase opacity-85 mix-blend-multiply sm:text-lg">
+                      Rejected
+                    </span>
+                  </div>
+                )}
+              </div>
+            </li>
           ))}
-        </div>
-
-        {/* The answer */}
-        <span
-          aria-label="Reply: no"
-          className="pointer-events-none absolute right-5 bottom-8 rotate-[-12deg] rounded-md border-[3px] border-[#FF2E4D] px-3 py-1 font-mono text-lg font-bold tracking-[0.15em] text-[#FF2E4D] uppercase opacity-85 mix-blend-multiply sm:text-xl"
-        >
-          Not for sale
-        </span>
+        </ol>
       </div>
-
-      <figcaption className="mt-4 text-sm text-foreground/60">
-        The reply was short. The domain stayed theirs, the app stayed on my laptop, and the idea went in a drawer.
-      </figcaption>
     </figure>
   );
 }
