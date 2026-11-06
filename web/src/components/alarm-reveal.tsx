@@ -42,6 +42,7 @@ export function AlarmReveal({ theme: t, phase, target, offset, range, rollId, on
   // Beep while the target blinks, like a freshly set clock.
   useEffect(() => {
     if (phase !== "blink") return;
+    sfx.set();
     sfx.beep();
     const id = setInterval(sfx.beep, 1000);
     return () => clearInterval(id);
@@ -63,7 +64,12 @@ export function AlarmReveal({ theme: t, phase, target, offset, range, rollId, on
       id = setTimeout(step, ROLL_DELAYS[i++]);
     };
     id = setTimeout(step, 60);
-    return () => clearTimeout(id);
+    sfx.startRoll(ROLL_MS);
+    return () => {
+      clearTimeout(id);
+      // Cut a recorded roll short if the draw is abandoned; after landing this is a no-op.
+      sfx.stopRoll();
+    };
   }, [phase, target, range, offset, rollId]);
 
   const shown = isResult ? target + offset : phase === "rolling" ? rolled : target;

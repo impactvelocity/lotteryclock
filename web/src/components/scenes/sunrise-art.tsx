@@ -617,12 +617,15 @@ export function Cloud({
   width,
   belly,
   bellyLight,
+  top = "#FFFDF8",
   id,
 }: {
   shape: number;
   width: number;
   belly: string;
   bellyLight: string;
+  /** The cloud's main (upper) colour. */
+  top?: string;
   id: string;
 }) {
   const d = CLOUD_SHAPES[shape % CLOUD_SHAPES.length];
@@ -638,7 +641,7 @@ export function Cloud({
           <path d={d} />
         </clipPath>
       </defs>
-      <path fill="#FFFDF8" d={d} />
+      <path fill={top} d={d} />
       <g clipPath={`url(#${id})`}>
         <path
           fill={bellyLight}

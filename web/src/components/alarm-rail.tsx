@@ -63,7 +63,7 @@ export function AlarmRail({ theme: t, phase, range, offset, rollId, rangLabel, o
         {half("left")}
         {/* Drawn over the ticks, which start from underneath it */}
         <div className="pointer-events-auto relative z-10 shrink-0">
-          <PushButton theme={t} phase={phase} range={range} onPress={onPress} />
+          <PushButton theme={t} phase={phase} onPress={onPress} />
           {/* Snooze or jackpot: confetti bursts up from just above the Reset Alarm button */}
           {phase === "result" && offset <= 0 && (
             <Confetti
@@ -293,12 +293,10 @@ const EDGE = 3;
 function PushButton({
   theme: t,
   phase,
-  range,
   onPress,
 }: {
   theme: Theme;
   phase: Phase;
-  range: number;
   onPress: () => void;
 }) {
   const latched = phase !== "idle";
@@ -306,16 +304,11 @@ function PushButton({
   const ringing = phase === "dropping" || phase === "blink";
   // Once pressed, the face takes the rail colour so it reads as part of the line: faded text while
   // the draw runs, full-strength text once Reset Alarm is ready to press.
-  // Some themes warm the button up with the bet
-  const idleFace = t.button.ramp ? hexOf(ramp(t.button.ramp, range / MAX_RANGE)) : t.button.face;
-  const face = latched ? t.rail : idleFace;
+  // One face colour per theme, whatever the bet
+  const face = latched ? t.rail : t.button.face;
   const railLight = isLight(t.rail);
   const faceInk = !latched
-    ? t.button.whiteFrom !== undefined
-      ? range >= t.button.whiteFrom
-        ? "#FFFFFF"
-        : t.button.ink
-      : readableInk(idleFace, t.button.ink)
+    ? readableInk(t.button.face, t.button.ink)
     : busy
       ? railLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.7)"
       : railLight ? "#1B1B1B" : "#FFFFFF";
@@ -455,8 +448,6 @@ function isLight(hex: string) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
   return 0.299 * r + 0.587 * g + 0.114 * b > 150;
 }
-
-const hexOf = (c: [number, number, number]) => "#" + c.map((n) => n.toString(16).padStart(2, "0")).join("");
 
 /**
  * Keeps the button label readable as the face colour changes.

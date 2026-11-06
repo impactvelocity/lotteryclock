@@ -2,7 +2,9 @@
 
 import { motion } from "motion/react";
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
-import { Zzz } from "@/components/scenes/sunrise-scene";
+import { SUIT_PATHS } from "@/components/scenes/tarot-svg";
+import { WheelFace, WheelPointer } from "@/components/scenes/wheel-art";
+import { scallop } from "@/lib/scallop";
 import { sfx } from "@/lib/sfx";
 import { css, cssA, MAX_RANGE, ramp, type Theme } from "@/lib/themes";
 
@@ -32,6 +34,14 @@ function arc(a1: number, a2: number, r: number) {
   const large = a2 - a1 > 180 ? 1 : 0;
   return `M${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
 }
+
+/** The "calavera" ornament: a ring of dots in marigold, rose, teal and orange, and two flowers. */
+const CALAVERA_COLORS = ["#FFC23D", "#F0306E", "#2FB8A6", "#FF7A1F"];
+const CALAVERA_DOTS = Array.from({ length: 40 }, (_, i) => {
+  const [x, y] = pt(i * 9, 106);
+  return { x, y, r: i % 2 ? 1.4 : 2, fill: CALAVERA_COLORS[i % 4] };
+});
+const CALAVERA_FLOWERS = [112, 246].map((x) => ({ x, y: 118, d: scallop(x, 118, 5, 7, 1.05) }));
 
 type Props = {
   theme: Theme;
@@ -71,8 +81,7 @@ export function BetDial({
   const change = (next: number) => {
     const r = Math.max(0, Math.min(MAX_RANGE, next));
     if (r === range) return;
-    if (r === 0 || r === MAX_RANGE) sfx.detent();
-    else sfx.tick(r / MAX_RANGE);
+    sfx.dial(r, range);
     onRangeChange(r);
   };
 
@@ -154,10 +163,6 @@ export function BetDial({
       onPointerUp={release}
       onPointerCancel={release}
     >
-      {t.decor === "sun" && range === 0 && (
-        <Zzz color={t.ink} style={{ left: pct(268), top: pct(40) }} />
-      )}
-
       {/* Halo that grows with the bet */}
       <div
         aria-hidden
@@ -244,7 +249,7 @@ export function BetDial({
           aria-hidden
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-          style={{ mixBlendMode: "multiply" }}
+          style={{ mixBlendMode: t.trackEdgeBlend ?? "multiply" }}
         >
           {[TRACK_R - half + 1, TRACK_R + half - 1].map((r) => (
             <circle
@@ -265,6 +270,9 @@ export function BetDial({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
       >
+        {/* Prize wheel: wedges, pegs and the hub, under the ticks */}
+        {t.ornament === "wheel" && <WheelFace range={range} />}
+
         {/* Minute ticks; the ones inside the bet light up */}
         {Array.from({ length: MAX_RANGE - 1 }, (_, k) => k + 1).map((i) => {
           const long = i % 5 === 0;
@@ -302,10 +310,10 @@ export function BetDial({
             cx={b.x}
             cy={b.y}
             r={4.5}
-            fill={b.lit ? "#FFE28A" : "rgba(255,226,138,0.16)"}
+            fill={b.lit ? (t.bulbColors?.on ?? "#FFE28A") : (t.bulbColors?.off ?? "rgba(255,226,138,0.16)")}
             style={{
               filter: b.lit
-                ? "drop-shadow(0 0 5px rgba(255,210,100,0.9))"
+                ? `drop-shadow(0 0 5px ${t.bulbColors?.glow ?? "rgba(255,210,100,0.9)"})`
                 : "none",
               animation:
                 b.lit && p > 0.85
@@ -314,7 +322,34 @@ export function BetDial({
             }}
           />
         ))}
-        {t.ornament === "suits" &&
+        {t.ornament === "wheel" && <WheelPointer range={range} />}
+        {t.ornament === "chip" && (
+          // A giant poker chip: eight edge inserts round the rim (clear of the 12 o'clock notch)
+          // and a dashed inlay ring between the time and the minute ticks
+          <g>
+            {Array.from({ length: 8 }, (_, k) => 22.5 + k * 45).map((a) => (
+              <path
+                key={a}
+                d={arc(a - 7, a + 7, 169.5)}
+                fill="none"
+                stroke={t.ink}
+                strokeOpacity={0.5}
+                strokeWidth={9}
+              />
+            ))}
+            <circle
+              cx={C}
+              cy={C}
+              r={103}
+              fill="none"
+              stroke={t.faint}
+              strokeWidth={1.5}
+              strokeDasharray="3 5"
+              strokeLinecap="round"
+            />
+          </g>
+        )}
+        {(t.ornament === "suits" || t.ornament === "chip") &&
           (
             [
               ["♠", 112, 118],
@@ -334,26 +369,100 @@ export function BetDial({
               {g}
             </text>
           ))}
-        {t.ornament === "ouija" &&
-          (
-            [
-              ["YES", 90],
-              ["NO", 268],
-            ] as const
-          ).map(([w, x]) => (
-            <text
-              key={w}
-              x={x}
-              y={185}
-              fontSize={16}
-              textAnchor="middle"
-              letterSpacing="0.08em"
-              fill={t.faint}
-              style={{ fontFamily: t.titleFont }}
+        {t.ornament === "ouija" && (
+          // Engraved like a spirit board: YES and NO either side of the time, an eye above it,
+          // GOODBYE below, inside a dotted ring
+          <g fill={t.faint} style={{ fontFamily: t.titleFont }}>
+            <circle
+              cx={C}
+              cy={C}
+              r={108}
+              fill="none"
+              stroke={t.faint}
+              strokeWidth={1.6}
+              strokeLinecap="round"
+              strokeDasharray="0 5.65"
+            />
+            {(
+              [
+                ["YES", 93],
+                ["NO", 265],
+              ] as const
+            ).map(([w, x]) => (
+              <text key={w} x={x} y={184} fontSize={13} textAnchor="middle" letterSpacing="0.14em">
+                {w}
+              </text>
+            ))}
+            <g
+              transform={`translate(${C} 117)`}
+              fill="none"
+              stroke={t.faint}
+              strokeWidth={1.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              {w}
+              <path d="M-13 0s5.5-7 13-7 13 7 13 7-5.5 7-13 7-13-7-13-7z" />
+              <circle r={3.3} />
+              <path d="M0-11.5v-3.5M-7.5-9.5l-1.8-2.6M7.5-9.5l1.8-2.6" />
+            </g>
+            <text x={C} y={262} fontSize={9.5} textAnchor="middle" letterSpacing="0.32em">
+              GOODBYE
             </text>
-          ))}
+          </g>
+        )}
+        {t.ornament === "calavera" && (
+          <g opacity={0.75}>
+            {/* A sugar skull's ring of dots */}
+            {CALAVERA_DOTS.map((d, i) => (
+              <circle key={i} cx={d.x} cy={d.y} r={d.r} fill={d.fill} />
+            ))}
+            {/* Marigolds up top, hearts below */}
+            {CALAVERA_FLOWERS.map((f) => (
+              <g key={f.x}>
+                <path d={f.d} fill="#FF7A1F" />
+                <circle cx={f.x} cy={f.y} r={2.2} fill="#FFC23D" />
+              </g>
+            ))}
+            {[112, 246].map((x) => (
+              <path
+                key={x}
+                d={`M${x} 254.5c-.9-.8-5.2-3.6-5.2-6.6a2.7 2.7 0 0 1 5.2-1 2.7 2.7 0 0 1 5.2 1c0 3-4.3 5.8-5.2 6.6z`}
+                fill="#F0306E"
+              />
+            ))}
+          </g>
+        )}
+        {t.ornament === "tarot" && (
+          // Engraved like a tarot card's face: a fine ring with a sparkle at each quarter, and the
+          // four minor arcana suits on the diagonals
+          <g fill={t.faint}>
+            <circle cx={C} cy={C} r={112} fill="none" stroke={t.faint} strokeWidth={1.3} />
+            {[0, 90, 180, 270].map((a) => {
+              const [x, y] = pt(a, 112);
+              return (
+                <path
+                  key={a}
+                  transform={`translate(${x} ${y})`}
+                  d="M0-5.5C.4-1.9 1.9-.4 5.5 0 1.9.4.4 1.9 0 5.5-.4 1.9-1.9.4-5.5 0-1.9-.4-.4-1.9 0-5.5z"
+                  // Knocks the ring out round each sparkle (the disc's cream)
+                  stroke="#FBF4E6"
+                  strokeWidth={2.5}
+                  paintOrder="stroke"
+                />
+              );
+            })}
+            {(
+              [
+                ["wands", C - 64, C - 64],
+                ["cups", C + 64, C - 64],
+                ["swords", C - 64, C + 64],
+                ["pentacles", C + 64, C + 64],
+              ] as const
+            ).map(([suit, x, y]) => (
+              <path key={suit} d={SUIT_PATHS[suit]} fillRule="evenodd" transform={`translate(${x - 8} ${y - 8}) scale(${16 / 24})`} />
+            ))}
+          </g>
+        )}
       </svg>
 
       {/* Centre: the target time */}

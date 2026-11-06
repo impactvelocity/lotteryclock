@@ -11,10 +11,14 @@ import {
   type RevealPhase,
 } from "@/components/alarm-reveal";
 import { BetDial } from "@/components/bet-dial";
-import { RingMarks, SunRays, SunriseScene, Zzz, type SceneMood } from "@/components/scenes/sunrise-scene";
+import { RingMarks, Zzz } from "@/components/scenes/flourishes";
+import { CalaveraFace } from "@/components/scenes/muertos-art";
+import { LuckyFace } from "@/components/scenes/wheel-art";
+import { DialBackdrop, RollFlourish, ThemeScene, type SceneMood } from "@/components/scenes";
+import { frac } from "@/lib/rand";
 import { chipStyle, SEE_THROUGH, ThemePicker } from "@/components/theme-picker";
 import { TimePicker } from "@/components/time-picker";
-import { setMuted, sfx } from "@/lib/sfx";
+import { setMuted, setSoundTheme, sfx } from "@/lib/sfx";
 import { background, css, cssA, fillCopy, MAX_RANGE, ramp, THEMES, tierIndex, tierLabel } from "@/lib/themes";
 import { formatClock, toMinutes } from "@/lib/time";
 
@@ -48,26 +52,6 @@ const NEXT: Partial<Record<Phase, [Phase, number]>> = {
   // rolling → result is triggered by the clock when it lands.
 };
 
-/**
- * Deterministic pseudo-random in [0, 1) from integers only, so server and
- * browser always agree (Math.sin-based hashes can differ in the last bits).
- */
-function frac(i: number, salt: number) {
-  let x = Math.imul((i * 1013 + salt) ^ 0x9e3779b9, 0x85ebca6b);
-  x ^= x >>> 13;
-  x = Math.imul(x, 0xc2b2ae35);
-  x ^= x >>> 16;
-  return Math.round(((x >>> 0) / 4294967296) * 1e4) / 1e4;
-}
-
-const STARS = Array.from({ length: 46 }, (_, i) => ({
-  x: frac(i, 1) * 100,
-  y: frac(i, 2) * 100,
-  r: 1 + frac(i, 3) * 1.8,
-  dur: (2 + frac(i, 4) * 3).toFixed(1),
-  delay: (frac(i, 5) * 3).toFixed(1),
-}));
-
 const spring = { type: "spring", stiffness: 500, damping: 24 } as const;
 
 export function Hero() {
@@ -85,6 +69,10 @@ export function Hero() {
   const [soundOn, setSoundOn] = useState(true);
 
   const t = THEMES[themeIndex];
+  const MascotFace = t.mascot === "lucky" ? LuckyFace : CalaveraFace;
+
+  // Recorded sounds follow the theme (themes without files keep the synthesized ones).
+  useEffect(() => setSoundTheme(t.id), [t.id]);
 
   // Where the dial sits inside the hero, so the sun can be drawn behind everything (in the
   // background layer) yet still centred on the dial.
@@ -124,6 +112,9 @@ export function Hero() {
     if (next === themeIndex) return;
     setFadeFrom(background(t, p)); // old background fades out over the new one
     setThemeIndex(next);
+    // Each theme starts fresh: back on the dial, with no doubt
+    setRange(0);
+    setPhase("idle");
     setThemeSwaps((s) => s + 1);
     sfx.swap();
   };
@@ -162,11 +153,6 @@ export function Hero() {
     delay: (frac(i, 15) * 2).toFixed(1),
   }));
 
-  const windowLine =
-    range === 0
-      ? `Rings at exactly ${formatClock(target)}`
-      : `Rings between ${formatClock(target - range)} and ${formatClock(target + range)}`;
-
   const outcome = outcomeOf(offset);
   const tier = tierIndex(range);
   const mood: SceneMood =
@@ -197,7 +183,6 @@ export function Hero() {
   // The tier name's colour: the theme's own ramp if it has one, else the arc colour.
   const tierColor = range === 0 ? t.muted : t.tierInk ? css(ramp(t.tierInk, p)) : arcColor;
 
-  // Only this top label changes between phases; the "Rings between…" line below stays put.
   let status: { key: string; title: ReactNode; color?: string; shake?: boolean };
   if (phase === "idle") {
     status = {
@@ -256,47 +241,28 @@ export function Hero() {
             )}
 
             <AnimatePresence>
-              {t.decor === "sun" && (
+              {t.decor !== "none" && (
                 <motion.div
-                  key="sun"
+                  key={t.decor}
                   className="absolute inset-0"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <SunriseScene p={p} tier={tier} mood={mood} />
+                  <ThemeScene theme={t} p={p} tier={tier} mood={mood} />
                   {dialSpot && (
                     <div className="absolute" style={{ left: dialSpot.x, top: dialSpot.y }}>
-                      <SunRays p={p} range={range} visible={phase === "idle"} size={dialSpot.size} />
+                      <DialBackdrop
+                        theme={t}
+                        p={p}
+                        range={range}
+                        visible={phase === "idle"}
+                        size={dialSpot.size}
+                        mood={mood}
+                      />
                     </div>
                   )}
-                </motion.div>
-              )}
-              {t.decor === "stars" && (
-                <motion.div
-                  key="stars"
-                  className="absolute inset-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  {STARS.map((s, i) => (
-                    <span
-                      key={i}
-                      className="absolute rounded-full"
-                      style={{
-                        left: `${s.x}%`,
-                        top: `${s.y}%`,
-                        width: s.r * 2,
-                        height: s.r * 2,
-                        background: "#FFF4D8",
-                        boxShadow: "0 0 6px rgba(255,236,190,0.8)",
-                        animation: `lc-twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
-                      }}
-                    />
-                  ))}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -355,7 +321,10 @@ export function Hero() {
               className="col-start-3 flex items-center gap-4 justify-self-end text-[15px]"
               style={{ color: t.muted }}
             >
-              <span className="hidden sm:inline">Built for Kiroween</span>
+              <span className="hidden items-center gap-2 sm:inline-flex">
+                <KiroGhost className="h-[18px] w-auto" />
+                Built for Kiroween
+              </span>
               <motion.button
                 type="button"
                 onClick={toggleSound}
@@ -391,7 +360,11 @@ export function Hero() {
           <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-6 pt-8 pb-16 text-center sm:px-10 sm:pt-12">
             <h1
               className="max-w-3xl text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl md:text-balance"
-              style={{ fontFamily: t.titleFont }}
+              style={{
+                fontFamily: t.titleFont,
+                maskImage: t.titleTexture,
+                WebkitMaskImage: t.titleTexture,
+              }}
             >
               The alarm clock you can&apos;t quite trust
             </h1>
@@ -407,7 +380,7 @@ export function Hero() {
 
             {/* 25px extra under the controls once the clock replaces the dial */}
             <div
-              className={`grid w-full grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto_1fr] ${latched ? "mt-[65px] sm:mt-[73px]" : "mt-10 sm:mt-12"}`}
+              className={`grid w-full grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto_1fr] md:gap-x-[52px] ${latched ? "mt-[65px] sm:mt-[73px]" : "mt-10 sm:mt-12"}`}
               style={{
                 transition: `margin-top ${STAGE_EASE}`,
                 transitionDelay: latched ? "0.08s" : "0s",
@@ -509,14 +482,14 @@ export function Hero() {
             </div>
 
             {/* Status. A fixed-height box, so nothing here resizes the hero mid-animation.
-                Picking a bet: tier + window, top-aligned. Once set, each phase is one group
+                Picking a bet: just the tier, top-aligned. Once set, each phase is one group
                 (title / title + bar / title + result + Roll Again) pinned to the same centre
                 point, crossfading in place: nothing slides or jumps between phases. */}
             <div
               aria-live="polite"
-              className={`relative w-full ${latched ? "mt-6 md:mt-10" : "mt-8"}`}
+              className={`relative w-full ${latched ? "mt-6 md:mt-10" : "mt-12"}`}
               style={{
-                height: latched ? STATUS_SET_H : 60,
+                height: latched ? STATUS_SET_H : 32,
                 transition: `height ${STAGE_EASE}, margin-top ${STAGE_EASE}`,
                 transitionDelay: latched ? "0.08s" : "0s",
               }}
@@ -555,16 +528,21 @@ export function Hero() {
                             className="inline-flex items-center gap-[0.45em]"
                             style={{ animation: status.shake ? "lc-shake 0.4s linear infinite" : "none" }}
                           >
-                            {t.tierIcons && (
-                              <TierIcon key={tier} paths={t.tierIcons[tier]} />
+                            {t.mascot ? (
+                              // A face, not a line icon: drawn a little larger, without growing the line
+                              <MascotFace
+                                key={tier}
+                                tier={tier}
+                                className="-my-[0.3em] h-[1.7em] w-[1.7em] shrink-0"
+                                style={{ animation: "lc-icon-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both" }}
+                              />
+                            ) : (
+                              t.tierIcons && <TierIcon key={tier} paths={t.tierIcons[tier]} />
                             )}
                             {status.title}
                           </span>
                         </motion.div>
                       </AnimatePresence>
-                    </div>
-                    <div className="mt-1 h-5 text-sm leading-5 whitespace-nowrap" style={{ color: t.muted }}>
-                      {windowLine}
                     </div>
                   </motion.div>
                 ) : (
@@ -592,12 +570,12 @@ export function Hero() {
                           style={{ background: verdict.bg, color: verdict.ink }}
                         >
                           {status.title}
-                          {/* Classic: Zs drift off a snooze, alarm marks ring either side of a late one */}
-                          {t.decor === "sun" && mood === "win" && (
-                            <Zzz color="#D9547F" className="top-1/2 left-full ml-2" />
+                          {/* Zs drift off a snooze, alarm marks ring either side of a late one */}
+                          {t.flourish && mood === "win" && (
+                            <Zzz color={t.flourish.zzz} className="top-1/2 left-full ml-2" />
                           )}
-                          {t.decor === "sun" && mood === "loss" && (
-                            <RingMarks color={t.loss} className="-inset-x-8 top-1/2 -translate-y-1/2" />
+                          {t.flourish && mood === "loss" && (
+                            <RingMarks color={t.flourish.ring} className="-inset-x-8 top-1/2 -translate-y-1/2" />
                           )}
                         </span>
                       ) : (
@@ -608,16 +586,20 @@ export function Hero() {
                     {phase === "rolling" && (
                       <motion.div
                         variants={RISE}
-                        className="mt-4 h-2 w-40 overflow-hidden rounded-full bg-current/10"
+                        className="mt-4 flex flex-col items-center"
                         style={{ color: t.ink }}
                       >
-                        <motion.div
-                          className="h-full rounded-full bg-current"
-                          initial={{ width: "0%" }}
-                          animate={{ width: "100%" }}
-                          // Starts after the previous group fades out, so finish a touch early
-                          transition={{ duration: (ROLL_MS - 250) / 1000, ease: "easeInOut" }}
-                        />
+                        {/* Some themes put on a little show above the bar (Night's sheep use it as the ground) */}
+                        <RollFlourish theme={t} />
+                        <div className="h-2 w-40 overflow-hidden rounded-full bg-current/10">
+                          <motion.div
+                            className="h-full rounded-full bg-current"
+                            initial={{ width: "0%" }}
+                            animate={{ width: "100%" }}
+                            // Starts after the previous group fades out, so finish a touch early
+                            transition={{ duration: (ROLL_MS - 250) / 1000, ease: "easeInOut" }}
+                          />
+                        </div>
                       </motion.div>
                     )}
 
@@ -747,6 +729,29 @@ function TierIcon({ paths }: { paths: string[] }) {
       {paths.map((d) => (
         <path key={d} d={d} />
       ))}
+    </svg>
+  );
+}
+
+/** The Kiro ghost (from kiro.dev's icon), in the current text colour with see-through eyes. */
+function KiroGhost({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="272 202 655 796" className={className} aria-hidden fill="currentColor">
+      <mask id="kiro-ghost-eyes" maskUnits="userSpaceOnUse" x="272" y="202" width="655" height="796">
+        <path
+          fill="#fff"
+          d="M398.554 818.914C316.315 1001.03 491.477 1046.74 620.672 940.156C658.687 1059.66 801.052 970.473 852.234 877.795C964.787 673.567 919.318 465.357 907.64 422.374C827.637 129.443 427.623 128.946 358.8 423.865C342.651 475.544 342.402 534.18 333.458 595.051C328.986 625.86 325.507 645.488 313.83 677.785C306.873 696.424 297.68 712.819 282.773 740.645C259.915 783.881 269.604 867.113 387.87 823.883L399.051 818.914H398.554Z"
+        />
+        <path
+          fill="#000"
+          d="M636.123 549.353C603.328 549.353 598.359 510.097 598.359 486.742C598.359 465.623 602.086 448.977 609.293 438.293C615.504 428.852 624.697 424.131 636.123 424.131C647.555 424.131 657.492 428.852 664.447 438.541C672.398 449.474 676.623 466.12 676.623 486.742C676.623 525.998 661.471 549.353 636.375 549.353H636.123Z"
+        />
+        <path
+          fill="#000"
+          d="M771.24 549.353C738.445 549.353 733.477 510.097 733.477 486.742C733.477 465.623 737.203 448.977 744.41 438.293C750.621 428.852 759.814 424.131 771.24 424.131C782.672 424.131 792.609 428.852 799.564 438.541C807.516 449.474 811.74 466.12 811.74 486.742C811.74 525.998 796.588 549.353 771.492 549.353H771.24Z"
+        />
+      </mask>
+      <rect x="272" y="202" width="655" height="796" mask="url(#kiro-ghost-eyes)" />
     </svg>
   );
 }

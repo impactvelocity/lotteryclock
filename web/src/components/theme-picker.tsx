@@ -44,7 +44,7 @@ const spring = { type: "spring", stiffness: 500, damping: 26 } as const;
  */
 /** Frosted glass: the background blurs through. */
 export const SEE_THROUGH =
-  "bg-(--chip)/50 backdrop-blur-md transition-colors duration-200 hover:bg-(--chip)/75";
+  "bg-(--chip)/50 backdrop-blur-sm transition-colors duration-200 hover:bg-(--chip)/75";
 
 /**
  * A 1px see-through ring instead of a solid border, so whatever the background is doing

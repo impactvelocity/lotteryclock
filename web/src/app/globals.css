@@ -8,7 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Only three fonts, for every theme: Geist, Geist Mono and Geist Serif */
+  /* Only three fonts, for every theme: Geist, Geist Mono and Geist Serif (Ouija uses its Triangle cut) */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-geist-serif);
@@ -19,6 +19,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  /* Geist Serif Triangle comes in one weight: show it as drawn rather than smeared into a faux bold.
+     (The other Geist fonts are variable, so they have every weight anyway.) */
+  font-synthesis-weight: none;
 }
 
 @keyframes lc-float {
@@ -106,11 +109,180 @@ body {
   40% { opacity: 1; }
   100% { opacity: 0; transform: translateX(4px); }
 }
+/* ---- Night scene ---- */
+/* A shooting star: a quick streak down and to the left, then a long wait */
+@keyframes lc-shoot {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-26.5deg); }
+  2% { opacity: 1; }
+  10% { opacity: 0; transform: translate(-280px, 140px) rotate(-26.5deg); }
+  100% { opacity: 0; transform: translate(-280px, 140px) rotate(-26.5deg); }
+}
+
+/* ---- Ouija scene ---- */
+/* Film grain jumps to a new spot a few times a second */
+@keyframes lc-grain {
+  0% { transform: translate(0, 0); }
+  17% { transform: translate(-28px, 18px); }
+  33% { transform: translate(22px, -31px); }
+  50% { transform: translate(-13px, -9px); }
+  67% { transform: translate(31px, 23px); }
+  83% { transform: translate(-21px, 29px); }
+}
+/* Scratches on the print skip and blink like old film */
+@keyframes lc-scratch {
+  0% { translate: 0 0; opacity: 1; }
+  22% { translate: 3px 0; opacity: 0.4; }
+  41% { translate: -2px 0; opacity: 1; }
+  63% { translate: 1px 0; opacity: 0; }
+  71% { translate: -4px 0; opacity: 0.8; }
+}
+/* A candle flame: stretches, leans, sputters */
+.lc-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lc-flame 1.6s ease-in-out infinite;
+}
+@keyframes lc-flame {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  20% { transform: scale(0.92, 1.1) skewX(-3deg); }
+  45% { transform: scale(1.05, 0.94) skewX(2deg); }
+  70% { transform: scale(0.96, 1.06) skewX(-1deg); }
+}
+@keyframes lc-candle-glow {
+  0%, 100% { opacity: 1; }
+  30% { opacity: 0.78; }
+  55% { opacity: 0.95; }
+  80% { opacity: 0.7; }
+}
+/* Smoke from a snuffed wick curls up and thins out */
+@keyframes lc-smoke {
+  0% { transform: translateY(2px); opacity: 0; }
+  25% { opacity: 0.45; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+/* A moth looping round a flame */
+@keyframes lc-moth {
+  0%, 100% { transform: translate(0, 0) rotate(-10deg); }
+  20% { transform: translate(34px, -22px) rotate(15deg); }
+  40% { transform: translate(58px, 6px) rotate(40deg); }
+  55% { transform: translate(30px, 26px) rotate(-20deg); }
+  75% { transform: translate(-14px, 4px) rotate(-35deg); }
+}
+@keyframes lc-moth-flap {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.3); }
+}
+/* An ember floating up off the board */
+@keyframes lc-ember {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  10% { opacity: 0.9; }
+  100% { transform: translate(var(--drift, 0px), -340px) scale(0.3); opacity: 0; }
+}
+/* Candlelight wavering: a faint, uneven dimming of the whole board */
+@keyframes lc-candlelight {
+  0%, 100% { opacity: 0; }
+  9% { opacity: var(--flicker, 0.05); }
+  13% { opacity: 0; }
+  31% { opacity: calc(var(--flicker, 0.05) * 0.6); }
+  36% { opacity: 0; }
+  62% { opacity: var(--flicker, 0.05); }
+  66% { opacity: calc(var(--flicker, 0.05) * 0.3); }
+  81% { opacity: calc(var(--flicker, 0.05) * 0.8); }
+  86% { opacity: 0; }
+}
+
+/* ---- Día de Muertos scene ---- */
+/* Papel picado flags swing on their string */
+@keyframes lc-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+/* A gust on top of the sway, at the biggest bets */
+@keyframes lc-flutter {
+  0%, 100% { transform: rotate(0) skewX(0); }
+  30% { transform: rotate(6deg) skewX(-5deg); }
+  65% { transform: rotate(-5deg) skewX(4deg); }
+}
+/* Candle flames */
+@keyframes lc-flicker {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  20% { transform: scale(0.94, 1.08) skewX(2.5deg); }
+  45% { transform: scale(1.05, 0.93) skewX(-2deg); }
+  70% { transform: scale(0.97, 1.05) skewX(1.5deg); }
+}
+/* Marigold petals: fall the height of the hero, drifting sideways, fading out low */
+@keyframes lc-petal-fall {
+  0% { transform: translate(0, -40px); opacity: 0; }
+  8% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--dx, 60px), 1000px); opacity: 0; }
+}
+@keyframes lc-tumble {
+  to { transform: rotate(360deg) rotateX(360deg); }
+}
+/* Butterfly wings fold up and open */
+@keyframes lc-wing {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.2); }
+}
+/* A butterfly's wandering flight */
+@keyframes lc-flit {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  25% { transform: translateY(-16px) rotate(5deg); }
+  50% { transform: translateY(-5px) rotate(-3deg); }
+  75% { transform: translateY(-20px) rotate(8deg); }
+}
+
+/* ---- Poker scene ---- */
+/* A chip flicked off the thumb: up, two turns, back down, then a rest */
+@keyframes lc-chip-flip {
+  0% { transform: translateY(0) rotateX(0deg); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+  28% { transform: translateY(-58px) rotateX(360deg); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.3); }
+  56% { transform: translateY(0) rotateX(720deg); }
+  62% { transform: translateY(-4px) rotateX(720deg); }
+  68%, 100% { transform: translateY(0) rotateX(720deg); }
+}
+
 /* Tier icon pops in when the tier changes */
 @keyframes lc-icon-pop {
   0% { transform: scale(0.4) rotate(-25deg); }
   60% { transform: scale(1.2) rotate(8deg); }
   100% { transform: scale(1) rotate(0); }
+}
+
+/* ---- Prize wheel scene ---- */
+/* Spotlights swing between two angles (set per beam) */
+@keyframes lc-sweep {
+  0%, 100% { transform: rotate(var(--from)); }
+  50% { transform: rotate(var(--to)); }
+}
+/* Chips bob and turn a little as they float */
+@keyframes lc-float-spin {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-14px) rotate(calc(var(--tilt, 0deg) + 14deg)); }
+}
+/* A coin flipping over, seen edge-on halfway */
+@keyframes lc-coin-flip {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.12); }
+}
+/* Payout: coins fall the height of the hero, tumbling */
+@keyframes lc-coin-fall {
+  0% { opacity: 0; transform: translateY(0) rotate(0deg); }
+  8% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(115vh) rotate(var(--spin, 540deg)); }
+}
+/* A wedge flashes white as the bet reaches it */
+@keyframes lc-wedge-flash {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+/* The pointer flicks off each peg */
+@keyframes lc-flick {
+  0% { transform: rotate(0); }
+  35% { transform: rotate(var(--flick, -12deg)); }
+  100% { transform: rotate(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -121,4 +293,84 @@ body {
   .lc-drifter {
     left: var(--x, 0) !important;
   }
+  /* Falling petals would just hang at the top */
+  .lc-petal {
+    display: none;
+  }
+}
+
+/* Night's counting sheep: run across the lane, hop the fence in the middle, switch to the jumping pose in the air */
+@keyframes lc-sheep-run {
+  from { transform: translateX(-44px); }
+  to { transform: translateX(164px); }
+}
+@keyframes lc-sheep-hop {
+  0%, 32% { transform: translateY(0); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+  50% { transform: translateY(-19px); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.3); }
+  68%, 100% { transform: translateY(0); }
+}
+@keyframes lc-sheep-ground {
+  0%, 32.9% { opacity: 1; }
+  33%, 67% { opacity: 0; }
+  67.1%, 100% { opacity: 1; }
+}
+@keyframes lc-sheep-air {
+  0%, 32.9% { opacity: 0; }
+  33%, 67% { opacity: 1; }
+  67.1%, 100% { opacity: 0; }
+}
+@keyframes lc-count-pop {
+  0% { opacity: 0; transform: translateY(6px) scale(0.5); }
+  45% { opacity: 1; transform: translateY(0) scale(1.2); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Night's skyline: red aircraft beacons, and the flicker of a TV left on */
+@keyframes lc-beacon {
+  0%, 100% { opacity: 0.2; }
+  12% { opacity: 1; }
+  30% { opacity: 0.2; }
+}
+@keyframes lc-tv {
+  0% { opacity: 0.85; }
+  25% { opacity: 0.5; }
+  45% { opacity: 0.95; }
+  70% { opacity: 0.65; }
+}
+@keyframes lc-halo-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.6) rotate(45deg); }
+}
+
+/* ---- Tarot scene ---- */
+/* Lightning: a stutter as it strikes, holds, then goes dark until the next one */
+@keyframes lc-strike {
+  0%, 100% { opacity: 0; }
+  1% { opacity: 1; }
+  3% { opacity: 0.2; }
+  5%, 34% { opacity: 1; }
+  42% { opacity: 0; }
+}
+/* The sky lights up with the strike */
+@keyframes lc-sky-flash {
+  0%, 100% { opacity: 0; }
+  1% { opacity: 1; }
+  3% { opacity: 0.1; }
+  5% { opacity: 0.7; }
+  14% { opacity: 0; }
+}
+/* The all-seeing eye blinks, glances one way then the other, and its rays breathe */
+@keyframes lc-eye-blink {
+  0%, 44%, 52%, 100% { transform: scaleY(1); }
+  48% { transform: scaleY(0.08); }
+}
+@keyframes lc-eye-glance {
+  0%, 12%, 100% { transform: translateX(0); }
+  20%, 40% { transform: translateX(-9px); }
+  56%, 78% { transform: translateX(9px); }
+  88% { transform: translateX(0); }
+}
+@keyframes lc-eye-rays {
+  0%, 100% { opacity: 0.75; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.04); }
 }

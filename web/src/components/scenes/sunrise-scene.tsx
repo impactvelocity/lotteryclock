@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { Cloud } from "@/components/scenes/sunrise-art";
+import type { SceneMood } from "@/components/scenes/types";
 import { css, cssA, MAX_RANGE, rampN } from "@/lib/themes";
 
 /**
@@ -16,8 +17,6 @@ import { css, cssA, MAX_RANGE, rampN } from "@/lib/themes";
  *
  * Purely decorative and pointer-transparent; the hero draws the sky gradient itself.
  */
-
-export type SceneMood = "idle" | "set" | "win" | "loss" | "jackpot";
 
 type Props = {
   /** Bet as a fraction of the maximum, 0..1. */
@@ -72,7 +71,8 @@ const GLINTS = [
 ];
 
 /** A four-point sparkle on a 24-unit grid. */
-const SPARKLE = "M12 0C12.8 7 17 11.2 24 12 17 12.8 12.8 17 12 24 11.2 17 7 12.8 0 12 7 11.2 11.2 7 12 0z";
+const SPARKLE =
+  "M12 0C12.8 7 17 11.2 24 12 17 12.8 12.8 17 12 24 11.2 17 7 12.8 0 12 7 11.2 11.2 7 12 0z";
 
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 
@@ -81,14 +81,19 @@ export function SunriseScene({ p, tier, mood }: Props) {
   const sun = clamp(mood === "win" ? p * 0.5 : mood === "loss" ? 0.35 + p : p);
   const night = clamp(1 - sun * 2.4);
 
-  const bellyRGB = rampN(["#ECEEFA", "#F8E2EA", "#FFD8C4", "#FFCBAE", "#FFBD9A"], sun);
+  const bellyRGB = rampN(
+    ["#ECEEFA", "#F8E2EA", "#FFD8C4", "#FFCBAE", "#FFBD9A"],
+    sun,
+  );
   const cloudBelly = css(bellyRGB);
   // The upper band sits halfway between the belly and the cloud's cream top
   const cream = [255, 253, 248];
   const cloudBellyLight = `rgb(${bellyRGB.map((v, k) => Math.round((v + cream[k]) / 2)).join(",")})`;
   const horizon = rampN(["#FFD9C2", "#FFC79A", "#FFB070", "#FF9450"], sun);
-  const birds = mood === "idle" ? BIRDS_AT[tier] : mood === "win" ? 0 : BIRDS_AT[tier];
-  const glints = tier >= 4 && mood !== "win" ? (tier === 5 ? GLINTS.length : 5) : 0;
+  const birds =
+    mood === "idle" ? BIRDS_AT[tier] : mood === "win" ? 0 : BIRDS_AT[tier];
+  const glints =
+    tier >= 4 && mood !== "win" ? (tier === 5 ? GLINTS.length : 5) : 0;
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -113,12 +118,21 @@ export function SunriseScene({ p, tier, mood }: Props) {
             opacity: 0.22 + c.depth * 0.2,
           }}
         >
-          <Cloud shape={i} width={c.w} belly={cloudBelly} bellyLight={cloudBellyLight} id={`lc-cloud-${i}`} />
+          <Cloud
+            shape={i}
+            width={c.w}
+            belly={cloudBelly}
+            bellyLight={cloudBellyLight}
+            id={`lc-cloud-${i}`}
+          />
         </div>
       ))}
 
       {/* Pre-dawn stars, gone by first light */}
-      <div className="absolute inset-0" style={{ opacity: night, transition: "opacity 500ms" }}>
+      <div
+        className="absolute inset-0"
+        style={{ opacity: night, transition: "opacity 500ms" }}
+      >
         {STARS.map((s, i) => (
           <svg
             key={i}
@@ -143,13 +157,21 @@ export function SunriseScene({ p, tier, mood }: Props) {
           <motion.div
             key={i}
             className="lc-drifter absolute left-0"
-            style={{ top: `${b.top}%`, ["--x" as string]: `${(i * 23 + 12) % 85}%`, animation: `lc-drift ${b.dur}s linear ${b.delay}s infinite` }}
+            style={{
+              top: `${b.top}%`,
+              ["--x" as string]: `${(i * 23 + 12) % 85}%`,
+              animation: `lc-drift ${b.dur}s linear ${b.delay}s infinite`,
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div style={{ animation: `lc-bob ${(2.4 + i * 0.3).toFixed(1)}s ease-in-out infinite` }}>
+            <div
+              style={{
+                animation: `lc-bob ${(2.4 + i * 0.3).toFixed(1)}s ease-in-out infinite`,
+              }}
+            >
               <svg
                 viewBox="0 0 24 10"
                 width={b.size}
@@ -203,59 +225,6 @@ export function SunriseScene({ p, tier, mood }: Props) {
   );
 }
 
-/** Three Zs drifting up and away: someone's back asleep. */
-export function Zzz({ color, className, style }: { color: string; className?: string; style?: React.CSSProperties }) {
-  return (
-    <div aria-hidden className={`pointer-events-none absolute ${className ?? ""}`} style={style}>
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="absolute font-extrabold leading-none"
-          style={{
-            left: i * 10,
-            bottom: i * 10,
-            fontSize: 14 + i * 6,
-            color,
-            opacity: 0,
-            animation: `lc-zzz 2.7s ease-out ${(i * 0.9).toFixed(1)}s infinite`,
-          }}
-        >
-          z
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/** Classic alarm-clock ringing marks: little arcs that pulse out on either side. */
-export function RingMarks({ color, className }: { color: string; className?: string }) {
-  const side = (flip: boolean) => (
-    <svg
-      viewBox="0 0 24 40"
-      className="h-8 w-5"
-      fill="none"
-      stroke={color}
-      strokeWidth={3}
-      strokeLinecap="round"
-      style={{ transform: flip ? "scaleX(-1)" : undefined, overflow: "visible" }}
-    >
-      {[0, 1].map((i) => (
-        <path
-          key={i}
-          d={i === 0 ? "M6 10 Q12 20 6 30" : "M14 4 Q24 20 14 36"}
-          style={{ animation: `lc-ring-mark 0.6s ease-out ${i * 0.12}s infinite` }}
-        />
-      ))}
-    </svg>
-  );
-  return (
-    <div aria-hidden className={`pointer-events-none absolute flex items-center justify-between ${className ?? ""}`}>
-      {side(true)}
-      {side(false)}
-    </div>
-  );
-}
-
 /**
  * Classic's sun: a warm glow centred on the dial, drawn in the background layer so it sits
  * behind every control. From "Feeling lucky" up, a ring of soft rays fades in and turns faster
@@ -285,7 +254,8 @@ export function SunRays({
     let id = requestAnimationFrame(function frame(now) {
       angle = (angle + ((now - last) / 1000) * speed.current) % 360;
       last = now;
-      if (raysRef.current) raysRef.current.style.transform = `rotate(${angle.toFixed(2)}deg)`;
+      if (raysRef.current)
+        raysRef.current.style.transform = `rotate(${angle.toFixed(2)}deg)`;
       id = requestAnimationFrame(frame);
     });
     return () => cancelAnimationFrame(id);
