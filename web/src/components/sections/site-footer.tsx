@@ -1,5 +1,10 @@
 import { MAKER_LINKS, MAKER_NAME, MAKER_SITE } from "@/components/maker";
-import { Graveyard, GROUND, NightSky } from "@/components/sections/graveyard";
+import {
+  Graveyard,
+  GROUND,
+  Moon,
+  NightSky,
+} from "@/components/sections/graveyard";
 import { GitHubIcon, REPO_URL } from "@/components/sections/mobile-app";
 
 const KIROWEEN_URL = "https://kiroween.devpost.com/";
@@ -10,10 +15,11 @@ const linkClass =
 export function SiteFooter() {
   return (
     <footer
-      className="relative isolate overflow-hidden text-white"
+      className="relative isolate overflow-x-clip text-white"
       style={{ background: GROUND }}
     >
       <NightSky />
+      <Moon />
       <div className="mx-auto max-w-6xl px-6 pt-24 pb-14 sm:px-10 sm:pt-32 sm:pb-24">
         {/* The hackathon line: a headline in the night sky and a simple link to the entry */}
         <div className="text-center">

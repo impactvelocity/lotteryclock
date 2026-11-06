@@ -28,7 +28,9 @@ import { drawOffset, NO_STREAK, type Streak } from "@/lib/draw";
 import { frac } from "@/lib/rand";
 import { chipStyle, SEE_THROUGH, ThemePicker } from "@/components/theme-picker";
 import { KiroGhost } from "@/components/kiro-ghost";
+import { GitHubIcon, REPO_URL } from "@/components/sections/mobile-app";
 import { MAKER_AVATAR, MAKER_LINKS, MAKER_NAME, MAKER_SITE } from "@/components/maker";
+import { SectionMenu } from "@/components/section-menu";
 import { ShareModal } from "@/components/share-modal";
 import { TimePicker } from "@/components/time-picker";
 import { loadSounds, setMusicOn, setMuted, setSoundTheme, sfx } from "@/lib/sfx";
@@ -397,12 +399,24 @@ export function Hero() {
                 href="https://kiroween.devpost.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden items-center gap-2 font-medium underline-offset-4 hover:underline sm:inline-flex"
+                className="hidden items-center gap-2 font-medium whitespace-nowrap underline-offset-4 hover:underline sm:inline-flex"
               >
                 <KiroGhost className="h-[18px] w-auto" />
                 Built for Kiroween
               </a>
               <span className="flex items-center gap-2">
+                {/* The source on GitHub, in the same see-through chip as the sound toggle */}
+                <a
+                  href={REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Source code on GitHub"
+                  title="Source code on GitHub"
+                  className={`grid h-10 w-10 place-items-center rounded-full ${SEE_THROUGH}`}
+                  style={chipStyle(t)}
+                >
+                  <GitHubIcon />
+                </a>
                 {SHOW_MUSIC && (
                   <motion.button
                     type="button"
@@ -461,6 +475,8 @@ export function Hero() {
                     )}
                   </svg>
                 </motion.button>
+                {/* Below lg the nav is hidden: its links live behind this */}
+                <SectionMenu theme={t} items={NAV} className="lg:hidden" />
               </span>
             </span>
           </header>

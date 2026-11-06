@@ -16,7 +16,7 @@ import { Bat } from "@/components/scenes/night-art";
  */
 
 /** The ground the footer's text sits on: the graveyard's front edge runs into it. */
-export const GROUND = "#170a1b";
+export const GROUND = "#12081A";
 
 /** The carving colour, for the epitaph cut into LotteryClock's headstone. */
 const STONE = { etch: "#2f1a35" };
@@ -49,14 +49,14 @@ const STARS: [number, number, number, number][] = [
   [36, 58, 1.5, 2.9],
 ];
 
-/** The sky behind everything: stars, the moon and a few bats. Fills the footer. */
+/** The sky behind the footer: stars and a couple of bats. Fills the footer. */
 export function NightSky() {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-[#12081a] via-[#21102a] to-[#2a1530]" />
+      <div className="absolute inset-0 bg-[#12081A]" />
       {STARS.map(([x, y, s, d]) => (
         <span
           key={`${x}-${y}`}
@@ -71,19 +71,7 @@ export function NightSky() {
         />
       ))}
 
-      {/* The moon, with a soft halo and a few craters */}
-      <div className="absolute top-8 right-[8%] h-20 w-20 rounded-full bg-[#FFE6A8] shadow-[0_0_60px_18px_rgba(255,214,140,0.28),inset_-8px_-6px_0_rgba(214,160,90,0.25)] sm:top-12 sm:right-[14%] sm:h-28 sm:w-28">
-        <span className="absolute top-[28%] left-[22%] h-[18%] w-[18%] rounded-full bg-[#E9C88A]/60" />
-        <span className="absolute top-[56%] left-[48%] h-[22%] w-[22%] rounded-full bg-[#E9C88A]/50" />
-        <span className="absolute top-[22%] left-[62%] h-[10%] w-[10%] rounded-full bg-[#E9C88A]/60" />
-      </div>
-
-      {/* Bats: one across the moon, two further off */}
-      <Bat
-        width={44}
-        beat={0.5}
-        className="absolute top-20 right-[16%] motion-safe:animate-[lc-bob_2.6s_ease-in-out_infinite] sm:top-24 sm:right-[20%]"
-      />
+      {/* Bats further off (the one across the moon is in <Moon>) */}
       <Bat
         width={30}
         beat={0.42}
@@ -95,6 +83,33 @@ export function NightSky() {
         beat={0.38}
         className="absolute top-24 left-[30%] hidden motion-safe:animate-[lc-bob_2.2s_ease-in-out_infinite] sm:block"
         style={{ animationDelay: "1.4s" }}
+      />
+    </div>
+  );
+}
+
+/**
+ * The moon and the bat crossing it. Kept out of the sky's clipped box so its glow can spill
+ * up past the top of the footer into the app section above, which shares the same colour.
+ */
+export function Moon() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10"
+    >
+      {/* The moon, with a soft halo and a few craters */}
+      <div className="absolute top-8 right-[8%] h-20 w-20 rounded-full bg-[#FFE6A8] shadow-[0_0_60px_18px_rgba(255,214,140,0.28),inset_-8px_-6px_0_rgba(214,160,90,0.25)] sm:top-12 sm:right-[14%] sm:h-28 sm:w-28">
+        <span className="absolute top-[28%] left-[22%] h-[18%] w-[18%] rounded-full bg-[#E9C88A]/60" />
+        <span className="absolute top-[56%] left-[48%] h-[22%] w-[22%] rounded-full bg-[#E9C88A]/50" />
+        <span className="absolute top-[22%] left-[62%] h-[10%] w-[10%] rounded-full bg-[#E9C88A]/60" />
+      </div>
+
+      {/* A bat flying across it */}
+      <Bat
+        width={44}
+        beat={0.5}
+        className="absolute top-20 right-[16%] motion-safe:animate-[lc-bob_2.6s_ease-in-out_infinite] sm:top-24 sm:right-[20%]"
       />
     </div>
   );

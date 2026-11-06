@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import { PIXEL_BELL, PIXEL_HEART, PIXEL_HEART_EMPTY, Pixels } from "@/components/scenes/digital-art";
 import { EightBallDie } from "@/components/scenes/eightball-scene";
 import { LatteArt } from "@/components/scenes/cafe-art";
@@ -75,6 +75,11 @@ export function BetDial({
 }: Props) {
   const dragging = useRef(false);
   const [grabbing, setGrabbing] = useState(false);
+  const handleRef = useRef<HTMLDivElement>(null);
+  /** Added to the pointer's angle while dragging, so grabbing the bell off-centre doesn't nudge it. */
+  const grabOffset = useRef(0);
+  /** What last pressed the dial: a mouse sets it on press, touch and pen on a tap (see onTap). */
+  const pointerType = useRef("mouse");
   const p = range / MAX_RANGE;
   const arcRGB = ramp(t.arcStops, p);
   const arcColor = css(arcRGB);
@@ -106,7 +111,7 @@ export function BetDial({
     change(r);
   };
 
-  const angleFrom = (ev: PointerEvent<HTMLDivElement>) => {
+  const angleFrom = (ev: MouseEvent<HTMLDivElement>) => {
     const rect = ev.currentTarget.getBoundingClientRect();
     const dx = ev.clientX - (rect.left + rect.width / 2);
     const dy = ev.clientY - (rect.top + rect.height / 2);
@@ -115,13 +120,40 @@ export function BetDial({
     return { dist: Math.hypot(dx, dy) / (rect.width / 2), ang };
   };
 
+  const onHandle = (ev: MouseEvent) => !!handleRef.current?.contains(ev.target as Node);
+
   const onPointerDown = (ev: PointerEvent<HTMLDivElement>) => {
+    pointerType.current = ev.pointerType;
     const pos = angleFrom(ev);
-    if (pos.dist < 0.6) return; // the centre belongs to the time button
+    const grabbed = onHandle(ev);
+    // The centre belongs to the time button. On a touch screen the ring is left to scroll the
+    // page, so a thumb passing over the dial can't move it: only the bell starts a drag there.
+    if (!grabbed && (pos.dist < 0.6 || ev.pointerType !== "mouse")) return;
     ev.currentTarget.setPointerCapture(ev.pointerId);
     dragging.current = true;
     setGrabbing(true);
-    setFromAngle(pos.ang);
+    if (grabbed) {
+      // Hold the bell where it is under the pointer, rather than snapping it to the exact spot
+      grabOffset.current = sweep - pos.ang;
+    } else {
+      grabOffset.current = 0;
+      setFromAngle(pos.ang);
+    }
+  };
+
+  const onPointerMove = (ev: PointerEvent<HTMLDivElement>) => {
+    if (!dragging.current) return;
+    const ang = angleFrom(ev).ang + grabOffset.current;
+    setFromAngle(((ang % 360) + 360) % 360);
+  };
+
+  /** Touch and pen: a tap on the ring jumps the bet there (a scroll across it never fires one). */
+  const onTap = (ev: MouseEvent<HTMLDivElement>) => {
+    // A mouse press has already set it; detail 0 is a keyboard click on the time button
+    if (pointerType.current === "mouse" || ev.detail === 0 || onHandle(ev)) return;
+    const pos = angleFrom(ev);
+    if (pos.dist < 0.6 || pos.dist > 1) return;
+    change(Math.round(pos.ang / DEG_PER_MIN));
   };
 
   const release = () => {
@@ -167,14 +199,14 @@ export function BetDial({
 
   return (
     <div
-      className="relative aspect-square w-full touch-none select-none"
+      // Touch can scroll the page across the dial; the bell opts out of that (touch-none) to drag
+      className="relative aspect-square w-full touch-manipulation select-none [-webkit-tap-highlight-color:transparent]"
       style={{ containerType: "inline-size" }}
       onPointerDown={onPointerDown}
-      onPointerMove={(ev) =>
-        dragging.current && setFromAngle(angleFrom(ev).ang)
-      }
+      onPointerMove={onPointerMove}
       onPointerUp={release}
       onPointerCancel={release}
+      onClick={onTap}
     >
       {/* Halo that grows with the bet */}
       <div
@@ -629,6 +661,7 @@ export function BetDial({
 
       {/* Bell handle: drag around the ring to place the bet */}
       <div
+        ref={handleRef}
         role="slider"
         tabIndex={0}
         aria-label="Gamble window"
@@ -637,7 +670,9 @@ export function BetDial({
         aria-valuenow={range}
         aria-valuetext={`${range} minutes either side`}
         onKeyDown={onKeyDown}
-        className={`absolute flex cursor-grab items-center justify-center outline-offset-4 transition-transform duration-150 ease-out hover:scale-110 active:cursor-grabbing ${t.pixelHandle ? "rounded-[22%]" : "rounded-full"}`}
+        // touch-none: a drag that starts on the bell turns it, rather than scrolling the page.
+        // The ::before widens what a finger can catch, past the bell's edge.
+        className={`absolute flex cursor-grab touch-none items-center justify-center outline-offset-4 transition-transform duration-150 ease-out before:absolute before:-inset-3 before:rounded-full hover:scale-110 active:cursor-grabbing ${t.pixelHandle ? "rounded-[22%]" : "rounded-full"}`}
         style={{
           left: pct(hx - 22),
           top: pct(hy - 22),

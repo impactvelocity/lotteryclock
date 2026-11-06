@@ -24,10 +24,7 @@ export function MobileApp() {
     <section
       id="app"
       className="relative scroll-mt-6 overflow-hidden px-6 py-24 text-white sm:px-10"
-      style={{
-        background:
-          "radial-gradient(ellipse at 50% 30%, #2a1747 0%, #120a22 55%, #0b0816 100%)",
-      }}
+      style={{ background: "#12081A" }}
     >
       {/* Soft neon glow behind the phones */}
       <div
@@ -40,7 +37,7 @@ export function MobileApp() {
       />
 
       <div className="relative mx-auto max-w-6xl">
-        <SectionHeading tone="dark" title="The iPhone app">
+        <SectionHeading tone="dark" title="LotteryClock Mobile App">
           Built with React Native and Expo, it sets real alarms with
           Apple&apos;s AlarmKit, so the doubt follows you to bed. It&apos;s open
           source: run it yourself or see how it works.
