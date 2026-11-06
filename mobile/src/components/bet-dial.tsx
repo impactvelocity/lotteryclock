@@ -4,7 +4,7 @@
  * Everything is laid out in the web's 358-unit square and scaled to `size`.
  */
 import * as Haptics from 'expo-haptics';
-import { type ComponentRef, type ComponentType, useEffect, useRef, useState } from 'react';
+import { type ComponentRef, type ComponentType, type ReactNode, useEffect, useRef, useState } from 'react';
 import { type GestureResponderEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Svg, { Circle, G, Line, Path, Rect } from 'react-native-svg';
@@ -45,6 +45,67 @@ const SEGMENTS = Array.from({ length: MAX_RANGE }, (_, i) =>
 
 /** The gradient arc is drawn as short slices, each in the ramp colour for its place. */
 const SLICE_DEG = 4;
+
+/** A small − or + beside the doubt: a tap steps once, holding keeps stepping. */
+function StepButton({
+  label,
+  color,
+  size,
+  disabled,
+  onStep,
+  children,
+}: {
+  label: string;
+  color: string;
+  size: number;
+  disabled: boolean;
+  onStep: () => void;
+  children: ReactNode;
+}) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stop = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+  };
+  useEffect(() => stop, []);
+  // Hitting the end of the range stops a hold
+  useEffect(() => {
+    if (disabled) stop();
+  }, [disabled]);
+  // After a short hold, repeat, getting quicker
+  const hold = (delay: number) => {
+    timer.current = setTimeout(() => {
+      onStep();
+      hold(Math.max(60, delay * 0.8));
+    }, delay);
+  };
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      hitSlop={10}
+      onPressIn={() => {
+        onStep();
+        hold(380);
+      }}
+      onPressOut={stop}
+      style={({ pressed }) => ({
+        width: size,
+        height: size,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: disabled ? 0.3 : pressed ? 0.55 : 1,
+        transform: [{ scale: pressed ? 0.85 : 1 }],
+      })}
+    >
+      <Svg width={size * 0.55} height={size * 0.55} viewBox="0 0 24 24" stroke={color} strokeWidth={3} strokeLinecap="round" fill="none">
+        {children}
+      </Svg>
+    </Pressable>
+  );
+}
 
 /** "3px dashed #FFFFFF" → a View border. */
 function parseBorder(b: string) {
@@ -378,26 +439,32 @@ export function BetDial({ theme: t, range, onRangeChange, timeLabel, ampm, onTim
           </Text>
           <Text style={{ color: t.timeColor, fontFamily: fontFor(t.timeFont, 700), fontSize: u(15) }}>{ampm}</Text>
         </View>
-        <View style={{ position: 'absolute', left: 0, right: 0, top: u(124), alignItems: 'center' }}>
-          {range > 0 && (
-            <Animated.View
+        {/* The doubt, with − and + to nudge it a minute at a time (hold to keep going) */}
+        <View style={{ position: 'absolute', left: 0, right: 0, top: u(120), alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: u(2) }}>
+            <StepButton label="Less doubt" color={rangeInk} size={u(26)} disabled={range <= 0} onStep={() => change(rangeRef.current - 1)}>
+              <Path d="M5 12h14" />
+            </StepButton>
+            <Animated.Text
               key={range}
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
+                color: rangeInk,
+                fontFamily: sans(600),
+                fontSize: u(15),
+                fontVariant: ['tabular-nums'],
+                minWidth: u(58),
+                textAlign: 'center',
                 animationName: KF.popIn,
                 animationDuration: '220ms',
                 animationTimingFunction: 'ease-out',
               }}
             >
-              <Svg width={u(13)} height={u(13)} viewBox="0 0 24 24" style={{ marginRight: u(2.5) }}>
-                <Path d="M12 5v14M5 12h14" stroke={rangeInk} strokeWidth={3} strokeLinecap="round" fill="none" />
-              </Svg>
-              <Text style={{ color: rangeInk, fontFamily: sans(600), fontSize: u(15), fontVariant: ['tabular-nums'] }}>
-                {range} {range === 1 ? 'min' : 'mins'}
-              </Text>
-            </Animated.View>
-          )}
+              {range} {range === 1 ? 'min' : 'mins'}
+            </Animated.Text>
+            <StepButton label="More doubt" color={rangeInk} size={u(26)} disabled={range >= MAX_RANGE} onStep={() => change(rangeRef.current + 1)}>
+              <Path d="M12 5v14M5 12h14" />
+            </StepButton>
+          </View>
         </View>
       </Pressable>
 

@@ -1,0 +1,1 @@
+In the early 2000s I unplugged my alarm clock by accident and was on time for a week, because I couldn't trust it. LotteryClock brings that back: it rings at a random moment around your wake-up time, early wins you a snooze, late means get up now. Built for Kiroween's Resurrection track, with seven themes and an iPhone app that sets real alarms. lotteryclock.app

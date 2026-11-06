@@ -5,9 +5,10 @@
  * - a dial instrument: single recorded notes, re-pitched in code so dragging the bet plays
  *   a melody up the scale;
  * - a looping background song, in the same key as the dial.
- * Every theme plays this same set, win and lose included. The one thing a theme can have of
- * its own is a draw song (DRAW_SONGS): a few seconds of music that runs from "Alarm set"
- * through the roll, in place of set.mp3 and roll.mp3.
+ * Every theme plays this same set, win and lose included. What a theme has of its own is a
+ * draw song (DRAW_SONGS): a few seconds of music that runs from "Alarm set" through the roll,
+ * in place of set.mp3 and roll.mp3; and a dial instrument in its key (THEME_SOUNDS), mostly
+ * synthesized: a music box for Good Night, a mandolin for Caffè, a chip blip for Digital.
  * Anything not loaded yet falls back to the blips. Sound only starts after the first user
  * interaction, as browsers require.
  * See docs/sound-prompts.md for how the files were made.
@@ -28,9 +29,15 @@ let musicOn = false;
  */
 let soundTheme = "";
 export function setSoundTheme(id: string) {
-  if (id !== soundTheme) stopDraw();
+  if (id !== soundTheme) {
+    stopDraw();
+    // A new instrument and scale: start its melody afresh.
+    walk = -1;
+    lastTake = -1;
+  }
   soundTheme = id;
   loadDraw(id);
+  load(id); // a recorded dial instrument of its own (Día de Muertos)
 }
 
 export function setMuted(value: boolean) {
@@ -56,9 +63,13 @@ type DialKit = {
    * Measured pitch (MIDI) of each recorded note: note-1.mp3 first. Several takes near the
    * same pitch are deliberate: they alternate, so repeated notes don't sound identical.
    */
-  notes: number[];
+  notes?: number[];
+  /** Or, in place of recordings, a synthesized instrument (nothing to load). */
+  synth?: Synth;
   /** The notes the dial plays, as MIDI, lowest first. 0 min is the bottom, 45 the top. */
   scale: number[];
+  /** Loudness against the recorded marimba (1). */
+  gain?: number;
 };
 
 type ThemeSounds = {
@@ -122,7 +133,228 @@ function scale(root: number, steps: number[], from: number, to: number): number[
 }
 
 const MAJOR_PENTATONIC = [0, 2, 4, 7, 9];
+const MINOR_PENTATONIC = [0, 3, 5, 7, 10];
+const MAJOR = [0, 2, 4, 5, 7, 9, 11];
+const MAJOR_TRIAD = [0, 4, 7];
+const BLUES = [0, 3, 5, 6, 7, 10];
+const HARMONIC_MINOR = [0, 2, 3, 5, 7, 8, 11];
+const PHRYGIAN = [0, 1, 3, 5, 7, 8, 10];
+const WHOLE_TONE = [0, 2, 4, 6, 8, 10];
 
+/* ---------------- Synthesized dial instruments ---------------- */
+
+/** One synthesized note being scheduled: everything it starts lands in `nodes`, so it can be cut short. */
+type Note = {
+  c: BaseAudioContext;
+  out: AudioNode;
+  /** Start time and pitch (Hz). */
+  t0: number;
+  f: number;
+  /** Scales every partial: an echo is the same strike, quieter and later. */
+  level: number;
+  nodes: AudioScheduledSourceNode[];
+  /** The node that stops last, and when (shared with the note's echoes). */
+  tail: { node?: AudioScheduledSourceNode; end: number };
+};
+
+/**
+ * A synthesized dial instrument: schedules one note into `n.out`, peaking around 1. Each
+ * one is built from a few struck partials, so it costs nothing to load.
+ */
+type Synth = (n: Note) => void;
+
+function track(n: Note, src: AudioScheduledSourceNode, start: number, stop: number) {
+  src.start(start);
+  src.stop(stop);
+  n.nodes.push(src);
+  if (stop >= n.tail.end) Object.assign(n.tail, { node: src, end: stop });
+}
+
+/**
+ * One partial: an oscillator at `ratio` × the note, struck up to `peak` over `attack` and
+ * dying away to silence over `decay` seconds. `glide` starts it at another ratio and slides
+ * it home over `time`.
+ */
+function partial(
+  n: Note,
+  {
+    ratio = 1,
+    type = "sine" as OscillatorType,
+    peak = 1,
+    attack = 0.003,
+    decay = 1,
+    detune = 0,
+    glide,
+    into,
+  }: {
+    ratio?: number;
+    type?: OscillatorType;
+    peak?: number;
+    attack?: number;
+    decay?: number;
+    detune?: number;
+    glide?: { from: number; time: number };
+    into?: AudioNode;
+  } = {},
+): OscillatorNode {
+  const { c, t0 } = n;
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.type = type;
+  o.detune.value = detune;
+  o.frequency.setValueAtTime(n.f * (glide?.from ?? ratio), t0);
+  if (glide) o.frequency.exponentialRampToValueAtTime(n.f * ratio, t0 + glide.time);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak * n.level, 0.0002), t0 + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + decay);
+  o.connect(g).connect(into ?? n.out);
+  track(n, o, t0, t0 + attack + decay + 0.03);
+  return o;
+}
+
+/** Wobble `params` (vibrato on a frequency, tremolo on a gain) by ±`depth` at `rate` Hz. */
+function lfo(n: Note, rate: number, depth: number, params: AudioParam[], length: number) {
+  const o = n.c.createOscillator();
+  const g = n.c.createGain();
+  o.frequency.value = rate;
+  g.gain.value = depth;
+  o.connect(g);
+  for (const p of params) g.connect(p);
+  track(n, o, n.t0, n.t0 + length);
+}
+
+/** FM: a sine at `ratio` × the note bending `carrier`, by `from` × the note fading to `to` over `time`. */
+function modulate(n: Note, carrier: OscillatorNode, ratio: number, from: number, to: number, time: number) {
+  const o = n.c.createOscillator();
+  const g = n.c.createGain();
+  o.frequency.value = n.f * ratio;
+  g.gain.setValueAtTime(n.f * from, n.t0);
+  g.gain.exponentialRampToValueAtTime(Math.max(n.f * to, 0.01), n.t0 + time);
+  o.connect(g).connect(carrier.frequency);
+  track(n, o, n.t0, n.t0 + time + 0.05);
+}
+
+/** The same note again `dt` seconds later at `level` of the strength: an echo. */
+const later = (n: Note, dt: number, level: number): Note => ({ ...n, t0: n.t0 + dt, level: n.level * level });
+
+/** Karplus–Strong strings, by period in samples (cached: the dial plays the same few pitches). */
+const strings = new Map<number, AudioBuffer>();
+
+/** A plucked string: a burst of noise going round a loop that softens it a little each time. */
+function stringBuffer(c: BaseAudioContext, period: number): AudioBuffer {
+  const key = period * 1e6 + c.sampleRate;
+  const hit = strings.get(key);
+  if (hit) return hit;
+  const len = Math.round(c.sampleRate * 1.1);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  const ring = new Float32Array(period);
+  for (let i = 0; i < period; i++) ring[i] = Math.random() * 2 - 1;
+  let peak = 0;
+  for (let i = 0, j = 0; i < len; i++, j = (j + 1) % period) {
+    const v = ring[j];
+    ring[j] = (v + ring[(j + 1) % period]) * 0.4985;
+    d[i] = v;
+    peak = Math.max(peak, Math.abs(v));
+  }
+  for (let i = 0; i < len; i++) d[i] /= peak;
+  strings.set(key, buf);
+  return buf;
+}
+
+/** One pluck of a string at the note's pitch, `detune` cents off. */
+function pluck(n: Note, detune: number, gain: number) {
+  const { c, t0 } = n;
+  const exact = c.sampleRate / n.f;
+  const period = Math.max(2, Math.round(exact));
+  const src = c.createBufferSource();
+  const g = c.createGain();
+  src.buffer = stringBuffer(c, period);
+  // The loop rounds to whole samples; the playback rate puts it back in tune.
+  src.playbackRate.value = (period / exact) * 2 ** (detune / 1200);
+  g.gain.value = gain * n.level;
+  src.connect(g).connect(n.out);
+  track(n, src, t0, t0 + 1.1);
+}
+
+const SYNTHS = {
+  /** Good Night: a music box tine, a soft octave and a glint, with a faint echo across the nursery. */
+  musicBox: (n: Note) => {
+    const tine = (m: Note) => {
+      partial(m, { decay: 1.6, peak: 0.8 });
+      partial(m, { ratio: 2, peak: 0.22, decay: 0.6 });
+      partial(m, { ratio: 4.2, peak: 0.12, decay: 0.08 });
+    };
+    tine(n);
+    tine(later(n, 0.24, 0.22));
+  },
+  /** Prize wheel: a game-show vibraphone, its motor's tremolo spinning under the bar. */
+  vibes: (n: Note) => {
+    const trem = n.c.createGain();
+    trem.connect(n.out);
+    lfo(n, 5.6, 0.3, [trem.gain], 2);
+    partial(n, { decay: 1.8, peak: 0.75, into: trem });
+    partial(n, { ratio: 4, peak: 0.2, decay: 0.3, into: trem });
+    partial(n, { ratio: 10, peak: 0.05, decay: 0.04 });
+  },
+  /** Slot machine: a bright casino bell, ding. */
+  bell: (n: Note) => {
+    const body = partial(n, { decay: 1.3, peak: 0.6 });
+    modulate(n, body, 3.5, 2.2, 0.05, 0.5);
+    partial(n, { ratio: 2, peak: 0.25, decay: 0.45 });
+    partial(n, { ratio: 5.4, peak: 0.08, decay: 0.12 });
+  },
+  /** Poker: a mellow electric piano with a little bark on the attack, for the lounge. */
+  epiano: (n: Note) => {
+    const tine = partial(n, { decay: 1.4, peak: 0.75 });
+    modulate(n, tine, 1, 1.3, 0.05, 0.45);
+    partial(n, { ratio: 2, peak: 0.12, decay: 0.5 });
+    partial(n, { ratio: 7, peak: 0.04, decay: 0.05 });
+  },
+  /** Ouija: a ghostly glass tone that swells in, wavers and sags into pitch, two voices out of tune. */
+  ghost: (n: Note) => {
+    const a = partial(n, { attack: 0.06, decay: 1.5, peak: 0.55, glide: { from: 1.035, time: 0.22 } });
+    const b = partial(n, { attack: 0.08, decay: 1.4, peak: 0.4, detune: 16, glide: { from: 1.035, time: 0.3 } });
+    partial(n, { ratio: 0.5, type: "triangle", attack: 0.05, decay: 0.9, peak: 0.12 });
+    lfo(n, 5.2, n.f * 0.009, [a.frequency, b.frequency], 1.6);
+  },
+  /** Tarot: a hang drum, warm and round, with its octave and fifth ringing above. */
+  hang: (n: Note) => {
+    partial(n, { attack: 0.006, decay: 1.9, peak: 0.75 });
+    partial(n, { ratio: 2, peak: 0.28, decay: 1.1 });
+    partial(n, { ratio: 2.98, peak: 0.12, decay: 0.55 });
+    partial(n, { ratio: 0.5, peak: 0.18, decay: 0.07, glide: { from: 0.75, time: 0.05 } });
+  },
+  /** Digital: a square-wave chip blip, flicking down from the octave, with an 8-bit echo. */
+  chip: (n: Note) => {
+    const blipAt = (m: Note) => {
+      const o = partial(m, { type: "square", decay: 0.2, peak: 0.3 });
+      o.frequency.setValueAtTime(m.f * 2, m.t0);
+      o.frequency.setValueAtTime(m.f, m.t0 + 0.025);
+    };
+    blipAt(n);
+    blipAt(later(n, 0.11, 0.35));
+  },
+  /** Magic 8 Ball: a bubble rising through the blue liquid, bloop, and a little one after it. */
+  bubble: (n: Note) => {
+    partial(n, { decay: 0.4, peak: 0.85, glide: { from: 0.55, time: 0.06 } });
+    partial(n, { ratio: 2, peak: 0.12, decay: 0.15, glide: { from: 1.2, time: 0.06 } });
+    partial({ ...later(n, 0.08, 0.3), f: n.f * 2 }, { decay: 0.16, glide: { from: 0.6, time: 0.04 } });
+  },
+  /** Caffè: a mandolin, two strings to a course, picked twice the way it trembles in a café band. */
+  mandolin: (n: Note) => {
+    pluck(n, -5, 0.5);
+    pluck(n, 5, 0.5);
+    const again = later(n, 0.075, 0.45);
+    pluck(again, -5, 0.5);
+    pluck(again, 5, 0.5);
+  },
+} satisfies Record<string, Synth>;
+
+/**
+ * Every theme's bet dial has an instrument in its key, so turning it fits the theme: the
+ * Classic marimba and Día de Muertos guitar are recorded, the rest synthesized.
+ */
 const THEME_SOUNDS: Record<string, ThemeSounds> = {
   classic: {
     stingers: { rollHit: 1.38 },
@@ -135,6 +367,32 @@ const THEME_SOUNDS: Record<string, ThemeSounds> = {
     // Marimba, kalimba and guitar in C major, 92 BPM: 20 bars.
     loop: 52.189,
   },
+  // Lullaby music box, C major pentatonic, C5 to C7, like its draw song.
+  night: { dial: { synth: SYNTHS.musicBox, scale: scale(0, MAJOR_PENTATONIC, 72, 96), gain: 0.85 } },
+  muertos: {
+    dial: {
+      // Nylon-string flamenco guitar. E Phrygian, E3 to E5 (15 notes): the same notes as the
+      // A minor draw song, with the Spanish F-to-E.
+      notes: [47.99, 52.2, 56.33, 56.95, 57.2, 59.18, 60.16, 66.27, 71.1, 74.05, 74.12, 77.05],
+      scale: scale(4, PHRYGIAN, 52, 76),
+    },
+  },
+  // Game-show vibraphone, F major pentatonic, F4 to F6, like its draw song.
+  wheel: { dial: { synth: SYNTHS.vibes, scale: scale(5, MAJOR_PENTATONIC, 65, 89), gain: 0.9 } },
+  // Casino bell, up a C major chord, C5 to C7.
+  slot: { dial: { synth: SYNTHS.bell, scale: scale(0, MAJOR_TRIAD, 72, 96), gain: 1.2 } },
+  // Lounge electric piano, D blues, D3 to D5, over the D minor draw song.
+  poker: { dial: { synth: SYNTHS.epiano, scale: scale(2, BLUES, 50, 74), gain: 1 } },
+  // Ghostly glass, D harmonic minor, D4 to D6.
+  ouija: { dial: { synth: SYNTHS.ghost, scale: scale(2, HARMONIC_MINOR, 62, 86), gain: 1.5 } },
+  // Hang drum, D minor pentatonic, D3 to D5, like its draw song.
+  tarot: { dial: { synth: SYNTHS.hang, scale: scale(2, MINOR_PENTATONIC, 50, 74), gain: 0.85 } },
+  // Chiptune square wave, E minor pentatonic, E4 to E6, over the E minor draw song.
+  digital: { dial: { synth: SYNTHS.chip, scale: scale(4, MINOR_PENTATONIC, 64, 88), gain: 1.6 } },
+  // Bubbles, whole-tone (dreamy, undecided), C5 to C7.
+  eightball: { dial: { synth: SYNTHS.bubble, scale: scale(0, WHOLE_TONE, 72, 96), gain: 1.5 } },
+  // Mandolin, G major, G3 to G5.
+  cafe: { dial: { synth: SYNTHS.mandolin, scale: scale(7, MAJOR, 55, 79), gain: 1.2 } },
 };
 
 /**
@@ -179,7 +437,7 @@ function filesFor(id: string): string[] {
   if (!s) return [];
   return [
     ...(s.stingers ? STINGERS.map((n) => STINGER_FILES[n]) : []),
-    ...(s.dial ? s.dial.notes.map((_, i) => noteFile(i)) : []),
+    ...(s.dial?.notes ?? []).map((_, i) => noteFile(i)),
   ];
 }
 
@@ -336,8 +594,11 @@ function noteFile(i: number) {
 const pick = <T,>(xs: readonly T[]): T => xs[Math.floor(Math.random() * xs.length)];
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
+/** A dial note, recorded or synthesized: its level, and how to cut it off. */
+type DialVoice = { amp: GainNode; stop: (at: number) => void };
+
 /** The dial note still ringing; the next one fades it out so a drag stays clean. */
-let dialVoice: Voice | null = null;
+let dialVoice: DialVoice | null = null;
 let lastDialAt = -1;
 /** Index into the scale of the last dial note: the melody walks on from here. */
 let walk = -1;
@@ -368,31 +629,61 @@ function nextStep(kit: DialKit, range: number, prev: number): number {
   return (walk = next);
 }
 
+/** Play MIDI note `midi` on a synthesized instrument, `delay` seconds from now. */
+function synthNote(c: AudioContext, synth: Synth, midi: number, delay: number, gain: number): DialVoice {
+  const out = c.createGain();
+  out.gain.value = gain;
+  out.connect(c.destination);
+  const note: Note = {
+    c,
+    out,
+    t0: c.currentTime + delay,
+    f: 440 * 2 ** ((midi - 69) / 12),
+    level: 1,
+    nodes: [],
+    tail: { end: 0 },
+  };
+  synth(note);
+  if (note.tail.node) note.tail.node.onended = () => out.disconnect();
+  return {
+    amp: out,
+    stop: (at) =>
+      note.nodes.forEach((s) => {
+        try {
+          s.stop(at);
+        } catch {}
+      }),
+  };
+}
+
 /**
- * Play MIDI note `target` from a recording within 5 semitones (a different take from last
- * time where there's a choice), re-pitched, at a slightly varied strength.
+ * Play MIDI note `target` at a slightly varied strength (`gain` of the dial's level): on the
+ * theme's synthesized instrument, or from a recording within 5 semitones (a different take
+ * from last time where there's a choice), re-pitched.
  */
-function playNote({ kit, bank }: Dial, target: number, { delay = 0, gain = DIAL_GAIN, steal = true } = {}) {
+function playNote({ kit, bank }: Dial, target: number, { delay = 0, gain = 1, steal = true } = {}) {
   const c = audio();
   if (!c || muted) return;
-  const near = kit.notes.map((_, i) => i).filter((i) => Math.abs(kit.notes[i] - target) <= 5);
-  let take = near.length ? pick(near.length > 1 ? near.filter((i) => i !== lastTake) : near) : -1;
-  if (take < 0)
-    take = kit.notes.reduce((b, m, i) => (Math.abs(m - target) < Math.abs(kit.notes[b] - target) ? i : b), 0);
-  const buf = bank[noteFile(take)];
-  if (!buf) return;
-  if (steal && dialVoice) {
-    const { src, amp } = dialVoice;
-    amp.gain.setTargetAtTime(0, c.currentTime, 0.015);
-    src.stop(c.currentTime + 0.1);
+  const level = DIAL_GAIN * (kit.gain ?? 1) * gain * (0.75 + Math.random() * 0.4);
+  let voice: DialVoice | null;
+  if (kit.synth) {
+    voice = synthNote(c, kit.synth, target, delay, level);
+  } else {
+    const notes = kit.notes ?? [];
+    const near = notes.map((_, i) => i).filter((i) => Math.abs(notes[i] - target) <= 5);
+    let take = near.length ? pick(near.length > 1 ? near.filter((i) => i !== lastTake) : near) : -1;
+    if (take < 0) take = notes.reduce((b, m, i) => (Math.abs(m - target) < Math.abs(notes[b] - target) ? i : b), 0);
+    const buf = bank[noteFile(take)];
+    if (!buf) return;
+    const v = play(buf, { delay, rate: 2 ** ((target - notes[take]) / 12), gain: level });
+    voice = v && { amp: v.amp, stop: (at) => v.src.stop(at) };
+    lastTake = take;
   }
-  const voice = play(buf, {
-    delay,
-    rate: 2 ** ((target - kit.notes[take]) / 12),
-    gain: gain * (0.75 + Math.random() * 0.4),
-  });
+  if (steal && dialVoice) {
+    dialVoice.amp.gain.setTargetAtTime(0, c.currentTime, 0.015);
+    dialVoice.stop(c.currentTime + 0.1);
+  }
   if (steal) dialVoice = voice;
-  lastTake = take;
 }
 
 /** How fast the dial is turning, in minutes per second, smoothed over recent moves. */
@@ -414,18 +705,26 @@ function dialNote(dial: Dial, range: number, prev: number, grace: boolean) {
     // A grace note just after: the next note up or a skip of two (down, at the very top).
     const step = pick([1, 1, 2]);
     const g = i + step < kit.scale.length ? i + step : i - step;
-    playNote(dial, kit.scale[g], { delay: 0.06 + Math.random() * 0.03, gain: DIAL_GAIN * 0.7, steal: false });
+    playNote(dial, kit.scale[g], { delay: 0.06 + Math.random() * 0.03, gain: 0.7, steal: false });
   }
 }
 
 /** A dial instrument and the decoded files it plays from. */
 type Dial = { kit: DialKit; bank: Record<string, AudioBuffer> };
 
-/** The dial instrument, once all its notes have loaded. */
+/**
+ * The theme's own dial instrument: synthesized ones are always ready, recorded ones once all
+ * their notes have loaded. Until then, Classic's marimba.
+ */
 function currentDial(): Dial | null {
-  const kit = THEME_SOUNDS[theme]?.dial;
-  const bank = buffers[theme];
-  return kit && bank && kit.notes.every((_, i) => bank[noteFile(i)]) ? { kit, bank } : null;
+  for (const id of [soundTheme, SOUND_SET]) {
+    const kit = THEME_SOUNDS[id]?.dial;
+    if (!kit) continue;
+    if (kit.synth) return { kit, bank: {} };
+    const bank = buffers[id];
+    if (bank && kit.notes?.every((_, i) => bank[noteFile(i)])) return { kit, bank };
+  }
+  return null;
 }
 
 /** The draw's recorded roll, if one is playing or scheduled. */

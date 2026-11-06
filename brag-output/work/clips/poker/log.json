@@ -1,0 +1,71 @@
+{
+ "events": [
+  {
+   "t": -6.205,
+   "type": "show"
+  },
+  {
+   "t": -6.055,
+   "type": "press"
+  },
+  {
+   "t": -6.005,
+   "type": "drag"
+  },
+  {
+   "t": -5.055,
+   "type": "release"
+  },
+  {
+   "t": -4.905,
+   "type": "move"
+  },
+  {
+   "t": -3.655,
+   "type": "force",
+   "offset": 14
+  },
+  {
+   "t": -3.605,
+   "type": "click"
+  },
+  {
+   "t": -3.155,
+   "type": "move"
+  }
+ ],
+ "status": [
+  {
+   "t": -6.5,
+   "status": "Small Blind"
+  },
+  {
+   "t": -5.767,
+   "status": "Small Blind Call"
+  },
+  {
+   "t": -5.6,
+   "status": "Call"
+  },
+  {
+   "t": -5.533,
+   "status": "Call Raise"
+  },
+  {
+   "t": -5.367,
+   "status": "Raise"
+  },
+  {
+   "t": -3.433,
+   "status": "CHIPS IN… CARDS DEALT C H I P S I N … C A R D S D E A L T"
+  },
+  {
+   "t": -1.567,
+   "status": "DEALING THE RIVER D E A L I N G T H E R I V E R 4 ♦ 3 ♠ 8 ♥ 5 ♦ Q ♥"
+  },
+  {
+   "t": 1.267,
+   "status": "BUSTED. UP YOU GET The river took 14 minutes ↻ Roll Again"
+  }
+ ]
+}

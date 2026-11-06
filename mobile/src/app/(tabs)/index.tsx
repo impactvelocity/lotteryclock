@@ -18,7 +18,7 @@ import { HEADER_H, PICKER_H, playLayout } from '@/components/play-layout';
 import { SceneOverlay, ScenePlate } from '@/components/scene-plate';
 import { SevenSegment } from '@/components/seven-segment';
 import { Letters, PillButton, ResultBadge, RollBar, TierLabel } from '@/components/status';
-import { isLightTheme, ThemePicker, ThemeSheet } from '@/components/theme-picker';
+import { Chip, isLightTheme, ThemePicker } from '@/components/theme-picker';
 import { alarmCopy, minutesOf, plural } from '@/lib/alarm-copy';
 import { alarmService } from '@/lib/alarm-service';
 import { createPlan, nextOccurrence, offsetMinutes, type AlarmPlan } from '@/lib/lottery';
@@ -52,7 +52,6 @@ export default function PlayScreen() {
   const [rolled, setRolled] = useState(0);
   /** Rang early with time left before the target: offer the snooze. Decided as it lands. */
   const [snoozable, setSnoozable] = useState(false);
-  const [choosing, setChoosing] = useState(false);
   const busyRef = useRef(false);
 
   const latched = phase !== 'idle';
@@ -71,6 +70,17 @@ export default function PlayScreen() {
     sfx.setMuted(!settings.sound);
   }, [settings.sound]);
   useEffect(() => sfx.preload(), []);
+
+  // The theme's song plays while it's chosen and nothing is set; setting the alarm fades it out.
+  // iOS stops it while the app is away, so it picks up again on return.
+  const musicOn = settings.sound && settings.music;
+  const songOn = musicOn && phase === 'idle';
+  useEffect(() => {
+    const sync = () => sfx.music(songOn && AppState.currentState === 'active' ? t.id : null);
+    sync();
+    const sub = AppState.addEventListener('change', sync);
+    return () => sub.remove();
+  }, [songOn, t.id]);
 
   const buzz = (type: 'light' | 'success' | 'error' | 'heavy') => {
     if (!settings.haptics) return;
@@ -264,7 +274,7 @@ export default function PlayScreen() {
       <StatusBar style={light ? 'dark' : 'light'} />
       <ScenePlate theme={t} range={range} mood={mood} layout={L} dialVisible={phase === 'idle'} />
 
-      {/* Header: the logo, centred (sound effects are switched in Settings) */}
+      {/* Header: the logo, centred, and the music button on the right (sound effects are switched in Settings) */}
       <View style={{ position: 'absolute', top: L.headerTop, left: 16, right: 16, height: HEADER_H, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} accessibilityRole="header">
           <Svg width={20} height={20} viewBox="0 0 15 15">
@@ -273,11 +283,31 @@ export default function PlayScreen() {
           </Svg>
           <Text style={{ color: t.ink, fontFamily: fontFor(t.titleFont, 700), fontSize: 21, letterSpacing: -0.3 }}>LotteryClock</Text>
         </View>
+        <View style={{ position: 'absolute', right: 0 }}>
+          <Chip
+            theme={t}
+            size={38}
+            label={musicOn ? 'Turn music off' : 'Turn music on'}
+            onPress={() => {
+              buzz('light');
+              // Off with the sound effects too, so turning the music on also brings the sound back
+              actions.updateSettings(musicOn ? { music: false } : { music: true, sound: true });
+            }}
+          >
+            {/* Lucide "music", struck through when off */}
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={t.chipInk} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <Path d="M9 18V5l12-2v13" opacity={musicOn ? 1 : 0.55} />
+              <Circle cx={6} cy={18} r={3} opacity={musicOn ? 1 : 0.55} />
+              <Circle cx={18} cy={16} r={3} opacity={musicOn ? 1 : 0.55} />
+              {!musicOn && <Path d="M3 3l18 18" />}
+            </Svg>
+          </Chip>
+        </View>
       </View>
 
       {/* Theme switcher */}
       <View style={{ position: 'absolute', top: L.pickerTop, left: 0, right: 0 }}>
-        <ThemePicker themes={THEMES} index={themeIndex} onSelect={goTheme} onOpen={() => setChoosing(true)} />
+        <ThemePicker themes={THEMES} index={themeIndex} onSelect={goTheme} onOpen={() => router.push('/themes')} />
       </View>
 
       {/* Stage: the dial, or the bedside clock once the alarm is set */}
@@ -442,7 +472,6 @@ export default function PlayScreen() {
 
       <SceneOverlay theme={t} layout={L} />
 
-      <ThemeSheet themes={THEMES} index={themeIndex} open={choosing} onClose={() => setChoosing(false)} onSelect={goTheme} />
     </View>
   );
 }

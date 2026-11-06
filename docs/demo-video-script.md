@@ -8,15 +8,17 @@ It's about a kid, his snooze button, and an alarm clock that came back from the 
 
 ## The story
 
-Dylan was always late for school. Not because he overslept. Because he snoozed. Professionally.
+*[Alarm beeps. A hand slaps snooze. Beeps again. Slap.]*
 
-One day he cleaned his room, which is honestly the scariest part of this story. He tripped over the cord, the alarm clock went dark, and he plugged it back in like nothing happened.
+Dylan was always late for school. He didn't oversleep. He snoozed. Professionally.
 
-It blinked back to life. But it wasn't the same clock.
+One day he cleaned his room, which is honestly the scariest part of this story. He tripped over the cord, and the alarm clock went dark. He plugged it back in like nothing happened.
+
+The numbers came back on.
 
 The next morning it went off, and his hand stopped halfway to snooze.
 
-Is that the real time? How long was it dead? Five minutes? Twenty?
+Is that the real time? How long was it unplugged? Five minutes? Twenty?
 
 He had no idea. So he got up.
 
@@ -24,67 +26,71 @@ He was on time for days. Then he worked out the offset, fixed the clock, and was
 
 ## The resurrection
 
-Dylan grew up, but he never forgot that clock. In 2012 he built it as an iPhone app that looked like a slot machine. He tried to buy LotteryClock dot com. The owner said no. The app never shipped. The idea died.
+In 2012, Dylan rebuilt that clock as an iPhone app that looked like a slot machine. He tried to buy LotteryClock dot com. The owner said no. The app never shipped.
 
-But some things don't stay dead. This Kiroween, Dylan dug it back up.
+Fourteen years later, Dylan dug it back up for Kiroween's Resurrection category.
 
 ## How it works
 
-*[Good Morning theme: sunrise behind the dial]*
+*[Good Morning theme: sunrise behind the dial. Set the time to 7:30.]*
 
-This is LotteryClock.
+This is LotteryClock. Say you need to be up at 7:30.
 
-Pick when you want to wake up. Then drag the dial to pick how much you're willing to gamble: five minutes, ten, or forty-five if you're truly unwell.
+*[Drag the dial out to 15 minutes. The window reads 7:15 to 7:45.]*
 
-LotteryClock hides the real alarm somewhere in that window. Could be early. Could be late. You don't get to know.
+Drag the dial to fifteen minutes. Now your alarm will ring somewhere between 7:15 and 7:45. Go all the way to forty-five if you're truly unwell.
 
-*[Hit Set alarm, the draw rolls, a result lands]*
+*[Hit Set alarm. The draw rolls.]*
 
-Rings early? You win. Snooze guilt-free until your target time.
+LotteryClock picks the minute and keeps it to itself.
 
-Rings late? You lose. Get up. You're already late.
+*[Result: "Snooze until 7:30 AM"]*
 
-And because you can't tell which one it is, you get up anyway. That's the trick. Once your clock can't be trusted, your brain can't snooze on autopilot.
+It rings at 7:21? You won nine minutes. Snooze until 7:30.
+
+*[Result: "No snooze. Up you get"]*
+
+It rings at 7:38? You're eight minutes late. Up you get.
+
+Either way, you have to open your eyes and check. And once your eyes are open, you're most of the way out of bed.
 
 ## The themes
 
-Every theme has its own way of telling you you're late.
+*[Good Night: moonlit skyline, sheep jumping the fence, "Counting sheep"]*
 
-*[Good Night: moonlit skyline, sheep jumping the fence]*
-
-Good Night. It counts sheep while it decides your fate.
+Good Night counts sheep while it decides. Lose, and it says, "Rise and shine. Now."
 
 *[Día de Muertos: papel picado, candles, marigolds, sugar-skull dial]*
 
-Día de Muertos. Win, and you rest in peace. Lose, and you rise from the dead. Which is basically every Monday.
+Día de Muertos lets you rest in peace till 7:30. Or it tells you to rise from the dead.
 
 *[Ouija: candlelit spirit board, letters round the dial]*
 
-Ouija. Let the spirits pick. The spirits say: rise.
+On the Ouija board, the spirits pick the minute. This morning they say: rise.
 
 *[Tarot: sun and moon with faces; flames and lightning as the bet climbs]*
 
-Tarot. Push your luck and the card catches fire. Upright, you sleep. Reversed, you're up.
+In Tarot, the bigger your bet, the more the card burns. Upright, you sleep. Reversed, you're up.
 
-*[Quick cuts: Prize wheel, Poker]*
+*[Quick cuts: Prize wheel lands on "Bankrupt", poker table shows "The river took 8 minutes"]*
 
-And for the high rollers: a prize wheel and a poker table. Two ways to go bust before breakfast.
+The prize wheel lands on bankrupt. At the poker table, the river takes eight minutes. Two ways to go bust before breakfast.
 
 ## Bonus: the real alarm
 
 *[iPhone: same theme, drag the bell round the dial, tap Set Alarm]*
 
-One more thing. The website is the game. The iPhone app is the real thing.
+The website lets you play. The iPhone app actually wakes you up.
 
-Same themes, same dial. But tap Set Alarm, and it schedules a real alarm with Apple's AlarmKit, at a random moment inside your window. The phone knows when. You don't.
+Same themes, same dial. Tap Set Alarm, and Apple's AlarmKit schedules a real alarm at a random minute inside your window. The phone knows which minute. You don't.
 
-*[Lock screen: the alarm rings with the theme's verdict]*
+*[Lock screen: the alarm rings with "Snooze until 7:30 AM"]*
 
-When it rings, the alarm tells you how it went. Rang early? Hit snooze, and you get exactly the minutes you won, then it rings again at your target time. Rang late? No snooze. Up you get.
+It rings at 7:21 and tells you, "Snooze until 7:30." Hit snooze, and you get your nine minutes. At 7:30 it rings again.
 
-*[Open the app: the bedside clock rolls and lands on when it really rang, then History]*
+*[Open the app: the bedside clock rolls and lands on 7:21, then History]*
 
-Open the app and the clock rolls to reveal when it really went off. Every morning lands in your history, so you can see exactly how many minutes of sleep you've gambled away.
+Open the app, and the clock rolls back to the minute it really rang. Every morning goes into your history, so you can count exactly how many minutes of sleep you've gambled away.
 
 ## Close
 

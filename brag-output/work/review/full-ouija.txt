@@ -1,0 +1,6 @@
+ouija loading
+ouija ready
+ouija frame 0 / 337 vt 2033
+ouija frame 150 / 337 vt 7033
+ouija frame 300 / 337 vt 12033
+ouija done 337 frames

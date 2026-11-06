@@ -1,0 +1,219 @@
+1
+00:00:01,600 --> 00:00:04,364
+Gather round. I've got a scary story.
+
+2
+00:00:04,644 --> 00:00:10,656
+It's about a kid, his snooze button, and an alarm clock that came back from the dead.
+
+3
+00:00:12,036 --> 00:00:14,255
+Dylan was always late for school.
+
+4
+00:00:14,335 --> 00:00:17,643
+Not because he overslept. Because he snoozed. Professionally.
+
+5
+00:00:18,023 --> 00:00:23,346
+One day he cleaned his room, which is honestly the scariest part of this story.
+
+6
+00:00:23,626 --> 00:00:27,224
+He tripped over the cord, the alarm clock went dark,
+
+7
+00:00:27,604 --> 00:00:30,858
+and he plugged it back in like nothing happened.
+
+8
+00:00:31,138 --> 00:00:35,281
+It blinked back to life. But it wasn't the same clock.
+
+9
+00:00:35,861 --> 00:00:40,493
+The next morning it went off, and his hand stopped halfway to snooze.
+
+10
+00:00:40,773 --> 00:00:44,572
+Is that the real time? How long was it dead?
+
+11
+00:00:44,752 --> 00:00:46,136
+Five minutes? Twenty?
+
+12
+00:00:46,616 --> 00:00:49,725
+He had no idea. So he got up.
+
+13
+00:00:50,305 --> 00:00:52,524
+He was on time for days.
+
+14
+00:00:52,804 --> 00:00:58,126
+Then he worked out the offset, fixed the clock, and was late again by Monday.
+
+15
+00:00:59,306 --> 00:01:02,560
+Dylan grew up, but he never forgot that clock.
+
+16
+00:01:02,640 --> 00:01:07,962
+In 2012 he built it as an iPhone app that looked like a slot machine.
+
+17
+00:01:08,242 --> 00:01:11,696
+He tried to buy LotteryClock.com. The owner said no.
+
+18
+00:01:12,276 --> 00:01:15,039
+The app never shipped. The idea died.
+
+19
+00:01:15,619 --> 00:01:17,838
+But some things don't stay dead.
+
+20
+00:01:18,218 --> 00:01:20,782
+This Kiroween, Dylan dug it back up.
+
+21
+00:01:22,462 --> 00:01:23,762
+This is LotteryClock.
+
+22
+00:01:24,442 --> 00:01:27,006
+Pick when you want to wake up.
+
+23
+00:01:27,986 --> 00:01:32,274
+Then drag the dial to pick how much you're willing to gamble:
+
+24
+00:01:32,354 --> 00:01:35,607
+five minutes, ten, or forty-five if you're truly unwell.
+
+25
+00:01:36,287 --> 00:01:39,541
+LotteryClock hides the real alarm somewhere in that window.
+
+26
+00:01:39,821 --> 00:01:44,164
+Could be early. Could be late. You don't get to know.
+
+27
+00:01:44,644 --> 00:01:48,642
+Rings early? You win. Snooze guilt-free until your target time.
+
+28
+00:01:49,922 --> 00:01:53,776
+Rings late? You lose. Get up. You're already late.
+
+29
+00:01:54,656 --> 00:01:59,288
+And because you can't tell which one it is, you get up anyway.
+
+30
+00:01:59,568 --> 00:02:00,868
+That's the trick.
+
+31
+00:02:01,248 --> 00:02:05,536
+Once your clock can't be trusted, your brain can't snooze on autopilot.
+
+32
+00:02:06,516 --> 00:02:10,459
+Every theme has its own way of telling you you're late.
+
+33
+00:02:10,839 --> 00:02:14,638
+Good Night. It counts sheep while it decides your fate.
+
+34
+00:02:16,318 --> 00:02:19,771
+Día de Muertos. Win, and you rest in peace.
+
+35
+00:02:22,051 --> 00:02:26,539
+Lose, and you rise from the dead. Which is basically every Monday.
+
+36
+00:02:27,219 --> 00:02:31,072
+Ouija. Let the spirits pick. The spirits say: rise.
+
+37
+00:02:31,952 --> 00:02:35,406
+Tarot. Push your luck and the card catches fire.
+
+38
+00:02:37,686 --> 00:02:40,105
+Upright, you sleep. Reversed, you're up.
+
+39
+00:02:41,185 --> 00:02:45,673
+And for the high rollers: a prize wheel and a poker table.
+
+40
+00:02:46,053 --> 00:02:48,617
+Two ways to go bust before breakfast.
+
+41
+00:02:50,097 --> 00:02:51,397
+One more thing.
+
+42
+00:02:51,777 --> 00:02:56,264
+The website is the game. The iPhone app is the real thing.
+
+43
+00:02:56,644 --> 00:02:58,174
+Same themes, same dial.
+
+44
+00:02:58,454 --> 00:03:03,087
+But tap Set Alarm, and it schedules a real alarm with Apple's AlarmKit,
+
+45
+00:03:03,167 --> 00:03:05,730
+at a random moment inside your window.
+
+46
+00:03:06,010 --> 00:03:08,429
+The phone knows when. You don't.
+
+47
+00:03:09,109 --> 00:03:12,708
+When it rings, the alarm tells you how it went.
+
+48
+00:03:13,088 --> 00:03:17,576
+Rang early? Hit snooze, and you get exactly the minutes you won,
+
+49
+00:03:17,656 --> 00:03:20,564
+then it rings again at your target time.
+
+50
+00:03:21,044 --> 00:03:24,008
+Rang late? No snooze. Up you get.
+
+51
+00:03:24,688 --> 00:03:29,666
+Open the app and the clock rolls to reveal when it really went off.
+
+52
+00:03:30,046 --> 00:03:32,264
+Every morning lands in your history,
+
+53
+00:03:32,344 --> 00:03:36,977
+so you can see exactly how many minutes of sleep you've gambled away.
+
+54
+00:03:38,257 --> 00:03:39,787
+Try it at LotteryClock.app.
+
+55
+00:03:40,467 --> 00:03:41,851
+Sweet dreams. Maybe.

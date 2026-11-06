@@ -1,0 +1,7 @@
+muertos loading
+muertos ready
+muertos frame 0 / 522 vt 2033
+muertos frame 150 / 522 vt 7033
+muertos frame 300 / 522 vt 12033
+muertos frame 450 / 522 vt 17033
+muertos done 522 frames

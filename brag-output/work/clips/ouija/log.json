@@ -1,0 +1,71 @@
+{
+ "events": [
+  {
+   "t": -5.155,
+   "type": "show"
+  },
+  {
+   "t": -5.005,
+   "type": "press"
+  },
+  {
+   "t": -4.955,
+   "type": "drag"
+  },
+  {
+   "t": -4.005,
+   "type": "release"
+  },
+  {
+   "t": -3.855,
+   "type": "move"
+  },
+  {
+   "t": -2.605,
+   "type": "force",
+   "offset": 12
+  },
+  {
+   "t": -2.555,
+   "type": "click"
+  },
+  {
+   "t": -2.105,
+   "type": "move"
+  }
+ ],
+ "status": [
+  {
+   "t": -6.5,
+   "status": "A Faint Whisper"
+  },
+  {
+   "t": -4.667,
+   "status": "A Faint Whisper Something Stirs"
+  },
+  {
+   "t": -4.5,
+   "status": "Something Stirs"
+  },
+  {
+   "t": -4.3,
+   "status": "Something Stirs The Planchette Moves"
+  },
+  {
+   "t": -4.133,
+   "status": "The Planchette Moves"
+  },
+  {
+   "t": -2.367,
+   "status": "THE SPIRITS ARE LISTENING… T H E S P I R I T S A R E L I S T E N I N G …"
+  },
+  {
+   "t": -0.5,
+   "status": "CONSULTING THE OTHER SIDE C O N S U L T I N G T H E O T H E R S I D E YES NO GOODBYE A B C D E F G H I J K L M N O P Q R S T U V W X Y Z K E Y N O T A G"
+  },
+  {
+   "t": 2.167,
+   "status": "THE SPIRITS SAY: RISE Cursed with 12 minutes late ↻ Roll Again"
+  }
+ ]
+}

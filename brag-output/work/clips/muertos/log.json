@@ -1,0 +1,96 @@
+{
+ "events": [
+  {
+   "t": -5.905,
+   "type": "show"
+  },
+  {
+   "t": -5.755,
+   "type": "press"
+  },
+  {
+   "t": -5.705,
+   "type": "drag"
+  },
+  {
+   "t": -4.755,
+   "type": "release"
+  },
+  {
+   "t": -4.605,
+   "type": "move"
+  },
+  {
+   "t": -3.355,
+   "type": "force",
+   "offset": -8
+  },
+  {
+   "t": -3.305,
+   "type": "click"
+  },
+  {
+   "t": -2.855,
+   "type": "move"
+  },
+  {
+   "t": 2.4,
+   "type": "move"
+  },
+  {
+   "t": 3.488,
+   "type": "force",
+   "offset": 13
+  },
+  {
+   "t": 3.538,
+   "type": "click"
+  },
+  {
+   "t": 7.283,
+   "type": "move"
+  }
+ ],
+ "status": [
+  {
+   "t": -6.5,
+   "status": "Light A Candle"
+  },
+  {
+   "t": -5.433,
+   "status": "Light A Candle Follow The Marigolds"
+  },
+  {
+   "t": -5.3,
+   "status": "Follow The Marigolds"
+  },
+  {
+   "t": -5.167,
+   "status": "Follow The Marigolds Dance With The Dead"
+  },
+  {
+   "t": -5.033,
+   "status": "Dance With The Dead"
+  },
+  {
+   "t": -3.133,
+   "status": "THE OFRENDA IS SET… T H E O F R E N D A I S S E T …"
+  },
+  {
+   "t": -1.267,
+   "status": "RATTLING THE BONES R A T T L I N G T H E B O N E S"
+  },
+  {
+   "t": 1.567,
+   "status": "REST IN PEACE TILL 7:30 AM Z Z Z 8 minutes more six feet under ↻ Roll Again"
+  },
+  {
+   "t": 3.6,
+   "status": "RATTLING THE BONES R A T T L I N G T H E B O N E S"
+  },
+  {
+   "t": 6.433,
+   "status": "RISE FROM THE DEAD. NOW 13 minutes late to the fiesta ↻ Roll Again"
+  }
+ ]
+}

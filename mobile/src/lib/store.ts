@@ -24,6 +24,8 @@ export type Settings = {
   themeId: string;
   /** Sound effects in the app (the alarm itself always rings). */
   sound: boolean;
+  /** The theme's background song on Play (the music button, top right). */
+  music: boolean;
 };
 
 export type ArmedBet = {
@@ -50,6 +52,7 @@ const DEFAULT_SETTINGS: Settings = {
   showDebug: false,
   themeId: 'classic',
   sound: true,
+  music: true,
 };
 
 let state: AppState = {

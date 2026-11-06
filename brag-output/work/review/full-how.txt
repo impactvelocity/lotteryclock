@@ -1,0 +1,14 @@
+how loading
+how ready
+how frame 0 / 1640 vt 2033
+how frame 150 / 1640 vt 7033
+how frame 300 / 1640 vt 12033
+how frame 450 / 1640 vt 17033
+how frame 600 / 1640 vt 22033
+how frame 750 / 1640 vt 27033
+how frame 900 / 1640 vt 32033
+how frame 1050 / 1640 vt 37033
+how frame 1200 / 1640 vt 42033
+how frame 1350 / 1640 vt 47033
+how frame 1500 / 1640 vt 52033
+how done 1640 frames

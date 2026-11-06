@@ -1,12 +1,28 @@
-import { useId } from "react";
+import { useId, type SVGProps } from "react";
 
 /** The Kiro ghost (from kiro.dev's icon), in the current text colour with see-through eyes. */
-export function KiroGhost({ className = "" }: { className?: string }) {
+export function KiroGhost({
+  className = "",
+  ...rest
+}: { className?: string } & Omit<SVGProps<SVGSVGElement>, "viewBox">) {
   // Unique per copy: the header and the share sheet both draw one
   const maskId = `kiro-ghost-eyes-${useId().replace(/:/g, "")}`;
   return (
-    <svg viewBox="272 202 655 796" className={className} aria-hidden fill="currentColor">
-      <mask id={maskId} maskUnits="userSpaceOnUse" x="272" y="202" width="655" height="796">
+    <svg
+      viewBox="272 202 655 796"
+      className={className}
+      aria-hidden
+      fill="currentColor"
+      {...rest}
+    >
+      <mask
+        id={maskId}
+        maskUnits="userSpaceOnUse"
+        x="272"
+        y="202"
+        width="655"
+        height="796"
+      >
         <path
           fill="#fff"
           d="M398.554 818.914C316.315 1001.03 491.477 1046.74 620.672 940.156C658.687 1059.66 801.052 970.473 852.234 877.795C964.787 673.567 919.318 465.357 907.64 422.374C827.637 129.443 427.623 128.946 358.8 423.865C342.651 475.544 342.402 534.18 333.458 595.051C328.986 625.86 325.507 645.488 313.83 677.785C306.873 696.424 297.68 712.819 282.773 740.645C259.915 783.881 269.604 867.113 387.87 823.883L399.051 818.914H398.554Z"

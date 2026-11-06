@@ -1,0 +1,6 @@
+tarot loading
+tarot ready
+tarot frame 0 / 352 vt 2033
+tarot frame 150 / 352 vt 7033
+tarot frame 300 / 352 vt 12033
+tarot done 352 frames

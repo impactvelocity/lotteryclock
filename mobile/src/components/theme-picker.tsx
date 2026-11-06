@@ -1,14 +1,12 @@
 /**
  * Theme controls, ported from web/src/components/theme-picker.tsx: previous / next chips and a
- * pill with the theme's swatch and name, which opens a sheet listing every theme. Chips are
+ * pill with the theme's swatch and name, which opens the theme sheet (app/themes.tsx). Chips are
  * Liquid Glass (iOS 26), tinted with the theme, so they sit well on any scene.
  */
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import type { ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { sans } from '@/themes/fonts';
 import { baseColor, css, ramp, type Theme } from '@/themes/themes';
@@ -197,83 +195,48 @@ export function ThemePicker({
   );
 }
 
-/** Every theme in a sheet, each row drawn in its own colours. */
-export function ThemeSheet({
+/**
+ * Every theme as a plain row in the current theme's colours; the swatch alone shows each theme's
+ * look. Shared by Settings and the theme sheet on the Play tab.
+ */
+export function ThemeList({
   themes,
   index,
-  open,
-  onClose,
+  current: t,
   onSelect,
 }: {
   themes: Theme[];
   index: number;
-  open: boolean;
-  onClose: () => void;
+  current: Theme;
   onSelect: (index: number) => void;
 }) {
-  const insets = useSafeAreaInsets();
-  const t = themes[index];
   return (
-    <Modal visible={open} transparent animationType="none" onRequestClose={onClose}>
-      {open && (
-        <View style={StyleSheet.absoluteFill}>
-          <Animated.View entering={FadeIn} exiting={FadeOut} style={[StyleSheet.absoluteFill, { backgroundColor: t.scrim }]}>
-            <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close" />
-          </Animated.View>
-          <Animated.View
-            entering={SlideInDown.springify().damping(22)}
-            exiting={SlideOutDown.duration(200)}
-            style={[styles.sheet, { backgroundColor: t.sheet, paddingBottom: insets.bottom + 12 }]}
+    <View style={{ gap: 2 }}>
+      {themes.map((th, i) => {
+        const selected = i === index;
+        return (
+          <Pressable
+            key={th.id}
+            onPress={() => onSelect(i)}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            accessibilityLabel={th.name}
           >
-            <View style={[styles.grabber, { backgroundColor: t.faint }]} />
-            <Text style={{ color: t.ink, fontFamily: sans(800), fontSize: 22, marginBottom: 8, marginLeft: 4 }}>
-              Pick a theme
-            </Text>
-            <ScrollView style={{ maxHeight: 520 }} contentContainerStyle={{ gap: 8 }}>
-              {themes.map((th, i) => (
-                <Pressable
-                  key={th.id}
-                  onPress={() => {
-                    onSelect(i);
-                    onClose();
-                  }}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: i === index }}
-                  accessibilityLabel={`${th.name}. ${th.tagline}`}
-                >
-                  {({ pressed }) => (
-                    <View
-                      style={[
-                        styles.themeRow,
-                        {
-                          backgroundImage: `linear-gradient(90deg, ${baseColor(th)} 0%, ${th.bg.kind === 'flat' ? th.bg.to : th.bg.b[0]} 100%)`,
-                          borderColor: i === index ? th.arcStops[1] : 'transparent',
-                          transform: [{ scale: pressed ? 0.98 : 1 }],
-                        },
-                      ]}
-                    >
-                      <Swatch theme={th} size={40} />
-                      <View style={{ flex: 1, gap: 2 }}>
-                        <Text style={{ color: th.ink, fontFamily: sans(700), fontSize: 17 }}>{th.name}</Text>
-                        <Text style={{ color: th.muted, fontFamily: sans(500), fontSize: 13 }} numberOfLines={1}>
-                          {th.tagline}
-                        </Text>
-                      </View>
-                      {i === index && (
-                        <Svg width={22} height={22} viewBox="0 0 24 24">
-                          <Circle cx={12} cy={12} r={11} fill={th.arcStops[1]} />
-                          <Path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
-                        </Svg>
-                      )}
-                    </View>
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        </View>
-      )}
-    </Modal>
+            {({ pressed }) => (
+              <View style={[styles.themeRow, { backgroundColor: selected || pressed ? t.faint : 'transparent' }]}>
+                <Swatch theme={th} size={30} />
+                <Text style={{ flex: 1, color: t.ink, fontFamily: sans(selected ? 700 : 500), fontSize: 16 }}>{th.name}</Text>
+                {selected && (
+                  <Svg width={18} height={18} viewBox="0 0 24 24">
+                    <Path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke={t.ink} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" />
+                  </Svg>
+                )}
+              </View>
+            )}
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -288,23 +251,5 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 18,
   },
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-  },
-  grabber: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, marginBottom: 12 },
-  themeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    padding: 12,
-    borderRadius: 18,
-    borderWidth: 2,
-  },
+  themeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 14 },
 });

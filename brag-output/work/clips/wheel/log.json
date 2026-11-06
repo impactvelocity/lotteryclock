@@ -1,0 +1,71 @@
+{
+ "events": [
+  {
+   "t": -5.305,
+   "type": "show"
+  },
+  {
+   "t": -5.155,
+   "type": "press"
+  },
+  {
+   "t": -5.105,
+   "type": "drag"
+  },
+  {
+   "t": -4.155,
+   "type": "release"
+  },
+  {
+   "t": -4.005,
+   "type": "move"
+  },
+  {
+   "t": -2.755,
+   "type": "force",
+   "offset": 9
+  },
+  {
+   "t": -2.705,
+   "type": "click"
+  },
+  {
+   "t": -2.255,
+   "type": "move"
+  }
+ ],
+ "status": [
+  {
+   "t": -6.5,
+   "status": "Free Spin"
+  },
+  {
+   "t": -4.833,
+   "status": "Free Spin Round And Round"
+  },
+  {
+   "t": -4.667,
+   "status": "Round And Round"
+  },
+  {
+   "t": -4.567,
+   "status": "Round And Round Bonus Round"
+  },
+  {
+   "t": -4.4,
+   "status": "Bonus Round"
+  },
+  {
+   "t": -2.533,
+   "status": "PLACE YOUR BETS… P L A C E Y O U R B E T S …"
+  },
+  {
+   "t": -0.667,
+   "status": "ROUND AND ROUND IT GOES R O U N D A N D R O U N D I T G O E S"
+  },
+  {
+   "t": 2.167,
+   "status": "BANKRUPT. UP YOU GET The wheel took 9 minutes ↻ Roll Again"
+  }
+ ]
+}

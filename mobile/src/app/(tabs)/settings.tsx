@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
 
 import { Panel, SectionLabel } from '@/components/panel';
 import { Screen } from '@/components/screen';
 import { PillButton } from '@/components/status';
-import { Swatch } from '@/components/theme-picker';
+import { ThemeList } from '@/components/theme-picker';
 import { router } from 'expo-router';
 
 import { alarmCopy } from '@/lib/alarm-copy';
@@ -57,11 +56,7 @@ export default function SettingsScreen() {
     <Screen title="Settings">
       <Panel>
         <SectionLabel>Theme</SectionLabel>
-        <View style={{ gap: 2 }}>
-          {THEMES.map((th, i) => (
-            <ThemeRow key={th.id} theme={th} current={t} selected={i === index} onPress={() => actions.updateSettings({ themeId: th.id })} />
-          ))}
-        </View>
+        <ThemeList themes={THEMES} index={index} current={t} onSelect={(i) => actions.updateSettings({ themeId: THEMES[i].id })} />
       </Panel>
 
       <Panel>
@@ -116,25 +111,6 @@ export default function SettingsScreen() {
         Built by Dylan Jones for the Kiroween hackathon
       </Text>
     </Screen>
-  );
-}
-
-/** A plain row in the current theme's colours; the swatch alone shows each theme's look. */
-function ThemeRow({ theme: th, current: t, selected, onPress }: { theme: Theme; current: Theme; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected }} accessibilityLabel={th.name}>
-      {({ pressed }) => (
-        <View style={[styles.themeRow, { backgroundColor: selected || pressed ? t.faint : 'transparent' }]}>
-          <Swatch theme={th} size={30} />
-          <Text style={{ flex: 1, color: t.ink, fontFamily: sans(selected ? 700 : 500), fontSize: 16 }}>{th.name}</Text>
-          {selected && (
-            <Svg width={18} height={18} viewBox="0 0 24 24">
-              <Path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke={t.ink} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          )}
-        </View>
-      )}
-    </Pressable>
   );
 }
 
@@ -198,5 +174,4 @@ function Toggle({ theme: t, value, onChange }: { theme: Theme; value: boolean; o
 
 const styles = StyleSheet.create({
   settingRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  themeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, paddingHorizontal: 10, borderRadius: 14 },
 });

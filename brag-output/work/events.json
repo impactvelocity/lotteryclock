@@ -1,0 +1,737 @@
+{
+ "how": {
+  "g0": 81.562,
+  "actions": [
+   {
+    "g": 84.062,
+    "type": "show"
+   },
+   {
+    "g": 84.882,
+    "type": "move",
+    "dur": 0.7,
+    "sel": "[aria-label^=\"Alarm time\"]"
+   },
+   {
+    "g": 85.732,
+    "type": "click"
+   },
+   {
+    "g": 86.332,
+    "type": "move",
+    "dur": 0.55,
+    "sel": "DONE"
+   },
+   {
+    "g": 87.132,
+    "type": "click"
+   },
+   {
+    "g": 88.286,
+    "type": "move",
+    "dial": 10,
+    "dur": 0.8
+   },
+   {
+    "g": 89.286,
+    "type": "press"
+   },
+   {
+    "g": 92.204,
+    "type": "drag",
+    "dial": 5,
+    "dur": 0.45
+   },
+   {
+    "g": 93.104,
+    "type": "drag",
+    "dial": 10,
+    "dur": 0.4
+   },
+   {
+    "g": 93.704,
+    "type": "drag",
+    "dial": 45,
+    "dur": 1.15
+   },
+   {
+    "g": 96.487,
+    "type": "drag",
+    "dial": 15,
+    "dur": 0.9
+   },
+   {
+    "g": 97.537,
+    "type": "release"
+   },
+   {
+    "g": 98.889,
+    "type": "move",
+    "dur": 0.85,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 99.889,
+    "type": "force",
+    "offset": -9
+   },
+   {
+    "g": 99.939,
+    "type": "click"
+   },
+   {
+    "g": 100.389,
+    "type": "move",
+    "dur": 0.9
+   },
+   {
+    "g": 105.744,
+    "type": "move",
+    "dur": 0.7,
+    "sel": "Roll Again"
+   },
+   {
+    "g": 107.027,
+    "type": "force",
+    "offset": 11
+   },
+   {
+    "g": 107.077,
+    "type": "click"
+   },
+   {
+    "g": 116.573,
+    "type": "force",
+    "offset": -4
+   },
+   {
+    "g": 116.623,
+    "type": "click"
+   },
+   {
+    "g": 122.748,
+    "type": "move",
+    "dur": 1,
+    "sel": "button[aria-label=\"Next theme\"]"
+   },
+   {
+    "g": 126.816,
+    "type": "click"
+   },
+   {
+    "g": 127.266,
+    "type": "move",
+    "dial": 0,
+    "dur": 0.55
+   },
+   {
+    "g": 127.866,
+    "type": "press"
+   },
+   {
+    "g": 127.916,
+    "type": "drag",
+    "dial": 20,
+    "dur": 0.75
+   },
+   {
+    "g": 128.716,
+    "type": "release"
+   },
+   {
+    "g": 128.816,
+    "type": "move",
+    "dur": 0.7179999999999893,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 129.634,
+    "type": "force",
+    "offset": -7
+   },
+   {
+    "g": 129.684,
+    "type": "click"
+   },
+   {
+    "g": 130.134,
+    "type": "move",
+    "dur": 0.9
+   }
+  ],
+  "status": [
+   {
+    "g": 81.562,
+    "s": "A Little Spice"
+   },
+   {
+    "g": 93.962,
+    "s": "A Little Spice Feeling Lucky"
+   },
+   {
+    "g": 94.095,
+    "s": "Feeling Lucky"
+   },
+   {
+    "g": 94.262,
+    "s": "Feeling Lucky Risky Business"
+   },
+   {
+    "g": 94.395,
+    "s": "Risky Business Pure Chaos"
+   },
+   {
+    "g": 94.529,
+    "s": "Pure Chaos"
+   },
+   {
+    "g": 94.762,
+    "s": "Pure Chaos All In · Full 45"
+   },
+   {
+    "g": 94.895,
+    "s": "All In · Full 45"
+   },
+   {
+    "g": 96.595,
+    "s": "All In · Full 45 Pure Chaos"
+   },
+   {
+    "g": 96.729,
+    "s": "Pure Chaos"
+   },
+   {
+    "g": 96.895,
+    "s": "Pure Chaos Risky Business"
+   },
+   {
+    "g": 97.029,
+    "s": "Risky Business Feeling Lucky"
+   },
+   {
+    "g": 97.162,
+    "s": "Feeling Lucky"
+   },
+   {
+    "g": 99.962,
+    "s": "ALARM SET… OR IS IT? A L A R M S E T … O R I S I T ?"
+   },
+   {
+    "g": 101.829,
+    "s": "ROLLING THE DICE R O L L I N G T H E D I C E"
+   },
+   {
+    "g": 104.629,
+    "s": "SNOOZE UNTIL 7:30 AM Z Z Z You won 9 minutes of extra sleep ↻ Roll Again"
+   },
+   {
+    "g": 107.129,
+    "s": "ROLLING THE DICE R O L L I N G T H E D I C E"
+   },
+   {
+    "g": 109.962,
+    "s": "NO SNOOZE. UP YOU GET You lost 11 minutes ↻ Roll Again"
+   },
+   {
+    "g": 116.662,
+    "s": "ROLLING THE DICE R O L L I N G T H E D I C E"
+   },
+   {
+    "g": 119.495,
+    "s": "SNOOZE UNTIL 7:30 AM Z Z Z You won 4 minutes of extra sleep ↻ Roll Again"
+   },
+   {
+    "g": 126.862,
+    "s": "Lights Out"
+   },
+   {
+    "g": 128.062,
+    "s": "Lights Out Restless"
+   },
+   {
+    "g": 128.195,
+    "s": "Restless"
+   },
+   {
+    "g": 128.329,
+    "s": "Restless Night Owl"
+   },
+   {
+    "g": 128.462,
+    "s": "Night Owl"
+   },
+   {
+    "g": 129.695,
+    "s": "TUCKED IN… OR ARE YOU? T U C K E D I N … O R A R E Y O U ?"
+   },
+   {
+    "g": 131.529,
+    "s": "COUNTING SHEEP C O U N T I N G S H E E P"
+   },
+   {
+    "g": 131.795,
+    "s": "COUNTING SHEEP C O U N T I N G S H E E P 1"
+   },
+   {
+    "g": 132.395,
+    "s": "COUNTING SHEEP C O U N T I N G S H E E P 2"
+   },
+   {
+    "g": 132.995,
+    "s": "COUNTING SHEEP C O U N T I N G S H E E P 3"
+   },
+   {
+    "g": 133.595,
+    "s": "COUNTING SHEEP C O U N T I N G S H E E P 4"
+   },
+   {
+    "g": 134.195,
+    "s": "COUNTING SHEEP C O U N T I N G S H E E P 5"
+   },
+   {
+    "g": 134.362,
+    "s": "BACK TO SLEEP TILL 7:30 AM Z Z Z 7 minutes more under the covers ↻ Roll Again"
+   }
+  ]
+ },
+ "muertos": {
+  "g0": 136.21800000000002,
+  "actions": [
+   {
+    "g": 130.313,
+    "type": "show",
+    "at": 10
+   },
+   {
+    "g": 130.463,
+    "type": "press"
+   },
+   {
+    "g": 130.513,
+    "type": "drag",
+    "dial": 30,
+    "dur": 0.9
+   },
+   {
+    "g": 131.463,
+    "type": "release"
+   },
+   {
+    "g": 131.613,
+    "type": "move",
+    "dur": 0.8,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 132.863,
+    "type": "force",
+    "offset": -8
+   },
+   {
+    "g": 132.913,
+    "type": "click"
+   },
+   {
+    "g": 133.363,
+    "type": "move",
+    "dur": 0.9
+   },
+   {
+    "g": 138.618,
+    "type": "move",
+    "dur": 0.7,
+    "sel": "Roll Again"
+   },
+   {
+    "g": 139.706,
+    "type": "force",
+    "offset": 13
+   },
+   {
+    "g": 139.756,
+    "type": "click"
+   },
+   {
+    "g": 143.501,
+    "type": "move",
+    "dur": 1
+   }
+  ],
+  "status": [
+   {
+    "g": 129.718,
+    "s": "Light A Candle"
+   },
+   {
+    "g": 130.785,
+    "s": "Light A Candle Follow The Marigolds"
+   },
+   {
+    "g": 130.918,
+    "s": "Follow The Marigolds"
+   },
+   {
+    "g": 131.051,
+    "s": "Follow The Marigolds Dance With The Dead"
+   },
+   {
+    "g": 131.185,
+    "s": "Dance With The Dead"
+   },
+   {
+    "g": 133.085,
+    "s": "THE OFRENDA IS SET… T H E O F R E N D A I S S E T …"
+   },
+   {
+    "g": 134.951,
+    "s": "RATTLING THE BONES R A T T L I N G T H E B O N E S"
+   },
+   {
+    "g": 137.785,
+    "s": "REST IN PEACE TILL 7:30 AM Z Z Z 8 minutes more six feet under ↻ Roll Again"
+   },
+   {
+    "g": 139.818,
+    "s": "RATTLING THE BONES R A T T L I N G T H E B O N E S"
+   },
+   {
+    "g": 142.651,
+    "s": "RISE FROM THE DEAD. NOW 13 minutes late to the fiesta ↻ Roll Again"
+   }
+  ]
+ },
+ "ouija": {
+  "g0": 147.119,
+  "actions": [
+   {
+    "g": 141.964,
+    "type": "show",
+    "at": 10
+   },
+   {
+    "g": 142.114,
+    "type": "press"
+   },
+   {
+    "g": 142.164,
+    "type": "drag",
+    "dial": 25,
+    "dur": 0.9
+   },
+   {
+    "g": 143.114,
+    "type": "release"
+   },
+   {
+    "g": 143.264,
+    "type": "move",
+    "dur": 0.8,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 144.514,
+    "type": "force",
+    "offset": 12
+   },
+   {
+    "g": 144.564,
+    "type": "click"
+   },
+   {
+    "g": 145.014,
+    "type": "move",
+    "dur": 0.9
+   }
+  ],
+  "status": [
+   {
+    "g": 140.619,
+    "s": "A Faint Whisper"
+   },
+   {
+    "g": 142.452,
+    "s": "A Faint Whisper Something Stirs"
+   },
+   {
+    "g": 142.619,
+    "s": "Something Stirs"
+   },
+   {
+    "g": 142.819,
+    "s": "Something Stirs The Planchette Moves"
+   },
+   {
+    "g": 142.986,
+    "s": "The Planchette Moves"
+   },
+   {
+    "g": 144.752,
+    "s": "THE SPIRITS ARE LISTENING… T H E S P I R I T S A R E L I S T E N I N G …"
+   },
+   {
+    "g": 146.619,
+    "s": "CONSULTING THE OTHER SIDE C O N S U L T I N G T H E O T H E R S I D E YES NO GOODBYE A B C D E F G H I J K L M N O P Q R S T U V W X Y Z K E Y N O T A G"
+   },
+   {
+    "g": 149.286,
+    "s": "THE SPIRITS SAY: RISE Cursed with 12 minutes late ↻ Roll Again"
+   }
+  ]
+ },
+ "tarot": {
+  "g0": 151.852,
+  "actions": [
+   {
+    "g": 149.952,
+    "type": "show",
+    "at": 10
+   },
+   {
+    "g": 150.152,
+    "type": "press"
+   },
+   {
+    "g": 150.202,
+    "type": "drag",
+    "dial": 15,
+    "dur": 0.5
+   },
+   {
+    "g": 152.252,
+    "type": "drag",
+    "dial": 45,
+    "dur": 1.3
+   },
+   {
+    "g": 153.602,
+    "type": "release"
+   },
+   {
+    "g": 153.702,
+    "type": "move",
+    "dur": 0.5790000000000077,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 154.381,
+    "type": "force",
+    "offset": 21
+   },
+   {
+    "g": 154.431,
+    "type": "click"
+   },
+   {
+    "g": 154.881,
+    "type": "move",
+    "dur": 0.9
+   }
+  ],
+  "status": [
+   {
+    "g": 149.352,
+    "s": "The Star"
+   },
+   {
+    "g": 150.419,
+    "s": "The Star Wheel Of Fortune"
+   },
+   {
+    "g": 150.585,
+    "s": "Wheel Of Fortune"
+   },
+   {
+    "g": 152.819,
+    "s": "Wheel Of Fortune The Devil"
+   },
+   {
+    "g": 152.985,
+    "s": "The Devil"
+   },
+   {
+    "g": 153.019,
+    "s": "The Devil The Tower"
+   },
+   {
+    "g": 153.152,
+    "s": "The Tower"
+   },
+   {
+    "g": 153.452,
+    "s": "The Tower The Fool · Full 45"
+   },
+   {
+    "g": 153.585,
+    "s": "The Fool · Full 45"
+   },
+   {
+    "g": 154.452,
+    "s": "SHUFFLING THE DECK… S H U F F L I N G T H E D E C K …"
+   },
+   {
+    "g": 156.285,
+    "s": "DRAWING YOUR CARD D R A W I N G Y O U R C A R D"
+   },
+   {
+    "g": 159.119,
+    "s": "REVERSED. RISE NOW Fate takes 21 minutes ↻ Roll Again"
+   }
+  ]
+ },
+ "wheel": {
+  "g0": 161.085,
+  "actions": [
+   {
+    "g": 155.78,
+    "type": "show",
+    "at": 10
+   },
+   {
+    "g": 155.93,
+    "type": "press"
+   },
+   {
+    "g": 155.98,
+    "type": "drag",
+    "dial": 30,
+    "dur": 0.9
+   },
+   {
+    "g": 156.93,
+    "type": "release"
+   },
+   {
+    "g": 157.08,
+    "type": "move",
+    "dur": 0.8,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 158.33,
+    "type": "force",
+    "offset": 9
+   },
+   {
+    "g": 158.38,
+    "type": "click"
+   },
+   {
+    "g": 158.83,
+    "type": "move",
+    "dur": 0.9
+   }
+  ],
+  "status": [
+   {
+    "g": 154.585,
+    "s": "Free Spin"
+   },
+   {
+    "g": 156.252,
+    "s": "Free Spin Round And Round"
+   },
+   {
+    "g": 156.418,
+    "s": "Round And Round"
+   },
+   {
+    "g": 156.518,
+    "s": "Round And Round Bonus Round"
+   },
+   {
+    "g": 156.685,
+    "s": "Bonus Round"
+   },
+   {
+    "g": 158.552,
+    "s": "PLACE YOUR BETS… P L A C E Y O U R B E T S …"
+   },
+   {
+    "g": 160.418,
+    "s": "ROUND AND ROUND IT GOES R O U N D A N D R O U N D I T G O E S"
+   },
+   {
+    "g": 163.252,
+    "s": "BANKRUPT. UP YOU GET The wheel took 9 minutes ↻ Roll Again"
+   }
+  ]
+ },
+ "poker": {
+  "g0": 164.185,
+  "actions": [
+   {
+    "g": 157.98,
+    "type": "show",
+    "at": 10
+   },
+   {
+    "g": 158.13,
+    "type": "press"
+   },
+   {
+    "g": 158.18,
+    "type": "drag",
+    "dial": 35,
+    "dur": 0.9
+   },
+   {
+    "g": 159.13,
+    "type": "release"
+   },
+   {
+    "g": 159.28,
+    "type": "move",
+    "dur": 0.8,
+    "sel": "Set Alarm"
+   },
+   {
+    "g": 160.53,
+    "type": "force",
+    "offset": 14
+   },
+   {
+    "g": 160.58,
+    "type": "click"
+   },
+   {
+    "g": 161.03,
+    "type": "move",
+    "dur": 0.9
+   }
+  ],
+  "status": [
+   {
+    "g": 157.685,
+    "s": "Small Blind"
+   },
+   {
+    "g": 158.418,
+    "s": "Small Blind Call"
+   },
+   {
+    "g": 158.585,
+    "s": "Call"
+   },
+   {
+    "g": 158.652,
+    "s": "Call Raise"
+   },
+   {
+    "g": 158.818,
+    "s": "Raise"
+   },
+   {
+    "g": 160.752,
+    "s": "CHIPS IN… CARDS DEALT C H I P S I N … C A R D S D E A L T"
+   },
+   {
+    "g": 162.618,
+    "s": "DEALING THE RIVER D E A L I N G T H E R I V E R 4 ♦ 3 ♠ 8 ♥ 5 ♦ Q ♥"
+   },
+   {
+    "g": 165.452,
+    "s": "BUSTED. UP YOU GET The river took 14 minutes ↻ Roll Again"
+   }
+  ]
+ }
+}

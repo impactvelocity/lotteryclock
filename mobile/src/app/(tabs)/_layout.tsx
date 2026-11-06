@@ -1,27 +1,21 @@
-import { NativeTabs } from 'expo-router/native-tabs';
+import { TabList, TabSlot, Tabs, TabTrigger } from 'expo-router/ui';
 
-import { useTheme } from '@/themes/use-theme';
+import { TabBar } from '@/components/tab-bar';
 
 /**
- * Icons only (Lucide: clock-fading, chart-no-axes-column, settings-2, as template PNGs the tab
- * bar tints); the labels are hidden, but VoiceOver still reads them.
+ * Headless tabs with our own bar (components/tab-bar.tsx), which looks like the system one but
+ * takes its light or dark from the theme. The hidden list only declares the routes.
  */
 export default function TabsLayout() {
-  const { theme: t } = useTheme();
   return (
-    <NativeTabs tintColor={t.rail}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label hidden>Play</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon src={require('../../../assets/images/tabs/play.png')} renderingMode="template" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="history">
-        <NativeTabs.Trigger.Label hidden>History</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon src={require('../../../assets/images/tabs/history.png')} renderingMode="template" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="settings">
-        <NativeTabs.Trigger.Label hidden>Settings</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon src={require('../../../assets/images/tabs/settings.png')} renderingMode="template" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs>
+      <TabSlot />
+      <TabList style={{ display: 'none' }}>
+        <TabTrigger name="index" href="/" />
+        <TabTrigger name="history" href="/history" />
+        <TabTrigger name="settings" href="/settings" />
+      </TabList>
+      <TabBar />
+    </Tabs>
   );
 }

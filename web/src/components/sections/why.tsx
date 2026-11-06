@@ -1,5 +1,5 @@
 import { SectionHeading } from "@/components/sections/section-heading";
-import { ShiftingClock } from "@/components/sections/shifting-clock";
+import { ShiftingClockV2 } from "@/components/sections/shifting-clock-v2";
 
 type Finding = {
   stat: string;
@@ -65,13 +65,14 @@ export function Why() {
         </SectionHeading>
       </div>
 
-      {/* The clock sits on a tabletop: a faint surface across the page, starting partway up the clock */}
+      {/* The clock sits on a tabletop: a faint surface across the page, starting partway up the clock.
+          (The original clock, ShiftingClock, is hidden for now in favour of this redesign.) */}
       <div className="relative mt-14 px-6 sm:px-10">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-[58%] h-56 border-t border-foreground/[0.08] bg-gradient-to-b from-[#432344]/[0.05] to-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]"
         />
-        <ShiftingClock />
+        <ShiftingClockV2 />
       </div>
 
       <div className="mx-auto max-w-6xl px-6 sm:px-10">

@@ -1,0 +1,1234 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@font-face { font-family: Geist; src: url(assets/Geist-Variable.woff2) format('woff2'); font-weight: 100 900; }
+@font-face { font-family: GeistMono; src: url(assets/GeistMono-Variable.woff2) format('woff2'); font-weight: 100 900; }
+@font-face { font-family: GeistPixel; src: url(assets/GeistPixel-Square.woff2) format('woff2'); }
+@font-face { font-family: GeistSerif; src: url(assets/GeistSerifVF.woff2) format('woff2'); font-weight: 100 900; }
+:root {
+  --plum: #432344; --deep: #2a1530; --night: #1a0f1b; --amber: #FFC03D; --orange: #FF6B35;
+  --red: #FF2E4D; --pink: #D9547F; --cream: #FFF6EA; --green: #34F5B0; --ledred: #FF3D6E;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+body { font-family: Geist, system-ui, sans-serif; color: var(--plum); -webkit-font-smoothing: antialiased; font-synthesis-weight: none; }
+.sec { position: absolute; inset: 0; overflow: hidden; visibility: hidden; }
+.abs { position: absolute; }
+.center { position: absolute; left: 50%; top: 50%; }
+.o0 { opacity: 0; }
+
+/* ---------- Bedside clock (the site's ShiftingClock) ---------- */
+.bclock { position: absolute; width: 640px; border-radius: 40px; background: #fff; padding: 13px;
+  box-shadow: 0 30px 50px -28px rgba(67,35,68,.55); outline: 1px solid rgba(67,35,68,.1); }
+.bscreen { position: relative; overflow: hidden; border-radius: 30px; background: linear-gradient(#2a1530, #140916);
+  padding: 26px 44px 26px; color: #fff; }
+.bscreen .scan { position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(255,255,255,.035) 0 1px, transparent 1px 4px); }
+.bscreen .glare { position: absolute; left: 0; right: 0; top: 0; height: 50%; background: linear-gradient(rgba(255,255,255,.06), transparent); }
+.bscreen .ghost { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(52,245,176,.35), transparent 70%); opacity: 0; mix-blend-mode: screen; }
+.bhead { position: relative; margin: 0; display: flex; justify-content: center; align-items: center; gap: 9px;
+  font-family: GeistPixel; font-size: 16px; letter-spacing: .12em; color: rgba(255,255,255,.5); text-transform: uppercase; }
+.bdigits { position: relative; margin-top: 14px; display: flex; justify-content: center; height: 128px; }
+.bdigits svg { height: 128px; width: auto; overflow: visible; }
+.bleds { position: relative; margin-top: 22px; display: flex; gap: 3px; }
+.bleds span { height: 15px; flex: 1; border-radius: 2px; transition: none; }
+.bfoot { position: relative; margin-top: 13px; display: flex; justify-content: space-between; align-items: center; font-family: GeistPixel; font-size: 16px; }
+.bfoot .e { color: var(--green); text-shadow: 0 0 10px rgba(52,245,176,.5); }
+.bfoot .l { color: var(--ledred); text-shadow: 0 0 10px rgba(255,61,110,.5); }
+.bfoot .st { font-size: 18px; text-transform: uppercase; }
+
+/* ---------- Comic panels (the site's why art) ---------- */
+.panel { position: absolute; width: 640px; height: 480px; border-radius: 44px; background: var(--cream);
+  box-shadow: 0 1px 0 rgba(67,35,68,.06), 0 30px 60px -30px rgba(67,35,68,.45); outline: 1px solid rgba(67,35,68,.08); }
+.panel svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: 1; }
+.panel.hot { background: linear-gradient(135deg, #FFC03D, #FF6B35 55%, #FF2E4D); }
+.panel.hot::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: rgba(255,255,255,.12); }
+.sticker { position: absolute; padding: 12px 26px 14px; border-radius: 999px; background: #fff; border: 4px solid var(--plum);
+  font-weight: 850; font-size: 44px; letter-spacing: -.01em; white-space: nowrap; box-shadow: 0 6px 0 var(--plum); }
+
+.kicker { font-family: GeistMono; font-weight: 600; font-size: 20px; letter-spacing: .2em; text-transform: uppercase; }
+.big { font-weight: 850; letter-spacing: -.035em; line-height: 1.02; }
+
+/* ---------- Week cards ---------- */
+.day { position: absolute; width: 196px; height: 220px; border-radius: 30px; background: linear-gradient(#2a1530, #140916);
+  box-shadow: 0 24px 40px -24px rgba(67,35,68,.6); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.day .d { font-family: GeistPixel; font-size: 26px; letter-spacing: .14em; color: rgba(255,255,255,.55); }
+.day .mark { font-family: GeistPixel; font-size: 24px; letter-spacing: .06em; }
+.day .dot { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; }
+
+/* ---------- 2012 phone ---------- */
+.oldphone { position: absolute; width: 360px; height: 720px; border-radius: 58px; background: linear-gradient(160deg, #3a3a40, #101013 60%);
+  box-shadow: inset 0 0 0 4px #a9afb8, inset 0 0 0 7px #2a2a2f, 0 50px 90px -40px rgba(0,0,0,.9); }
+.oldphone .scr { position: absolute; left: 26px; right: 26px; top: 118px; height: 446px; background: #000; overflow: hidden; border-radius: 4px; }
+.oldphone .home { position: absolute; left: 50%; bottom: 46px; width: 66px; height: 66px; margin-left: -33px; border-radius: 50%; background: linear-gradient(#18181b, #2c2c31); box-shadow: inset 0 0 0 3px #3b3b41; }
+.oldphone .home::after { content: ''; position: absolute; left: 22px; top: 22px; width: 22px; height: 22px; border-radius: 5px; border: 2px solid #6b6b73; }
+.oldphone .spk { position: absolute; left: 50%; top: 66px; width: 70px; height: 9px; margin-left: -35px; border-radius: 6px; background: #050506; box-shadow: inset 0 1px 2px #000; }
+.slot { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 20%, #8a1a2c, #3a0814 70%); }
+.slot .title { position: absolute; top: 34px; width: 100%; text-align: center; font-family: GeistSerif; font-weight: 800; font-size: 34px; letter-spacing: .02em;
+  background: linear-gradient(#fff3b0, #f2c14e 50%, #b07818); -webkit-background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #3a0814); }
+.slot .bulbs span { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: #ffd66b; box-shadow: 0 0 10px #ffb02e; }
+.slot .reels { position: absolute; left: 22px; right: 22px; top: 120px; height: 170px; display: flex; gap: 10px; padding: 12px; border-radius: 16px;
+  background: linear-gradient(#c9952c, #6e4710); box-shadow: inset 0 2px 0 #ffe7a1, 0 8px 18px rgba(0,0,0,.5); }
+.slot .reel { position: relative; flex: 1; overflow: hidden; border-radius: 8px; background: linear-gradient(#bdbdbd, #fff 30%, #fff 70%, #9a9a9a); }
+.slot .strip { position: absolute; left: 0; right: 0; top: 0; }
+.slot .strip div { height: 146px; display: grid; place-items: center; font-family: GeistSerif; font-weight: 800; font-size: 96px; color: #7a0f20; }
+.slot .colon { position: absolute; left: 50%; }
+.slot .btn { position: absolute; left: 50%; bottom: 46px; width: 170px; height: 64px; margin-left: -85px; border-radius: 32px;
+  background: linear-gradient(#ff6a5a, #c51c2f); box-shadow: inset 0 2px 0 #ffb1a6, 0 6px 0 #6d0c18; color: #fff; font-weight: 800; font-size: 26px; display: grid; place-items: center; letter-spacing: .08em; }
+
+/* ---------- Email (the site's Story section) ---------- */
+.mail { position: absolute; width: 620px; border-radius: 14px; border: 1px solid rgba(67,35,68,.15); background: #fff; overflow: hidden;
+  box-shadow: 0 30px 60px -28px rgba(0,0,0,.7); color: var(--plum); }
+.mail .chrome { display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-bottom: 1px solid rgba(67,35,68,.1); background: linear-gradient(#f4f1f4, #e4dee4); }
+.mail .chrome i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+.mail .chrome b { flex: 1; text-align: center; font-size: 13px; font-weight: 500; color: rgba(67,35,68,.5); }
+.mail h3 { margin: 0; padding: 22px 26px 4px; font-size: 23px; font-weight: 650; letter-spacing: -.01em; }
+.mail li { display: flex; gap: 14px; padding: 20px 26px; list-style: none; border-top: 1px solid rgba(67,35,68,.1); }
+.mail ol { margin: 0; padding: 0; }
+.mail .av { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; object-fit: cover; }
+.mail .rs { display: grid; place-items: center; background: #432344; color: #fff; font-weight: 600; font-size: 15px; }
+.mail .who { display: flex; justify-content: space-between; align-items: baseline; }
+.mail .who b { font-weight: 650; font-size: 17px; }
+.mail .who time, .mail .to { font-size: 13px; color: rgba(67,35,68,.5); }
+.mail .body p { margin: 10px 0 0; font-size: 16.5px; line-height: 1.5; color: rgba(67,35,68,.85); }
+.stamp { position: absolute; padding: 6px 16px; border: 4px solid #FF2E4D; border-radius: 8px; font-family: GeistMono; font-weight: 800; font-size: 34px;
+  letter-spacing: .12em; color: #FF2E4D; text-transform: uppercase; mix-blend-mode: multiply; }
+
+/* ---------- Graveyard ---------- */
+.stone { position: absolute; width: 330px; height: 400px; border-radius: 165px 165px 14px 14px; background: linear-gradient(#6c5a73, #3d2f45);
+  box-shadow: inset 0 -20px 40px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.15), 0 30px 50px -20px rgba(0,0,0,.8); text-align: center; color: rgba(25,12,30,.75); }
+.stone .rip { margin-top: 70px; font-family: GeistSerif; font-weight: 700; font-size: 54px; letter-spacing: .12em; text-shadow: 0 1px 0 rgba(255,255,255,.18); }
+.stone .nm { margin-top: 16px; font-weight: 800; font-size: 40px; letter-spacing: -.02em; text-shadow: 0 1px 0 rgba(255,255,255,.18); }
+.stone .yr { margin-top: 10px; font-family: GeistMono; font-weight: 600; font-size: 24px; letter-spacing: .14em; text-shadow: 0 1px 0 rgba(255,255,255,.15); }
+.banner { position: absolute; width: 1340px; border-radius: 36px; padding: 44px 52px; display: flex; align-items: center; gap: 34px; color: #2a1530;
+  background: linear-gradient(115deg, #FFC03D, #FF6B35 45%, #FF2E4D);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 -2px 0 rgba(42,21,48,.12), 0 40px 80px -30px rgba(255,107,53,.75); }
+.banner .tile { width: 112px; height: 112px; border-radius: 28px; flex-shrink: 0; display: grid; place-items: center; background: rgba(255,255,255,.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 8px 18px -8px rgba(42,21,48,.45); outline: 1px solid rgba(255,255,255,.35); }
+.banner .k { font-family: GeistMono; font-weight: 650; font-size: 19px; letter-spacing: .18em; color: rgba(42,21,48,.7); text-transform: uppercase; }
+.banner .h { margin-top: 8px; font-weight: 850; font-size: 46px; letter-spacing: -.025em; }
+
+/* ---------- iPhone (the site's Phone frame) ---------- */
+.phone { position: absolute; width: 380px; border-radius: 60px; background: #1d1d22; padding: 11px;
+  box-shadow: 0 0 0 2px #3a3a42, inset 0 0 0 1px rgba(255,255,255,.08), 0 50px 100px -30px rgba(0,0,0,.9); }
+.phone .screen { position: relative; width: 358px; height: 779px; border-radius: 49px; overflow: hidden; background: #000; }
+.phone .screen > img { display: block; width: 100%; height: 100%; }
+.phone .btnl { position: absolute; left: -4px; width: 4px; border-radius: 3px 0 0 3px; background: #3a3a42; }
+.ripple { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; background: rgba(255,255,255,.5); box-shadow: 0 0 0 3px rgba(255,255,255,.6); opacity: 0; }
+.lock { position: absolute; inset: 0; }
+.lock .wall { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(22px) saturate(1.2); }
+.lock .dim { position: absolute; inset: 0; background: linear-gradient(rgba(20,8,28,.35), rgba(20,8,28,.7)); }
+.lock .date { position: absolute; top: 96px; width: 100%; text-align: center; color: rgba(255,255,255,.85); font-weight: 600; font-size: 20px; }
+.lock .time { position: absolute; top: 118px; width: 100%; text-align: center; color: #fff; font-weight: 700; font-size: 104px; letter-spacing: -.03em; }
+.lock .card { position: absolute; left: 14px; right: 14px; bottom: 34px; border-radius: 34px; padding: 22px 22px 20px; background: rgba(255,255,255,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25); color: #fff; }
+.lock .app { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 600; color: rgba(255,255,255,.75); }
+.lock .app img { width: 24px; height: 24px; border-radius: 7px; background: #FFC03D; padding: 3px; }
+.lock .ttl { margin-top: 12px; font-size: 25px; font-weight: 750; letter-spacing: -.01em; line-height: 1.15; }
+.lock .bdy { margin-top: 6px; font-size: 17px; color: rgba(255,255,255,.8); }
+.lock .btns { margin-top: 18px; display: flex; gap: 10px; }
+.lock .btns div { flex: 1; height: 58px; border-radius: 29px; display: grid; place-items: center; font-size: 19px; font-weight: 700; }
+.lock .cd { font-family: Geist; font-weight: 700; font-size: 58px; letter-spacing: -.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+.pill { display: inline-flex; align-items: center; gap: 12px; padding: 16px 30px; border-radius: 999px; font-weight: 700; font-size: 30px; }
+</style>
+</head>
+<body>
+
+<!-- ================= COLD OPEN ================= -->
+<div class="sec" id="cold" style="background: radial-gradient(ellipse at 50% 46%, #2a1530 0%, #140916 55%, #07040a 100%);">
+  <div class="abs" id="coldGlow" style="left:360px; top:180px; width:1200px; height:700px; border-radius:50%; background: radial-gradient(ellipse, rgba(255,192,61,.22), transparent 65%);"></div>
+  <div class="abs" id="coldClockWrap" style="left:0; top:0; width:1920px; height:1080px;">
+    <div class="bclock" id="coldClock" style="left:640px; top:420px; transform: scale(1.7); transform-origin: 50% 50%;"></div>
+  </div>
+  <div class="abs" id="coldVig" style="inset:0; background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,.6) 100%);"></div>
+</div>
+
+<!-- ================= STORY ================= -->
+<div class="sec" id="story" style="background: radial-gradient(ellipse at 50% 40%, #ffffff 0%, #fbf6fb 60%, #f1e7f2 100%);">
+  <div class="abs kicker" id="yearTag" style="left:80px; top:64px; font-size:24px; color: rgba(67,35,68,.55);">Early 2000s</div>
+
+  <!-- B1: snooze, professionally -->
+  <div class="abs" id="b1" style="inset:0">
+    <div class="panel" style="left:560px; top:140px; width:800px; height:600px;"><svg viewBox="0 0 160 120" preserveAspectRatio="xMidYMid meet"><g id="snooze-clock" transform="translate(67 86) rotate(0) scale(1 0.8)"><g data-part="clock-case"><path d="M -18 22 L -23 31 Q -24 34 -20 34 H -14 L -10 26 Z M 18 22 L 23 31 Q 24 34 20 34 H 14 L 10 26 Z" fill="#432344"/><path d="M -20 -25 L -14 -31 L -10 -26 L -15 -20 Z M 20 -25 L 14 -31 L 10 -26 L 15 -20 Z" fill="#432344"/><path d="M -32 -29 C -34 -36 -24 -43 -17 -41 C -10 -40 -7 -36 -7 -32 Q -20 -24 -32 -29 Z M 32 -29 C 34 -36 24 -43 17 -41 C 10 -40 7 -36 7 -32 Q 20 -24 32 -29 Z" fill="#432344"/><rect x="-2" y="-39" width="4" height="12" rx="2" fill="#432344"/><rect x="-7" y="-41" width="14" height="4" rx="2" fill="#432344"/><circle cx="0" cy="0" r="28" fill="#432344"/><circle cx="0" cy="0" r="22" fill="#FFF6EA"/></g><g data-part="clock-face"><rect x="-1.5" y="-18" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-1.5" y="13" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-18" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><rect x="13" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><path d="M -1.1 -1.1 L -8.8 6.7 A 1.5 1.5 0 0 0 -6.7 8.8 L 1.1 1.1 A 1.5 1.5 0 0 0 -1.1 -1.1 Z" fill="#432344"/><path d="M -1.5 0 L -1.5 15 A 1.5 1.5 0 0 0 1.5 15 L 1.5 0 A 1.5 1.5 0 0 0 -1.5 0 Z" fill="#432344"/><circle cx="0" cy="0" r="2.3" fill="#432344"/></g></g><g data-part="impact"><path d="M 42.9 44.8 L 34.9 38.8 A 1.5 1.5 0 0 0 33.1 41.2 L 41.1 47.2 A 1.5 1.5 0 0 0 42.9 44.8 Z" fill="#FF6B35"/><path d="M 100.7 49.3 L 109.7 44.3 A 1.5 1.5 0 0 0 108.3 41.7 L 99.3 46.7 A 1.5 1.5 0 0 0 100.7 49.3 Z" fill="#FF6B35"/><path d="M 103.9 58.5 L 114.9 59.5 A 1.5 1.5 0 0 0 115.1 56.5 L 104.1 55.5 A 1.5 1.5 0 0 0 103.9 58.5 Z" fill="#FF6B35"/></g><g data-part="sleep-marks"><path d="M 116 29 H 133 V 33 L 122 42 H 133 V 46 H 116 V 42 L 127 33 H 116 Z M 139 15 H 150 V 18 L 143 24 H 150 V 27 H 139 V 24 L 146 18 H 139 Z M 123 7 H 131 V 9 L 126 13 H 131 V 15 H 123 V 13 L 128 9 H 123 Z" fill="#432344"/></g><g data-part="hand"><path d="M 65 0 H 84 V 24 C 91 27 98 30 102 35 C 107 41 102 46 97 43 L 88 40 C 92 47 86 54 80 52 L 57 48 C 48 48 44 43 48 39 C 52 34 57 37 63 38 C 59 31 61 26 65 23 Z" fill="#FFC03D" stroke="#432344" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+</div>
+    <div class="sticker" id="b1slap" style="left:1240px; top:130px; transform: rotate(8deg); color: var(--orange);">*slap*</div>
+    <div class="sticker" id="b1pro" style="left:380px; top:640px; transform: rotate(-6deg); background: var(--plum); color:#fff; border-color: var(--plum); box-shadow: 0 6px 0 #1a0f1b;">Professional snoozer</div>
+  </div>
+
+  <!-- B2: the clock, the cord, the socket -->
+  <div class="abs" id="b2" style="inset:0"><div class="abs" id="b2in" style="inset:0; transform: translate(60px, 50px) scale(1.18); transform-origin: 960px 480px;">
+    <div class="abs" style="left:0; right:0; top:752px; height:240px; background: linear-gradient(rgba(67,35,68,.06), transparent); border-top: 1px solid rgba(67,35,68,.09);"></div>
+    <svg class="abs" id="cordSvg" width="1920" height="1080" style="left:0; top:0; overflow:visible">
+      <g id="socket" transform="translate(420 560)">
+        <rect x="-62" y="-90" width="124" height="180" rx="22" fill="#fff" stroke="rgba(67,35,68,.18)" stroke-width="3"/>
+        <rect x="-16" y="-44" width="9" height="30" rx="4" fill="#432344"/>
+        <rect x="7" y="-44" width="9" height="30" rx="4" fill="#432344"/>
+        <circle cx="0" cy="30" r="9" fill="#432344"/>
+      </g>
+      <path id="cord" d="" fill="none" stroke="#432344" stroke-width="10" stroke-linecap="round"/>
+      <g id="plug"><rect x="-38" y="-22" width="64" height="44" rx="12" fill="#432344"/><rect x="26" y="-13" width="20" height="7" rx="3" fill="#9a8c9c"/><rect x="26" y="6" width="20" height="7" rx="3" fill="#9a8c9c"/></g>
+      <g id="spark" opacity="0"><path d="M0 -40 L10 -10 L40 -12 L14 6 L26 36 L0 16 L-26 36 L-14 6 L-40 -12 L-10 -10 Z" fill="#FFC03D" stroke="#432344" stroke-width="4" stroke-linejoin="round"/></g>
+    </svg>
+    <div class="bclock" id="storyClock" style="left:760px; top:300px;"></div>
+    <div class="sticker" id="b2q" style="left:1330px; top:230px; transform: rotate(7deg); opacity:0;">12:00?</div>
+  </div></div>
+
+  <!-- B3: ringing, then the hand stops -->
+  <div class="abs" id="b3" style="inset:0">
+    <div class="panel" id="b3ring" style="left:560px; top:140px; width:800px; height:600px;"><svg viewBox="0 0 160 120" preserveAspectRatio="xMidYMid meet"><g data-part="motion"><path d="M 29.7 52.7 L 20.7 47.7 A 1.5 1.5 0 0 0 19.3 50.3 L 28.3 55.3 A 1.5 1.5 0 0 0 29.7 52.7 Z" fill="#FF6B35"/><path d="M 27.1 64.5 L 16.1 63.5 A 1.5 1.5 0 0 0 15.9 66.5 L 26.9 67.5 A 1.5 1.5 0 0 0 27.1 64.5 Z" fill="#FF6B35"/><path d="M 29.4 76.6 L 20.4 80.6 A 1.5 1.5 0 0 0 21.6 83.4 L 30.6 79.4 A 1.5 1.5 0 0 0 29.4 76.6 Z" fill="#FF6B35"/><path d="M 128.8 50.2 L 137.8 44.2 A 1.5 1.5 0 0 0 136.2 41.8 L 127.2 47.8 A 1.5 1.5 0 0 0 128.8 50.2 Z" fill="#FF6B35"/><path d="M 132.2 62.5 L 144.2 60.5 A 1.5 1.5 0 0 0 143.8 57.5 L 131.8 59.5 A 1.5 1.5 0 0 0 132.2 62.5 Z" fill="#FF6B35"/><path d="M 129.4 75.4 L 139.4 79.4 A 1.5 1.5 0 0 0 140.6 76.6 L 130.6 72.6 A 1.5 1.5 0 0 0 129.4 75.4 Z" fill="#FF6B35"/><path d="M 36 20 Q 37 24 41 25 Q 37 26 36 30 Q 35 26 31 25 Q 35 24 36 20 Z" fill="#FFC03D"/><path d="M 119 18 Q 119.8 21.2 123 22 Q 119.8 22.8 119 26 Q 118.2 22.8 115 22 Q 118.2 21.2 119 18 Z" fill="#FFC03D"/></g><g id="clock" transform="translate(80 75) rotate(-6) scale(1 1)"><g data-part="clock-case"><path d="M -18 22 L -23 31 Q -24 34 -20 34 H -14 L -10 26 Z M 18 22 L 23 31 Q 24 34 20 34 H 14 L 10 26 Z" fill="#432344"/><path d="M -20 -25 L -14 -31 L -10 -26 L -15 -20 Z M 20 -25 L 14 -31 L 10 -26 L 15 -20 Z" fill="#432344"/><path d="M -32 -29 C -34 -36 -24 -43 -17 -41 C -10 -40 -7 -36 -7 -32 Q -20 -24 -32 -29 Z M 32 -29 C 34 -36 24 -43 17 -41 C 10 -40 7 -36 7 -32 Q 20 -24 32 -29 Z" fill="#432344"/><rect x="-2" y="-39" width="4" height="12" rx="2" fill="#432344"/><rect x="-7" y="-41" width="14" height="4" rx="2" fill="#432344"/><circle cx="0" cy="0" r="28" fill="#432344"/><circle cx="0" cy="0" r="22" fill="#FFF6EA"/></g><g data-part="clock-face"><rect x="-1.5" y="-18" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-1.5" y="13" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-18" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><rect x="13" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><path d="M -1.1 -1.1 L -8.8 6.7 A 1.5 1.5 0 0 0 -6.7 8.8 L 1.1 1.1 A 1.5 1.5 0 0 0 -1.1 -1.1 Z" fill="#432344"/><path d="M -1.5 0 L -1.5 15 A 1.5 1.5 0 0 0 1.5 15 L 1.5 0 A 1.5 1.5 0 0 0 -1.5 0 Z" fill="#432344"/><circle cx="0" cy="0" r="2.3" fill="#432344"/></g></g></svg>
+</div>
+    <div class="panel" id="b3stop" style="left:560px; top:140px; width:800px; height:600px;"><svg viewBox="0 0 160 120" preserveAspectRatio="xMidYMid meet"><g id="snooze-clock" transform="translate(67 86) rotate(0) scale(1 0.8)"><g data-part="clock-case"><path d="M -18 22 L -23 31 Q -24 34 -20 34 H -14 L -10 26 Z M 18 22 L 23 31 Q 24 34 20 34 H 14 L 10 26 Z" fill="#432344"/><path d="M -20 -25 L -14 -31 L -10 -26 L -15 -20 Z M 20 -25 L 14 -31 L 10 -26 L 15 -20 Z" fill="#432344"/><path d="M -32 -29 C -34 -36 -24 -43 -17 -41 C -10 -40 -7 -36 -7 -32 Q -20 -24 -32 -29 Z M 32 -29 C 34 -36 24 -43 17 -41 C 10 -40 7 -36 7 -32 Q 20 -24 32 -29 Z" fill="#432344"/><rect x="-2" y="-39" width="4" height="12" rx="2" fill="#432344"/><rect x="-7" y="-41" width="14" height="4" rx="2" fill="#432344"/><circle cx="0" cy="0" r="28" fill="#432344"/><circle cx="0" cy="0" r="22" fill="#FFF6EA"/></g><g data-part="clock-face"><rect x="-1.5" y="-18" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-1.5" y="13" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-18" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><rect x="13" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><path d="M -1.1 -1.1 L -8.8 6.7 A 1.5 1.5 0 0 0 -6.7 8.8 L 1.1 1.1 A 1.5 1.5 0 0 0 -1.1 -1.1 Z" fill="#432344"/><path d="M -1.5 0 L -1.5 15 A 1.5 1.5 0 0 0 1.5 15 L 1.5 0 A 1.5 1.5 0 0 0 -1.5 0 Z" fill="#432344"/><circle cx="0" cy="0" r="2.3" fill="#432344"/></g></g><g data-part="impact"><path d="M 42.9 44.8 L 34.9 38.8 A 1.5 1.5 0 0 0 33.1 41.2 L 41.1 47.2 A 1.5 1.5 0 0 0 42.9 44.8 Z" fill="#FF6B35"/><path d="M 100.7 49.3 L 109.7 44.3 A 1.5 1.5 0 0 0 108.3 41.7 L 99.3 46.7 A 1.5 1.5 0 0 0 100.7 49.3 Z" fill="#FF6B35"/><path d="M 103.9 58.5 L 114.9 59.5 A 1.5 1.5 0 0 0 115.1 56.5 L 104.1 55.5 A 1.5 1.5 0 0 0 103.9 58.5 Z" fill="#FF6B35"/></g><g data-part="sleep-marks"><path d="M 116 29 H 133 V 33 L 122 42 H 133 V 46 H 116 V 42 L 127 33 H 116 Z M 139 15 H 150 V 18 L 143 24 H 150 V 27 H 139 V 24 L 146 18 H 139 Z M 123 7 H 131 V 9 L 126 13 H 131 V 15 H 123 V 13 L 128 9 H 123 Z" fill="#432344"/></g><g data-part="hand"><path d="M 65 0 H 84 V 24 C 91 27 98 30 102 35 C 107 41 102 46 97 43 L 88 40 C 92 47 86 54 80 52 L 57 48 C 48 48 44 43 48 39 C 52 34 57 37 63 38 C 59 31 61 26 65 23 Z" fill="#FFC03D" stroke="#432344" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+</div>
+    <div class="sticker" id="b3brr" style="left:1220px; top:110px; transform: rotate(9deg); color: var(--red);">BRRRING!</div>
+    <div class="sticker" id="b3wait" style="left:420px; top:650px; transform: rotate(-7deg);">wait…</div>
+  </div>
+
+  <!-- B4: is that the real time? (the site's shifting clock) -->
+  <div class="abs" id="b4" style="inset:0">
+    <div class="bclock" id="doubtClock" style="left:640px; top:300px;"></div>
+    <div class="sticker" id="b4a" style="left:450px; top:250px; transform: rotate(-8deg); opacity:0;">5 minutes?</div>
+    <div class="sticker" id="b4b" style="left:1230px; top:560px; transform: rotate(7deg); opacity:0; color: var(--red);">Twenty?!</div>
+  </div>
+
+  <!-- B5: no idea, so he got up -->
+  <div class="abs" id="b5" style="inset:0">
+    <div class="panel hot" id="b5doubt" style="left:200px; top:170px; width:720px; height:540px;"><svg viewBox="0 0 160 120" preserveAspectRatio="xMidYMid meet"><g id="startled-clock" transform="translate(55 76) rotate(0) scale(1 1)"><g data-part="clock-case"><path d="M -18 22 L -23 31 Q -24 34 -20 34 H -14 L -10 26 Z M 18 22 L 23 31 Q 24 34 20 34 H 14 L 10 26 Z" fill="#432344"/><path d="M -20 -25 L -14 -31 L -10 -26 L -15 -20 Z M 20 -25 L 14 -31 L 10 -26 L 15 -20 Z" fill="#432344"/><path d="M -32 -29 C -34 -36 -24 -43 -17 -41 C -10 -40 -7 -36 -7 -32 Q -20 -24 -32 -29 Z M 32 -29 C 34 -36 24 -43 17 -41 C 10 -40 7 -36 7 -32 Q 20 -24 32 -29 Z" fill="#432344"/><rect x="-2" y="-39" width="4" height="12" rx="2" fill="#432344"/><rect x="-7" y="-41" width="14" height="4" rx="2" fill="#432344"/><circle cx="0" cy="0" r="28" fill="#432344"/><circle cx="0" cy="0" r="22" fill="#FFF6EA"/></g><g data-part="clock-face"><circle cx="-9" cy="-3" r="8" fill="#FFFFFF" stroke="#432344" stroke-width="3"/><circle cx="9" cy="-3" r="8" fill="#FFFFFF" stroke="#432344" stroke-width="3"/><circle cx="-6" cy="-2" r="3.4" fill="#432344"/><circle cx="12" cy="-2" r="3.4" fill="#432344"/><path d="M -18 -16 Q -11 -22 -4 -17 Q -3 -14 -6 -15 Q -12 -18 -17 -14 Q -20 -13 -18 -16 Z M 3 -17 Q 10 -22 17 -17 Q 19 -14 16 -14 Q 10 -18 5 -15 Q 2 -14 3 -17 Z" fill="#432344"/><ellipse cx="1" cy="12" rx="4.4" ry="5.7" fill="#432344"/></g></g><g id="question" transform="rotate(8 126 54)"><path d="M 111 40 C 110 25 139 23 144 36 C 150 50 135 55 131 61 V 68 Q 131 71 128 71 H 122 Q 119 71 119 68 V 59 C 119 50 132 49 132 42 C 133 35 122 34 122 41 V 43 H 111 Z" fill="#FFFFFF"/><circle cx="125" cy="82" r="6" fill="#FFFFFF"/></g><g data-part="sparkles"><path d="M 107 15 Q 108 19 112 20 Q 108 21 107 25 Q 106 21 102 20 Q 106 19 107 15 Z" fill="#FFFFFF"/><path d="M 148 89 Q 148.8 92.2 152 93 Q 148.8 93.8 148 97 Q 147.2 93.8 144 93 Q 147.2 92.2 148 89 Z" fill="#FFFFFF"/></g></svg>
+</div>
+    <div class="panel" id="b5up" style="left:1000px; top:170px; width:720px; height:540px;"><svg viewBox="0 0 160 120" preserveAspectRatio="xMidYMid meet"><g data-part="sunrise"><path d="M 48 80 A 32 32 0 0 1 112 80 Z" fill="#FFC03D"/><path d="M 42.7 68.5 L 36.9 66.9 A 1.5 1.5 0 0 0 36.1 69.8 L 41.9 71.4 A 1.5 1.5 0 0 0 42.7 68.5 Z" fill="#FFC03D"/><path d="M 51.1 53.8 L 46.5 49.9 A 1.5 1.5 0 0 0 44.6 52.2 L 49.2 56.1 A 1.5 1.5 0 0 0 51.1 53.8 Z" fill="#FFC03D"/><path d="M 64.9 44 L 62.3 38.6 A 1.5 1.5 0 0 0 59.6 39.9 L 62.2 45.3 A 1.5 1.5 0 0 0 64.9 44 Z" fill="#FFC03D"/><path d="M 81.5 41 L 81.5 35 A 1.5 1.5 0 0 0 78.5 35 L 78.5 41 A 1.5 1.5 0 0 0 81.5 41 Z" fill="#FFC03D"/><path d="M 97.8 45.3 L 100.4 39.9 A 1.5 1.5 0 0 0 97.7 38.6 L 95.1 44 A 1.5 1.5 0 0 0 97.8 45.3 Z" fill="#FFC03D"/><path d="M 110.8 56.1 L 115.4 52.2 A 1.5 1.5 0 0 0 113.5 49.9 L 108.9 53.8 A 1.5 1.5 0 0 0 110.8 56.1 Z" fill="#FFC03D"/><path d="M 118.1 71.4 L 123.9 69.8 A 1.5 1.5 0 0 0 123.1 66.9 L 117.3 68.5 A 1.5 1.5 0 0 0 118.1 71.4 Z" fill="#FFC03D"/></g><g data-part="person"><path d="M 63 71 C 53 61 47 46 39 32 L 31 18 Q 28 13 32 10 Q 36 8 39 13 L 49 28 L 72 55 Z M 97 71 C 107 61 113 46 121 32 L 129 18 Q 132 13 128 10 Q 124 8 121 13 L 111 28 L 88 55 Z" fill="#FF6B35"/><path d="M 32 20 L 27 13 Q 24 9 27 7 Q 30 5 33 9 L 38 15 Q 40 12 42 15 Q 44 18 40 23 Z M 128 20 L 133 13 Q 136 9 133 7 Q 130 5 127 9 L 122 15 Q 120 12 118 15 Q 116 18 120 23 Z" fill="#432344"/><rect x="75" y="56" width="10" height="12" rx="3" fill="#432344"/><circle cx="80" cy="46" r="14" fill="#432344"/><ellipse cx="75" cy="45" rx="1.6" ry="2.3" fill="#FFFFFF"/><ellipse cx="85" cy="45" rx="1.6" ry="2.3" fill="#FFFFFF"/><path d="M 75 52 Q 80 57 85 52 Q 86 52 86 53 Q 80 61 74 53 Q 74 52 75 52 Z" fill="#FFFFFF"/><path d="M 64 64 Q 80 59 96 64 L 103 92 H 57 Z" fill="#FF6B35"/><path d="M 73 62 L 80 69 L 87 62 L 84 62 L 80 65 L 76 62 Z" fill="#432344"/><circle cx="80" cy="75" r="1.8" fill="#FFC03D"/><circle cx="80" cy="83" r="1.8" fill="#FFC03D"/></g><g data-part="bed"><path d="M 36 90 Q 80 79 121 90 L 124 114 H 33 Z" fill="#FFF6EA" stroke="#432344" stroke-width="3" stroke-linejoin="round"/><path d="M 58 91 Q 54 99 56 105 Q 53 102 55 94 Z M 100 92 Q 105 99 103 106 Q 107 102 103 94 Z" fill="#432344"/><rect x="33" y="111" width="91" height="5" rx="2" fill="#432344"/></g><g data-part="table"><rect x="125" y="92" width="31" height="4" rx="2" fill="#432344"/><rect x="128" y="95" width="4" height="21" rx="1" fill="#432344"/><rect x="149" y="95" width="4" height="21" rx="1" fill="#432344"/></g><g id="quiet-clock" transform="translate(140 78) rotate(0) scale(0.4 0.4)"><g data-part="clock-case"><path d="M -18 22 L -23 31 Q -24 34 -20 34 H -14 L -10 26 Z M 18 22 L 23 31 Q 24 34 20 34 H 14 L 10 26 Z" fill="#432344"/><path d="M -20 -25 L -14 -31 L -10 -26 L -15 -20 Z M 20 -25 L 14 -31 L 10 -26 L 15 -20 Z" fill="#432344"/><path d="M -32 -29 C -34 -36 -24 -43 -17 -41 C -10 -40 -7 -36 -7 -32 Q -20 -24 -32 -29 Z M 32 -29 C 34 -36 24 -43 17 -41 C 10 -40 7 -36 7 -32 Q 20 -24 32 -29 Z" fill="#432344"/><rect x="-2" y="-39" width="4" height="12" rx="2" fill="#432344"/><rect x="-7" y="-41" width="14" height="4" rx="2" fill="#432344"/><circle cx="0" cy="0" r="28" fill="#432344"/><circle cx="0" cy="0" r="22" fill="#FFF6EA"/></g><g data-part="clock-face"><rect x="-1.5" y="-18" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-1.5" y="13" width="3" height="5" rx="1.5" fill="#432344"/><rect x="-18" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><rect x="13" y="-1.5" width="5" height="3" rx="1.5" fill="#432344"/><path d="M -1.1 -1 L -8.7 6.9 A 1.5 1.5 0 0 0 -6.6 9 L 1.1 1 A 1.5 1.5 0 0 0 -1.1 -1 Z" fill="#432344"/><path d="M -1.5 0.3 L 1.7 15 A 1.5 1.5 0 0 0 4.6 14.4 L 1.5 -0.3 A 1.5 1.5 0 0 0 -1.5 0.3 Z" fill="#432344"/><circle cx="0" cy="0" r="2.3" fill="#432344"/></g></g></svg>
+</div>
+    <div class="sticker" id="b5huh" style="left:220px; top:120px; transform: rotate(-7deg);">…huh?</div>
+    <div class="sticker" id="b5im" style="left:1460px; top:120px; transform: rotate(6deg); color: var(--orange);">I'm up!</div>
+  </div>
+
+  <!-- B6: on time for days, late by Monday -->
+  <div class="abs" id="b6" style="inset:0; transform: scale(1.25); transform-origin: 960px 420px;">
+    <div class="abs kicker" id="b6k" style="left:0; width:1920px; top:250px; text-align:center; color: rgba(67,35,68,.55);">That week</div>
+    <div id="days"></div>
+  </div>
+</div>
+
+<!-- ================= RESURRECTION ================= -->
+<div class="sec" id="res" style="background: radial-gradient(ellipse at 50% 35%, #3a1d42 0%, #1a0f1b 60%, #0c070e 100%);">
+  <div class="abs" id="stars" style="inset:0"></div>
+  <!-- R1: grew up; 2012 -->
+  <div class="abs" id="r1" style="inset:0">
+    <div class="abs kicker" style="left:0; width:1920px; top:300px; text-align:center; color: rgba(255,255,255,.55);">An idea that wouldn't stay dead</div>
+    <div class="abs big" id="yearRoll" style="left:0; width:1920px; top:360px; text-align:center; color:#fff; font-size: 260px;"></div>
+  </div>
+  <!-- R2/R3: the 2012 slot-machine app, the domain -->
+  <div class="abs" id="r2" style="inset:0">
+    <div class="abs kicker" id="r2k" style="left:0; width:1920px; top:70px; text-align:center; color: rgba(255,255,255,.55);">2012</div>
+    <div class="oldphone" id="oldphone" style="left:780px; top:170px;">
+      <div class="spk"></div>
+      <div class="scr"><div class="slot" id="slot">
+        <div class="bulbs" id="bulbs"></div>
+        <div class="title">LotteryClock</div>
+        <div class="reels">
+          <div class="reel"><div class="strip" id="reel0"></div></div>
+          <div class="reel"><div class="strip" id="reel1"></div></div>
+          <div class="reel"><div class="strip" id="reel2"></div></div>
+        </div>
+        <div class="btn">SPIN</div>
+      </div></div>
+      <div class="home"></div>
+    </div>
+    <div class="mail" id="mail" style="left:1000px; top:190px; transform-origin: 0 0;">
+      <div class="chrome"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><b>Inbox</b><span style="width:52px"></span></div>
+      <h3>LotteryClock.com - Are you using it?</h3>
+      <ol>
+        <li><img class="av" src="assets/dylan.webp"><div style="flex:1"><div class="who"><b>Dylan Jones</b><time>Thu, May 31, 2012</time></div><div class="to">to Russell S.</div>
+          <div class="body"><p>I was wondering if you were planning on using LotteryClock.com?</p><p>If you don't have any plans for it, would it be possible if I buy it off you?</p></div></div></li>
+        <li id="reply"><span class="av rs">RS</span><div style="flex:1"><div class="who"><b>Russell S.</b><time>Fri, Jun 8, 2012</time></div><div class="to">to me</div>
+          <div class="body"><p>Hi Dylan - I have always had plans for it but I don't know when I will get to it. Sorry, not for sale.</p></div></div></li>
+      </ol>
+      <div class="stamp" id="stamp" style="right:40px; bottom:26px;">Rejected</div>
+    </div>
+  </div>
+  <!-- R4/R5/R6: the grave, the ghost, Kiroween -->
+  <div class="abs" id="r4" style="inset:0">
+    <div class="abs" id="moon" style="left:1440px; top:110px; width:190px; height:190px;"><svg viewBox="0 0 80 80" style="width:100%; height:100%; filter: drop-shadow(0 0 30px rgba(255,243,218,.45))"><circle cx="40" cy="40" r="30" fill="#FFF3DA"/><g id="maria" fill="#000000" opacity="0.12"><path d="M 24 20 C 29 15 39 15 42 21 C 44 25 39 27 38 31 C 36 35 30 34 27 30 C 24 27 20 26 24 20 Z" fill="#000000"/><path d="M 46 28 C 53 23 63 30 63 37 C 62 43 55 46 51 43 C 47 41 50 37 46 35 C 43 33 43 30 46 28 Z" fill="#000000"/><path d="M 30 41 C 34 37 43 39 45 44 C 48 47 46 50 49 54 C 50 60 43 64 38 61 C 34 58 35 54 31 53 C 26 51 26 45 30 41 Z" fill="#000000"/><path d="M 19 39 C 22 37 26 39 26 42 C 27 46 22 49 19 46 C 17 44 17 41 19 39 Z" fill="#000000"/></g><g id="crater-rims" fill="#000000" opacity="0.06"><circle cx="24" cy="31" r="3.7"/><circle cx="58" cy="47" r="4.3"/><circle cx="52" cy="57" r="3.4"/></g><g id="craters" fill="#000000" opacity="0.18"><circle cx="24" cy="31" r="2.5"/><circle cx="42" cy="22" r="2"/><circle cx="58" cy="47" r="3"/><circle cx="31" cy="58" r="2"/><circle cx="52" cy="57" r="2.4"/><circle cx="48" cy="41" r="1.8"/><circle cx="36" cy="34" r="1.5"/></g></svg>
+</div>
+    <div class="abs" id="ghost" style="left:870px; top:340px; width:180px;"><svg viewBox="272 202 655 796" style="width:100%; height:auto; display:block"><mask id="gm1" maskUnits="userSpaceOnUse" x="272" y="202" width="655" height="796"><path fill="#fff" d="M398.554 818.914C316.315 1001.03 491.477 1046.74 620.672 940.156C658.687 1059.66 801.052 970.473 852.234 877.795C964.787 673.567 919.318 465.357 907.64 422.374C827.637 129.443 427.623 128.946 358.8 423.865C342.651 475.544 342.402 534.18 333.458 595.051C328.986 625.86 325.507 645.488 313.83 677.785C306.873 696.424 297.68 712.819 282.773 740.645C259.915 783.881 269.604 867.113 387.87 823.883L399.051 818.914H398.554Z"/><path fill="#000" d="M636.123 549.353C603.328 549.353 598.359 510.097 598.359 486.742C598.359 465.623 602.086 448.977 609.293 438.293C615.504 428.852 624.697 424.131 636.123 424.131C647.555 424.131 657.492 428.852 664.447 438.541C672.398 449.474 676.623 466.12 676.623 486.742C676.623 525.998 661.471 549.353 636.375 549.353H636.123Z"/><path fill="#000" d="M771.24 549.353C738.445 549.353 733.477 510.097 733.477 486.742C733.477 465.623 737.203 448.977 744.41 438.293C750.621 428.852 759.814 424.131 771.24 424.131C782.672 424.131 792.609 428.852 799.564 438.541C807.516 449.474 811.74 466.12 811.74 486.742C811.74 525.998 796.588 549.353 771.492 549.353H771.24Z"/></mask><rect x="272" y="202" width="655" height="796" fill="#F4F0FF" mask="url(#gm1)"/></svg></div>
+    <div class="stone" id="stone" style="left:795px; top:380px;"><div class="rip">R.I.P.</div><div class="nm">LotteryClock</div><div class="yr">2012 – 2012</div></div>
+    <svg class="abs" id="ground" width="1920" height="320" viewBox="0 0 1920 320" style="left:0; top:760px">
+      <path d="M0 60 C 300 10 600 40 960 30 C 1300 20 1600 50 1920 20 V 320 H 0 Z" fill="#0b060d"/>
+      <g fill="#0b060d"><path d="M700 40 l8 -26 l6 26 l9 -20 l4 20 Z"/><path d="M1150 30 l7 -24 l6 24 l8 -18 l4 18 Z"/><path d="M420 46 l7 -20 l6 20 Z"/><path d="M1500 34 l6 -22 l7 22 Z"/></g>
+    </svg>
+    <div class="abs" id="dirt" style="inset:0"></div>
+    <div class="banner" id="banner" style="left:290px; top:330px;">
+      <div class="tile"><div style="width:62px"><svg viewBox="272 202 655 796" style="width:100%; height:auto; display:block"><mask id="gm2" maskUnits="userSpaceOnUse" x="272" y="202" width="655" height="796"><path fill="#fff" d="M398.554 818.914C316.315 1001.03 491.477 1046.74 620.672 940.156C658.687 1059.66 801.052 970.473 852.234 877.795C964.787 673.567 919.318 465.357 907.64 422.374C827.637 129.443 427.623 128.946 358.8 423.865C342.651 475.544 342.402 534.18 333.458 595.051C328.986 625.86 325.507 645.488 313.83 677.785C306.873 696.424 297.68 712.819 282.773 740.645C259.915 783.881 269.604 867.113 387.87 823.883L399.051 818.914H398.554Z"/><path fill="#000" d="M636.123 549.353C603.328 549.353 598.359 510.097 598.359 486.742C598.359 465.623 602.086 448.977 609.293 438.293C615.504 428.852 624.697 424.131 636.123 424.131C647.555 424.131 657.492 428.852 664.447 438.541C672.398 449.474 676.623 466.12 676.623 486.742C676.623 525.998 661.471 549.353 636.375 549.353H636.123Z"/><path fill="#000" d="M771.24 549.353C738.445 549.353 733.477 510.097 733.477 486.742C733.477 465.623 737.203 448.977 744.41 438.293C750.621 428.852 759.814 424.131 771.24 424.131C782.672 424.131 792.609 428.852 799.564 438.541C807.516 449.474 811.74 466.12 811.74 486.742C811.74 525.998 796.588 549.353 771.492 549.353H771.24Z"/></mask><rect x="272" y="202" width="655" height="796" fill="#ffffff" mask="url(#gm2)"/></svg></div></div>
+      <div><div class="k">Kiroween hackathon · Resurrection track</div><div class="h">A dead idea from 2012, brought back to life.</div></div>
+    </div>
+  </div>
+  <div class="abs" id="flash" style="inset:0; background:#fff; opacity:0"></div>
+</div>
+
+<!-- ================= THE APP ================= -->
+<div class="sec" id="app" style="background: radial-gradient(ellipse at 50% 30%, #2a1747 0%, #120a22 55%, #0b0816 100%); color:#fff;">
+  <div class="abs" id="appGlow" style="left:550px; top:200px; width:820px; height:520px; border-radius:50%; opacity:.4; filter: blur(60px);
+    background: radial-gradient(ellipse, #FF6B35 0%, #9B5DE5 40%, transparent 70%);"></div>
+  <div class="abs big" id="appHead" style="left:0; width:1920px; top:90px; text-align:center; font-size:76px;">Bonus: now it rings for real</div>
+  <div id="phones"></div>
+  <!-- window bar -->
+  <div class="abs" id="winBar" style="left:900px; top:380px; width:760px; height:200px; transform-origin: 0 0;">
+    <div class="abs kicker" style="left:0; top:0; color: rgba(255,255,255,.55);">Your window</div>
+    <div class="abs" style="left:0; right:0; top:74px; height:16px; border-radius:8px; background: linear-gradient(90deg, #34F5B0, rgba(255,255,255,.7) 50%, #FF3D6E);"></div>
+    <div class="abs" style="left:378px; top:60px; width:4px; height:44px; border-radius:2px; background:#fff;"></div>
+    <div class="abs" style="left:0; top:120px; font-family:GeistPixel; font-size:26px; color: var(--green);">7:13</div>
+    <div class="abs" style="left:330px; top:120px; width:100px; text-align:center; font-family:GeistPixel; font-size:26px; color:#fff;">7:30</div>
+    <div class="abs" style="right:0; top:120px; font-family:GeistPixel; font-size:26px; color: var(--ledred);">7:47</div>
+    <div class="abs" id="winMark" style="left:0; top:30px; width:64px; height:64px; margin-left:-32px; border-radius:50%; background:#FFC03D; color:#2a1530;
+      display:grid; place-items:center; font-weight:850; font-size:36px; box-shadow: 0 0 24px rgba(255,192,61,.7);">?</div>
+  </div>
+  <!-- the reveal clock -->
+  <div class="abs" id="revealWrap" style="left:0; top:0; width:1920px; height:1080px;">
+    <div class="abs" id="revealClock" style="left:560px; top:330px; width:800px; height:260px; display:flex; justify-content:center;"></div>
+    <div class="abs" id="revealLbl" style="left:0; width:1920px; top:640px; text-align:center;">
+      <span class="pill" style="background: rgba(255,255,255,.1); color:#fff; font-size:28px;">Target 7:30 AM <span style="opacity:.4">·</span> <span style="color:#FF6B35">Rang 7:41 AM</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CLOSE ================= -->
+<div class="sec" id="close">
+  <div class="abs" id="skyDay" style="inset:0; background: linear-gradient(#CDD4F4, #E6D9F1 40%, #FFE6C2);"></div>
+  <div class="abs" id="skyDusk" style="inset:0; background: linear-gradient(#5b3a8a, #b4568a 55%, #ff9f6b); opacity:0;"></div>
+  <div class="abs" id="skyNight" style="inset:0; background: radial-gradient(ellipse at 50% 30%, #241B45, #0B0919 75%); opacity:0;"></div>
+  <div class="abs" id="closeStars" style="inset:0; opacity:0"></div>
+  <div class="abs" id="closeMoon" style="left:1460px; top:120px; width:170px; height:170px; opacity:0;"><svg viewBox="0 0 80 80" style="width:100%; height:100%; filter: drop-shadow(0 0 30px rgba(255,243,218,.45))"><circle cx="40" cy="40" r="30" fill="#FFF3DA"/><g id="maria" fill="#000000" opacity="0.12"><path d="M 24 20 C 29 15 39 15 42 21 C 44 25 39 27 38 31 C 36 35 30 34 27 30 C 24 27 20 26 24 20 Z" fill="#000000"/><path d="M 46 28 C 53 23 63 30 63 37 C 62 43 55 46 51 43 C 47 41 50 37 46 35 C 43 33 43 30 46 28 Z" fill="#000000"/><path d="M 30 41 C 34 37 43 39 45 44 C 48 47 46 50 49 54 C 50 60 43 64 38 61 C 34 58 35 54 31 53 C 26 51 26 45 30 41 Z" fill="#000000"/><path d="M 19 39 C 22 37 26 39 26 42 C 27 46 22 49 19 46 C 17 44 17 41 19 39 Z" fill="#000000"/></g><g id="crater-rims" fill="#000000" opacity="0.06"><circle cx="24" cy="31" r="3.7"/><circle cx="58" cy="47" r="4.3"/><circle cx="52" cy="57" r="3.4"/></g><g id="craters" fill="#000000" opacity="0.18"><circle cx="24" cy="31" r="2.5"/><circle cx="42" cy="22" r="2"/><circle cx="58" cy="47" r="3"/><circle cx="31" cy="58" r="2"/><circle cx="52" cy="57" r="2.4"/><circle cx="48" cy="41" r="1.8"/><circle cx="36" cy="34" r="1.5"/></g></svg>
+</div>
+  <div class="abs" id="lockup" style="left:0; width:1920px; top:330px; text-align:center;">
+    <div id="logo" style="display:inline-flex; align-items:center; gap:30px; font-weight:800; font-size:150px; letter-spacing:-.04em;">
+      <svg viewBox="0 0 15 15" style="width:128px; height:128px" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7.5" cy="7.5" r="6.2"/><path id="hand" d="M7.5 4.4V7.5L9.5 9.5"/></svg>
+      LotteryClock
+    </div>
+    <div id="url" style="margin-top:44px;"><span class="pill" id="urlPill" style="font-size:44px; padding:20px 44px; background:#432344; color:#fff;">lotteryclock.app</span></div>
+    <div id="sweet" class="big" style="margin-top:56px; font-size:64px; color:#fff;">Sweet dreams. <span style="color:#FFC03D">Maybe.</span></div>
+  </div>
+</div>
+
+<script>
+const TL = {
+ "fps": 30,
+ "total": 224.531,
+ "sections": [
+  {
+   "id": "cold",
+   "start": 0,
+   "end": 11.636
+  },
+  {
+   "id": "story",
+   "start": 11.636,
+   "end": 59.006
+  },
+  {
+   "id": "resurrection",
+   "start": 59.006,
+   "end": 81.462
+  },
+  {
+   "id": "how",
+   "start": 81.462,
+   "end": 126.016
+  },
+  {
+   "id": "themes",
+   "start": 126.016,
+   "end": 169.297
+  },
+  {
+   "id": "app",
+   "start": 169.297,
+   "end": 217.657
+  },
+  {
+   "id": "close",
+   "start": 217.657,
+   "end": 224.531
+  }
+ ],
+ "lines": {
+  "c1": {
+   "id": "c1",
+   "text": "Gather round. I've got a scary story.",
+   "start": 1.6,
+   "end": 4.364,
+   "section": "cold"
+  },
+  "c2": {
+   "id": "c2",
+   "text": "It's about a kid, his snooze button, and an alarm clock that came back from the dead.",
+   "start": 4.644,
+   "end": 10.656,
+   "section": "cold"
+  },
+  "s1": {
+   "id": "s1",
+   "text": "Dylan was always late for school.",
+   "start": 12.036,
+   "end": 14.255,
+   "section": "story"
+  },
+  "s2": {
+   "id": "s2",
+   "text": "Not because he overslept. Because he snoozed. Professionally.",
+   "start": 14.335,
+   "end": 17.643,
+   "section": "story"
+  },
+  "s3": {
+   "id": "s3",
+   "text": "One day he cleaned his room, which is honestly the scariest part of this story.",
+   "start": 18.023,
+   "end": 23.346,
+   "section": "story"
+  },
+  "s4": {
+   "id": "s4",
+   "text": "He tripped over the cord, the alarm clock went dark,",
+   "start": 23.626,
+   "end": 27.224,
+   "section": "story"
+  },
+  "s5": {
+   "id": "s5",
+   "text": "and he plugged it back in like nothing happened.",
+   "start": 27.604,
+   "end": 30.858,
+   "section": "story"
+  },
+  "s6": {
+   "id": "s6",
+   "text": "It blinked back to life. But it wasn't the same clock.",
+   "start": 31.138,
+   "end": 35.281,
+   "section": "story"
+  },
+  "s7": {
+   "id": "s7",
+   "text": "The next morning it went off, and his hand stopped halfway to snooze.",
+   "start": 35.861,
+   "end": 40.493,
+   "section": "story"
+  },
+  "s8": {
+   "id": "s8",
+   "text": "Is that the real time? How long was it dead?",
+   "start": 40.773,
+   "end": 44.572,
+   "section": "story"
+  },
+  "s9": {
+   "id": "s9",
+   "text": "Five minutes? Twenty?",
+   "start": 44.752,
+   "end": 46.136,
+   "section": "story"
+  },
+  "s10": {
+   "id": "s10",
+   "text": "He had no idea. So he got up.",
+   "start": 46.616,
+   "end": 49.725,
+   "section": "story"
+  },
+  "s11": {
+   "id": "s11",
+   "text": "He was on time for days.",
+   "start": 50.305,
+   "end": 52.524,
+   "section": "story"
+  },
+  "s12": {
+   "id": "s12",
+   "text": "Then he worked out the offset, fixed the clock, and was late again by Monday.",
+   "start": 52.804,
+   "end": 58.126,
+   "section": "story"
+  },
+  "r1": {
+   "id": "r1",
+   "text": "Dylan grew up, but he never forgot that clock.",
+   "start": 59.306,
+   "end": 62.56,
+   "section": "resurrection"
+  },
+  "r2": {
+   "id": "r2",
+   "text": "In 2012 he built it as an iPhone app that looked like a slot machine.",
+   "start": 62.64,
+   "end": 67.962,
+   "section": "resurrection"
+  },
+  "r3": {
+   "id": "r3",
+   "text": "He tried to buy LotteryClock.com. The owner said no.",
+   "start": 68.242,
+   "end": 71.696,
+   "section": "resurrection"
+  },
+  "r4": {
+   "id": "r4",
+   "text": "The app never shipped. The idea died.",
+   "start": 72.276,
+   "end": 75.039,
+   "section": "resurrection"
+  },
+  "r5": {
+   "id": "r5",
+   "text": "But some things don't stay dead.",
+   "start": 75.619,
+   "end": 77.838,
+   "section": "resurrection"
+  },
+  "r6": {
+   "id": "r6",
+   "text": "This Kiroween, Dylan dug it back up.",
+   "start": 78.218,
+   "end": 80.782,
+   "section": "resurrection"
+  },
+  "h1": {
+   "id": "h1",
+   "text": "This is LotteryClock.",
+   "start": 82.462,
+   "end": 83.762,
+   "section": "how"
+  },
+  "h2": {
+   "id": "h2",
+   "text": "Pick when you want to wake up.",
+   "start": 84.442,
+   "end": 87.006,
+   "section": "how"
+  },
+  "h3": {
+   "id": "h3",
+   "text": "Then drag the dial to pick how much you're willing to gamble:",
+   "start": 87.986,
+   "end": 92.274,
+   "section": "how"
+  },
+  "h4": {
+   "id": "h4",
+   "text": "five minutes, ten, or forty-five if you're truly unwell.",
+   "start": 92.354,
+   "end": 95.607,
+   "section": "how"
+  },
+  "h5": {
+   "id": "h5",
+   "text": "LotteryClock hides the real alarm somewhere in that window.",
+   "start": 96.287,
+   "end": 99.541,
+   "section": "how"
+  },
+  "h6": {
+   "id": "h6",
+   "text": "Could be early. Could be late. You don't get to know.",
+   "start": 99.821,
+   "end": 104.164,
+   "section": "how"
+  },
+  "h7": {
+   "id": "h7",
+   "text": "Rings early? You win. Snooze guilt-free until your target time.",
+   "start": 104.644,
+   "end": 108.642,
+   "section": "how"
+  },
+  "h8": {
+   "id": "h8",
+   "text": "Rings late? You lose. Get up. You're already late.",
+   "start": 109.922,
+   "end": 113.776,
+   "section": "how"
+  },
+  "h9": {
+   "id": "h9",
+   "text": "And because you can't tell which one it is, you get up anyway.",
+   "start": 114.656,
+   "end": 119.288,
+   "section": "how"
+  },
+  "h10": {
+   "id": "h10",
+   "text": "That's the trick.",
+   "start": 119.568,
+   "end": 120.868,
+   "section": "how"
+  },
+  "h11": {
+   "id": "h11",
+   "text": "Once your clock can't be trusted, your brain can't snooze on autopilot.",
+   "start": 121.248,
+   "end": 125.536,
+   "section": "how"
+  },
+  "t1": {
+   "id": "t1",
+   "text": "Every theme has its own way of telling you you're late.",
+   "start": 126.516,
+   "end": 130.459,
+   "section": "themes"
+  },
+  "t2": {
+   "id": "t2",
+   "text": "Good Night. It counts sheep while it decides your fate.",
+   "start": 130.839,
+   "end": 134.638,
+   "section": "themes"
+  },
+  "t3": {
+   "id": "t3",
+   "text": "Día de Muertos. Win, and you rest in peace.",
+   "start": 136.318,
+   "end": 139.771,
+   "section": "themes"
+  },
+  "t4": {
+   "id": "t4",
+   "text": "Lose, and you rise from the dead. Which is basically every Monday.",
+   "start": 142.051,
+   "end": 146.539,
+   "section": "themes"
+  },
+  "t5": {
+   "id": "t5",
+   "text": "Ouija. Let the spirits pick. The spirits say: rise.",
+   "start": 147.219,
+   "end": 151.072,
+   "section": "themes"
+  },
+  "t6": {
+   "id": "t6",
+   "text": "Tarot. Push your luck and the card catches fire.",
+   "start": 151.952,
+   "end": 155.406,
+   "section": "themes"
+  },
+  "t7": {
+   "id": "t7",
+   "text": "Upright, you sleep. Reversed, you're up.",
+   "start": 157.686,
+   "end": 160.105,
+   "section": "themes"
+  },
+  "t8": {
+   "id": "t8",
+   "text": "And for the high rollers: a prize wheel and a poker table.",
+   "start": 161.185,
+   "end": 165.673,
+   "section": "themes"
+  },
+  "t9": {
+   "id": "t9",
+   "text": "Two ways to go bust before breakfast.",
+   "start": 166.053,
+   "end": 168.617,
+   "section": "themes"
+  },
+  "a1": {
+   "id": "a1",
+   "text": "One more thing.",
+   "start": 170.097,
+   "end": 171.397,
+   "section": "app"
+  },
+  "a2": {
+   "id": "a2",
+   "text": "The website is the game. The iPhone app is the real thing.",
+   "start": 171.777,
+   "end": 176.264,
+   "section": "app"
+  },
+  "a3": {
+   "id": "a3",
+   "text": "Same themes, same dial.",
+   "start": 176.644,
+   "end": 178.174,
+   "section": "app"
+  },
+  "a4": {
+   "id": "a4",
+   "text": "But tap Set Alarm, and it schedules a real alarm with Apple's AlarmKit,",
+   "start": 178.454,
+   "end": 183.087,
+   "section": "app"
+  },
+  "a5": {
+   "id": "a5",
+   "text": "at a random moment inside your window.",
+   "start": 183.167,
+   "end": 185.73,
+   "section": "app"
+  },
+  "a6": {
+   "id": "a6",
+   "text": "The phone knows when. You don't.",
+   "start": 186.01,
+   "end": 188.429,
+   "section": "app"
+  },
+  "a7": {
+   "id": "a7",
+   "text": "When it rings, the alarm tells you how it went.",
+   "start": 189.109,
+   "end": 192.708,
+   "section": "app"
+  },
+  "a8": {
+   "id": "a8",
+   "text": "Rang early? Hit snooze, and you get exactly the minutes you won,",
+   "start": 193.088,
+   "end": 197.576,
+   "section": "app"
+  },
+  "a9": {
+   "id": "a9",
+   "text": "then it rings again at your target time.",
+   "start": 197.656,
+   "end": 200.564,
+   "section": "app"
+  },
+  "a10": {
+   "id": "a10",
+   "text": "Rang late? No snooze. Up you get.",
+   "start": 201.044,
+   "end": 204.008,
+   "section": "app"
+  },
+  "a11": {
+   "id": "a11",
+   "text": "Open the app and the clock rolls to reveal when it really went off.",
+   "start": 204.688,
+   "end": 209.666,
+   "section": "app"
+  },
+  "a12": {
+   "id": "a12",
+   "text": "Every morning lands in your history,",
+   "start": 210.046,
+   "end": 212.264,
+   "section": "app"
+  },
+  "a13": {
+   "id": "a13",
+   "text": "so you can see exactly how many minutes of sleep you've gambled away.",
+   "start": 212.344,
+   "end": 216.977,
+   "section": "app"
+  },
+  "x1": {
+   "id": "x1",
+   "text": "Try it at LotteryClock.app.",
+   "start": 218.257,
+   "end": 219.787,
+   "section": "close"
+  },
+  "x2": {
+   "id": "x2",
+   "text": "Sweet dreams. Maybe.",
+   "start": 220.467,
+   "end": 221.851,
+   "section": "close"
+  }
+ }
+};
+const L = TL.lines;
+const S = Object.fromEntries(TL.sections.map((s) => [s.id, s]));
+const $ = (id) => document.getElementById(id);
+
+// ---------- math ----------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lin = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (k) => 1 - Math.pow(1 - k, 3);
+const ei = (k) => k * k * k;
+const eio = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const back = (k) => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const springK = (s) => (s <= 0 ? 0 : 1 - Math.exp(-7 * s) * Math.cos(13 * s)); // s seconds since start
+const mix = (a, b, k) => a + (b - a) * k;
+function hash(i) { let x = Math.imul(i ^ 0x9e3779b9, 0x85ebca6b); x ^= x >>> 13; x = Math.imul(x, 0xc2b2ae35); x ^= x >>> 16; return (x >>> 0) / 4294967296; }
+/** Presence of a beat: eases in over fi after a, out over fo before b. */
+function pres(t, a, b, fi = 0.4, fo = 0.3) { if (t < a || t > b) return 0; return Math.min(eo(lin(t, a, a + fi)), 1 - ei(lin(t, b - fo, b))); }
+function put(el, o, tf) { el.style.opacity = o; el.style.visibility = o <= 0.001 ? 'hidden' : 'visible'; if (tf !== undefined) el.style.transform = tf; }
+/** A sticker that pops in at t0 and stays (or leaves at t1). */
+function pop(el, t, t0, t1 = 1e9, rot = 0) {
+  const s = t - t0;
+  if (s < 0 || t > t1) return put(el, 0);
+  const k = springK(s);
+  const out = 1 - ei(lin(t, t1 - 0.25, t1));
+  put(el, Math.min(1, s / 0.08) * out, `rotate(${rot}deg) scale(${(0.2 + 0.8 * k) * (0.9 + 0.1 * out)})`);
+}
+
+// ---------- seven-segment (port of seven-segment.tsx) ----------
+const SW = 48, SH = 88, T = 9, G = 1.6, h = T / 2;
+const hSeg = (x1, x2, y) => `${x1},${y} ${x1 + h},${y - h} ${x2 - h},${y - h} ${x2},${y} ${x2 - h},${y + h} ${x1 + h},${y + h}`;
+const vSeg = (x, y1, y2) => `${x},${y1} ${x + h},${y1 + h} ${x + h},${y2 - h} ${x},${y2} ${x - h},${y2 - h} ${x - h},${y1 + h}`;
+const SEG = { a: hSeg(h + G, SW - h - G, h), b: vSeg(SW - h, h + G, SH / 2 - G), c: vSeg(SW - h, SH / 2 + G, SH - h - G),
+  d: hSeg(h + G, SW - h - G, SH - h), e: vSeg(h, SH / 2 + G, SH - h - G), f: vSeg(h, h + G, SH / 2 - G), g: hSeg(h + G, SW - h - G, SH / 2) };
+const DIG = ['abcdef', 'bc', 'abdeg', 'abcdg', 'bcfg', 'acdfg', 'acdefg', 'abc', 'abcdefg', 'abcdfg'];
+const GAP = 12, COL = 18, SLOTS = [0, SW + GAP, 2 * SW + 2 * GAP + COL, 3 * SW + 3 * GAP + COL];
+const COLON_X = (SLOTS[1] + SW + SLOTS[2]) / 2, AMPM_X = SLOTS[3] + SW + 14;
+const NS = 'http://www.w3.org/2000/svg';
+function makeSeg(host, { on = '#FFC03D', off = 'rgba(255,255,255,0.07)', glow = 'rgba(255,192,61,0.6)', height = 128 } = {}) {
+  const svg = document.createElementNS(NS, 'svg');
+  svg.style.height = height + 'px'; svg.style.width = 'auto'; svg.style.overflow = 'visible';
+  const g = document.createElementNS(NS, 'g'); g.setAttribute('transform', 'skewX(-6)'); svg.appendChild(g);
+  const lit = [];
+  const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+  for (let i = 0; i < 4; i++) { const sg = mk('g', { transform: `translate(${SLOTS[i]} 0)` }, g); for (const s in SEG) mk('polygon', { points: SEG[s], fill: off }, sg); }
+  const amOff = mk('text', { x: AMPM_X, y: 30, 'font-size': 15, 'font-weight': 700, fill: off, 'font-family': 'Geist' }, g); amOff.textContent = 'AM';
+  const pmOff = mk('text', { x: AMPM_X, y: 56, 'font-size': 15, 'font-weight': 700, fill: off, 'font-family': 'Geist' }, g); pmOff.textContent = 'PM';
+  const L1 = mk('g', {}, g);
+  for (let i = 0; i < 4; i++) { const sg = mk('g', { transform: `translate(${SLOTS[i]} 0)` }, L1); const segs = {}; for (const s in SEG) segs[s] = mk('polygon', { points: SEG[s], fill: on }, sg); lit.push(segs); }
+  const c1 = mk('circle', { cx: COLON_X, cy: 28, r: 4.8, fill: on }, L1), c2 = mk('circle', { cx: COLON_X, cy: 60, r: 4.8, fill: on }, L1);
+  const ampm = mk('text', { x: AMPM_X, y: 30, 'font-size': 15, 'font-weight': 700, fill: on, 'font-family': 'Geist' }, L1); ampm.textContent = 'AM';
+  host.appendChild(svg);
+  let curGlow = glow;
+  return {
+    svg,
+    set(minutes, { lit: isLit = true, colon = true, color = on, glowC = curGlow, pm = null, wide = false } = {}) {
+      const total = ((minutes % 1440) + 1440) % 1440;
+      const H24 = Math.floor(total / 60), M = total % 60;
+      const h12 = H24 % 12 === 0 ? 12 : H24 % 12;
+      const digits = [h12 >= 10 ? 1 : null, h12 % 10, Math.floor(M / 10), M % 10];
+      const first = digits[0] === null && !wide ? 1 : 0;
+      const minX = SLOTS[first] - 16, maxX = AMPM_X + 30;
+      svg.setAttribute('viewBox', `${minX} -8 ${maxX - minX} 104`);
+      L1.style.display = isLit ? '' : 'none';
+      L1.style.filter = glowC ? `drop-shadow(0 0 5px ${glowC})` : 'none';
+      lit.forEach((segs, i) => { const d = digits[i]; for (const s in segs) { segs[s].style.display = d !== null && DIG[d].includes(s) ? '' : 'none'; segs[s].setAttribute('fill', color); } });
+      c1.setAttribute('fill', color); c2.setAttribute('fill', color); ampm.setAttribute('fill', color);
+      c1.style.display = c2.style.display = colon ? '' : 'none';
+      const isPm = pm ?? H24 >= 12; ampm.setAttribute('y', isPm ? 56 : 30); ampm.textContent = isPm ? 'PM' : 'AM';
+    },
+  };
+}
+/** The site's bedside clock: header, seven-segment digits, LED window row, status line. */
+const PIXEL_BELL = '<svg viewBox="0 0 7 7" width="13" height="13" fill="currentColor" shape-rendering="crispEdges"><path d="M3 0h1v1H3zM2 1h3v1H2zM1 2h5v3H1zM0 5h7v1H0zM3 6h1v1H3z"/></svg>';
+function makeBedside(host, { head = true, leds = true } = {}) {
+  host.innerHTML = `<div class="bscreen"><span class="scan"></span><span class="glare"></span><span class="ghost"></span>
+    ${head ? `<p class="bhead">${PIXEL_BELL}<span class="hd">Alarm 7:30 AM</span></p>` : ''}
+    <div class="bdigits"></div>
+    ${leds ? `<div class="bleds">${'<span></span>'.repeat(31)}</div><div class="bfoot"><span class="e">7:15</span><span class="st"></span><span class="l">7:45</span></div>` : ''}</div>`;
+  const seg = makeSeg(host.querySelector('.bdigits'));
+  const ledEls = [...host.querySelectorAll('.bleds span')];
+  const st = host.querySelector('.st');
+  const ghost = host.querySelector('.ghost');
+  return {
+    seg, ghost,
+    leds(offset) {
+      ledEls.forEach((el, i) => {
+        const m = i - 15;
+        const side = m < 0 ? 'e' : m > 0 ? 'l' : 'c';
+        const litNow = m === offset;
+        const between = offset !== 0 && (offset < 0 ? m > offset && m < 0 : m < offset && m > 0);
+        const C = { e: ['#174A3E', 'rgba(52,245,176,.85)', '#34F5B0', 'rgba(52,245,176,.85)'], l: ['#5A1D36', 'rgba(255,61,110,.85)', '#FF3D6E', 'rgba(255,61,110,.85)'], c: ['rgba(255,255,255,.4)', 'rgba(255,255,255,.4)', '#fff', 'rgba(255,255,255,.6)'] }[side];
+        el.style.background = litNow ? C[2] : between ? C[1] : C[0];
+        el.style.boxShadow = litNow ? `0 0 16px 3px ${C[3]}` : between ? `0 0 6px ${C[1]}` : 'none';
+      });
+      if (st) {
+        st.textContent = offset === 0 ? 'Right on time' : offset < 0 ? `${-offset} min early` : `${offset} min late`;
+        st.style.color = offset === 0 ? 'rgba(255,255,255,.8)' : offset < 0 ? '#34F5B0' : '#FF3D6E';
+        st.style.textShadow = offset === 0 ? 'none' : `0 0 12px ${offset < 0 ? 'rgba(52,245,176,.7)' : 'rgba(255,61,110,.7)'}`;
+      }
+    },
+  };
+}
+
+// ---------- build ----------
+const cold = makeBedside($('coldClock'), { head: false, leds: false });
+const sclock = makeBedside($('storyClock'), { head: true, leds: false });
+const dclock = makeBedside($('doubtClock'), { head: true, leds: true });
+
+// week cards
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Mon'];
+$('days').innerHTML = DAYS.map((d, i) => `<div class="day" id="day${i}"><div class="d">${d}</div>
+  <div class="dot" style="background:${i === 5 ? 'rgba(255,61,110,.18)' : 'rgba(52,245,176,.16)'}">${i === 5
+    ? '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FF3D6E" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+    : '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#34F5B0" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'}</div>
+  <div class="mark" style="color:${i === 5 ? '#FF3D6E' : '#34F5B0'}; text-shadow: 0 0 12px ${i === 5 ? 'rgba(255,61,110,.6)' : 'rgba(52,245,176,.6)'}">${i === 5 ? 'LATE' : 'ON TIME'}</div></div>`).join('');
+
+// stars
+const starHTML = (n, seed) => Array.from({ length: n }, (_, i) => {
+  const x = hash(i * 3 + seed) * 1920, y = hash(i * 3 + seed + 1) * 700, s = 1.5 + hash(i * 3 + seed + 2) * 2.5;
+  return `<span class="abs st" style="left:${x}px; top:${y}px; width:${s}px; height:${s}px; border-radius:50%; background:#fff;"></span>`;
+}).join('');
+$('stars').innerHTML = starHTML(90, 11);
+$('closeStars').innerHTML = starHTML(120, 77);
+
+// slot reels
+const REEL_STOP = [7, 3, 0];
+for (let r = 0; r < 3; r++) $('reel' + r).innerHTML = Array.from({ length: 40 }, (_, i) => `<div>${i % 10}</div>`).join('');
+$('bulbs').innerHTML = Array.from({ length: 22 }, (_, i) => {
+  const per = 2 * (308 + 446); let d = (i / 22) * per; let x, y;
+  if (d < 308) { x = d; y = 8; } else if ((d -= 308) < 446) { x = 300; y = d; } else if ((d -= 446) < 308) { x = 300 - d; y = 438; } else { d -= 308; x = 8; y = 446 - d; }
+  return `<span style="left:${x - 6}px; top:${y - 6}px"></span>`;
+}).join('');
+
+// phones for the app section
+const phone = (id, inner) => `<div class="phone" id="${id}"><span class="btnl" style="top:22%; height:6%"></span><span class="btnl" style="top:30%; height:9%"></span><div class="screen">${inner}</div></div>`;
+const lockInner = (k) => `<div class="lock"><div class="wall" style="background-image:url(assets/play-morning.webp)"></div><div class="dim"></div>
+  <div class="date">Friday, November 6</div><div class="time" id="${k}Time">7:21</div>
+  <div class="card" id="${k}Card"><div class="app"><img src="assets/icon.svg">LotteryClock<span style="margin-left:auto; font-weight:500">now</span></div>
+  <div class="ttl" id="${k}Ttl"></div><div class="bdy" id="${k}Bdy"></div><div class="btns" id="${k}Btns"></div></div>
+  <div class="ripple" id="${k}Rip"></div></div>`;
+$('phones').innerHTML =
+  phone('pMorning', '<img src="assets/play-morning.webp"><div class="ripple" id="ripSet"></div><div class="abs" id="pmDim" style="inset:0; background:#000; opacity:0"></div>') +
+  phone('pNight', '<img src="assets/play-night.webp">') +
+  phone('pHistory', '<img src="assets/history.webp">') +
+  phone('pLockWin', lockInner('lw')) +
+  phone('pLockLate', lockInner('ll'));
+
+const reveal = makeSeg($('revealClock'), { height: 250 });
+
+// ---------- scenes ----------
+function show(id, on) { $(id).style.visibility = on ? 'visible' : 'hidden'; }
+
+function renderCold(t) {
+  const s = S.cold;
+  // the unplugged clock blinks 12:00 in the dark
+  const blinkOn = Math.floor(t * 2) % 2 === 0;
+  const flick = t > L.c2.end - 1.6 ? lin(t, L.c2.end - 1.6, L.c2.end - 0.2) : 0; // comes back from the dead
+  const jitter = flick > 0 && flick < 1 ? (hash(Math.floor(t * 30)) > 0.5) : false;
+  if (flick >= 1) cold.seg.set(7 * 60 + 30, { glowC: 'rgba(52,245,176,0.8)', color: '#B8FFE6' });
+  else cold.seg.set(12 * 60, { lit: jitter ? !blinkOn : blinkOn, pm: false });
+  cold.ghost.style.opacity = flick > 0 ? (jitter ? 0.9 : 0.5 * flick) : 0;
+  const push = 1 + 0.12 * eio(lin(t, s.start, s.end));
+  $('coldClockWrap').style.transform = `translate(0, -20px) scale(${push})`;
+  $('coldGlow').style.opacity = (blinkOn ? 1 : 0.35) * (flick >= 1 ? 0.2 : 1);
+  $('coldGlow').style.background = flick >= 1 ? 'radial-gradient(ellipse, rgba(52,245,176,.25), transparent 65%)' : 'radial-gradient(ellipse, rgba(255,192,61,.22), transparent 65%)';
+  put($('cold'), 1 - eio(lin(t, s.end - 0.5, s.end)));
+}
+
+function renderStory(t) {
+  const s = S.story;
+  put($('yearTag'), pres(t, s.start + 0.2, s.end, 0.5, 0.4), `translateY(${10 * (1 - eo(lin(t, s.start + 0.2, s.start + 0.7)))}px)`);
+
+  // B1 snooze
+  {
+    const a = s.start, b = L.s3.start - 0.05, p = pres(t, a, b, 0.45, 0.3);
+    put($('b1'), p, `translateY(${24 * (1 - eo(lin(t, a, a + 0.5)))}px)`);
+    if (p > 0) {
+      const svg = $('b1').querySelector('svg');
+      const cyc = (t - a) % 1.15, down = cyc < 0.14 ? cyc / 0.14 : Math.max(0, 1 - (cyc - 0.14) / 0.45);
+      svg.querySelector('[data-part=hand]').setAttribute('transform', `translate(0 ${-34 * (1 - down)})`);
+      svg.querySelector('[data-part=impact]').style.opacity = cyc < 0.3 ? 1 : 0;
+      svg.querySelector('#snooze-clock').setAttribute('transform', `translate(67 86) scale(1 ${0.8 + 0.2 * (1 - down)})`);
+      svg.querySelector('[data-part=sleep-marks]').setAttribute('transform', `translate(0 ${-4 * Math.sin(t * 3)})`);
+    }
+    pop($('b1slap'), t, a + 0.7, b, 8);
+    pop($('b1pro'), t, L.s2.end - 1.05, b, -6);
+  }
+
+  // B2 clock + cord
+  {
+    const a = L.s3.start, b = L.s7.start - 0.05, p = pres(t, a, b, 0.45, 0.3);
+    put($('b2'), p, `translateY(${24 * (1 - eo(lin(t, a, a + 0.5)))}px)`);
+    if (p > 0) {
+      const yank = L.s4.start + 1.3, back_ = L.s5.start + 1.2;
+      const out = t < yank ? 0 : t < back_ ? eo(lin(t, yank, yank + 0.25)) : 1 - eio(lin(t, back_, back_ + 0.45));
+      const plugX = 482 + 120 * out, plugY = 560 + 60 * out, rot = 34 * out;
+      $('plug').setAttribute('transform', `translate(${plugX} ${plugY}) rotate(${rot}) scale(-1 1)`);
+      const sx = 760 + 30, sy = 520; // clock's lower left
+      const sag = 140 - 110 * (t > yank - 0.3 && t < yank ? lin(t, yank - 0.3, yank) : 0);
+      $('cord').setAttribute('d', `M ${plugX + 34} ${plugY} C ${plugX + 160} ${plugY + sag}, ${sx - 170} ${sy + sag + 40}, ${sx} ${sy}`);
+      const sp = t >= yank && t < yank + 0.35 ? 1 - lin(t, yank, yank + 0.35) : 0;
+      $('spark').setAttribute('opacity', sp); $('spark').setAttribute('transform', `translate(500 540) scale(${0.6 + 0.8 * (1 - sp)})`);
+      // display: 7:30 → dark → blinking 12:00 → wrong time with a ghostly glow
+      const relit = back_ + 0.35, wrong = L.s6.start + 1.9;
+      const shake = t >= yank && t < yank + 0.4 ? Math.sin((t - yank) * 80) * 10 * (1 - lin(t, yank, yank + 0.4)) : 0;
+      $('storyClock').style.transform = `translateX(${shake}px)`;
+      if (t < yank) { sclock.seg.set(7 * 60 + 30 - 3 + Math.floor(lin(t, a, yank) * 3)); sclock.ghost.style.opacity = 0; }
+      else if (t < relit) { sclock.seg.set(7 * 60 + 30, { lit: false }); sclock.ghost.style.opacity = 0; }
+      else if (t < wrong) { sclock.seg.set(12 * 60, { lit: Math.floor((t - relit) * 2) % 2 === 0, pm: false }); sclock.ghost.style.opacity = 0; }
+      else {
+        const k = lin(t, wrong, wrong + 0.6);
+        const glitch = k < 1 && hash(Math.floor(t * 30)) > 0.45;
+        sclock.seg.set(glitch ? Math.floor(hash(Math.floor(t * 30) + 7) * 720) : 7 * 60 + 21, { color: k >= 1 ? '#B8FFE6' : '#FFC03D', glowC: k >= 1 ? 'rgba(52,245,176,.8)' : 'rgba(255,192,61,.6)' });
+        sclock.ghost.style.opacity = 0.25 + 0.2 * Math.sin(t * 5);
+      }
+      $('storyClock').querySelector('.hd').textContent = t >= relit ? 'Alarm ??:??' : 'Alarm 7:30 AM';
+      pop($('b2q'), t, relit + 0.2, b, 7);
+      $('b2q').textContent = t >= wrong ? '7:21?' : '12:00?';
+    }
+  }
+
+  // B3 ringing → the hand stops halfway
+  {
+    const a = L.s7.start, b = L.s8.start - 0.05, p = pres(t, a, b, 0.4, 0.3);
+    put($('b3'), p, `translateY(${24 * (1 - eo(lin(t, a, a + 0.5)))}px)`);
+    const stopAt = L.s7.start + 1.95;
+    if (p > 0) {
+      const ring = t < stopAt;
+      put($('b3ring'), ring ? 1 : 0); put($('b3stop'), ring ? 0 : 1);
+      const cg = $('b3ring').querySelector('#clock');
+      if (!cg.dataset.tf) cg.dataset.tf = cg.getAttribute('transform') || '';
+      cg.setAttribute('transform', `${cg.dataset.tf} rotate(${Math.sin(t * 95) * 7})`);
+      $('b3ring').querySelector('[data-part=motion]').style.opacity = Math.floor(t * 14) % 2 ? 1 : 0.4;
+      const sv = $('b3stop').querySelector('svg');
+      const k = eo(lin(t, stopAt, stopAt + 0.5));
+      sv.querySelector('[data-part=hand]').setAttribute('transform', `translate(0 ${-60 + 30 * k + (k >= 1 ? Math.sin(t * 9) * 1.2 : 0)})`);
+      sv.querySelector('[data-part=impact]').style.opacity = 0; sv.querySelector('[data-part=sleep-marks]').style.opacity = 0;
+      sv.querySelector('#snooze-clock').setAttribute('transform', 'translate(67 86) scale(1 1)');
+    }
+    pop($('b3brr'), t, a + 0.25, stopAt, 9);
+    pop($('b3wait'), t, stopAt + 0.45, b, -7);
+  }
+
+  // B4 is that the real time?
+  {
+    const a = L.s8.start, b = L.s10.start - 0.05, p = pres(t, a, b, 0.4, 0.3);
+    put($('b4'), p, `translateY(${24 * (1 - eo(lin(t, a, a + 0.5)))}px) scale(1.35)`);
+    if (p > 0) {
+      const seq = [0, -8, 12, -3, 6, -12, 5, 14];
+      const i = Math.min(seq.length - 1, Math.floor((t - a) / 0.85));
+      const off = seq[i];
+      dclock.seg.set(7 * 60 + 30 + off);
+      dclock.leds(off);
+    }
+    pop($('b4a'), t, L.s9.start + 0.05, b, -8);
+    pop($('b4b'), t, L.s9.start + 0.75, b, 7);
+  }
+
+  // B5 no idea → up
+  {
+    const a = L.s10.start, b = L.s11.start - 0.05, p = pres(t, a, b, 0.4, 0.3);
+    put($('b5'), p);
+    const upAt = L.s10.start + 1.25;
+    put($('b5doubt'), eo(lin(t, a, a + 0.4)), `translateY(${30 * (1 - eo(lin(t, a, a + 0.45)))}px) rotate(-2deg)`);
+    put($('b5up'), eo(lin(t, upAt, upAt + 0.4)), `translateY(${30 * (1 - eo(lin(t, upAt, upAt + 0.45)))}px) rotate(2deg)`);
+    if (p > 0) {
+      const q = $('b5doubt').querySelector('#question');
+      if (q) { q.style.transformBox = 'fill-box'; q.style.transformOrigin = '50% 100%'; q.style.transform = `rotate(${Math.sin(t * 6) * 8}deg)`; }
+      const per = $('b5up').querySelector('[data-part=person]');
+      if (per) per.setAttribute('transform', `translate(0 ${-6 * eo(lin(t, upAt + 0.2, upAt + 0.6))})`);
+    }
+    pop($('b5huh'), t, a + 0.3, b, -7);
+    pop($('b5im'), t, upAt + 0.35, b, 6);
+  }
+
+  // B6 the week
+  {
+    const a = L.s11.start, b = s.end, p = pres(t, a, b, 0.4, 0.4);
+    put($('b6'), p);
+    put($('b6k'), eo(lin(t, a, a + 0.4)));
+    const x0 = 960 - (5 * 196 + 4 * 28) / 2;
+    for (let i = 0; i < 6; i++) {
+      const el = $('day' + i);
+      let t0, x;
+      if (i < 5) { t0 = a + 0.25 + i * 0.32; x = x0 + i * (196 + 28); }
+      else { t0 = L.s12.end - 1.25; x = 960 - 98; }
+      const k = springK(t - t0);
+      const shift = i < 5 ? -560 * eio(lin(t, L.s12.end - 1.7, L.s12.end - 1.2)) : 0; // the week slides away
+      const fadeWeek = i < 5 ? 1 - lin(t, L.s12.end - 1.6, L.s12.end - 1.25) : 1;
+      put(el, (t >= t0 ? Math.min(1, (t - t0) / 0.1) : 0) * fadeWeek, `translate(${x + shift}px, ${340 + 40 * (1 - k)}px) scale(${i === 5 ? 1.15 * (0.4 + 0.6 * k) : 0.7 + 0.3 * k}) rotate(${i === 5 ? -4 * k : 0}deg)`);
+    }
+  }
+}
+
+function renderRes(t) {
+  const s = S.resurrection;
+  // stars twinkle
+  $('stars').querySelectorAll('.st').forEach((el, i) => { el.style.opacity = 0.25 + 0.5 * (0.5 + 0.5 * Math.sin(t * (1 + hash(i) * 2) + i)); });
+  // R1: years roll from the early 2000s to 2012
+  {
+    const a = s.start, b = L.r2.start - 0.05, p = pres(t, a, b, 0.5, 0.3);
+    put($('r1'), p);
+    const k = eio(lin(t, a + 0.6, L.r1.end - 0.6));
+    $('yearRoll').textContent = String(Math.round(mix(2002, 2012, k)));
+  }
+  // R2-R3: the 2012 phone, then the domain email
+  {
+    const a = L.r2.start, b = L.r4.start - 0.05, p = pres(t, a, b, 0.45, 0.35);
+    put($('r2'), p);
+    const mailIn = L.r3.start - 0.1;
+    const slide = eio(lin(t, mailIn - 0.2, mailIn + 0.5));
+    put($('oldphone'), 1, `translate(${-330 * slide}px, ${30 * (1 - eo(lin(t, a, a + 0.6)))}px) rotate(${-4 * slide}deg) scale(${1 - 0.08 * slide})`);
+    // reels spin, then land 7 3 0 one by one
+    for (let r = 0; r < 3; r++) {
+      const stop = a + 1.6 + r * 0.45;
+      const spinV = 14; // rows per second
+      let pos;
+      if (t < stop) pos = (t - a) * spinV + r * 3.3;
+      else { const target = 30 + REEL_STOP[r]; const startPos = (stop - a) * spinV + r * 3.3; const k = springK(t - stop); pos = mix(startPos, target, Math.min(1.06, k)); }
+      $('reel' + r).style.transform = `translateY(${-(pos - 0) * 146 + 0}px)`;
+    }
+    $('bulbs').querySelectorAll('span').forEach((el, i) => { el.style.opacity = (Math.floor(t * 6) + i) % 2 ? 1 : 0.35; });
+    put($('mail'), eo(lin(t, mailIn, mailIn + 0.45)), `translate(${-120 + 120 * eo(lin(t, mailIn, mailIn + 0.5)) - 90}px, 0) rotate(1.2deg) scale(1.22)`);
+    const st = L.r3.start + 2.05;
+    const sk = t - st;
+    put($('stamp'), sk < 0 ? 0 : Math.min(1, sk / 0.06) * 0.9, `rotate(-8deg) scale(${sk < 0 ? 2.4 : 2.4 - 1.4 * Math.min(1, eo(sk / 0.16))})`);
+    const thud = sk > 0 && sk < 0.25 ? Math.sin(sk * 70) * 6 * (1 - sk / 0.25) : 0;
+    $('mail').style.marginTop = thud + 'px';
+  }
+  // R4-R6: the grave, the ghost, Kiroween
+  {
+    const a = L.r4.start, b = s.end + 0.1, p = pres(t, a, b, 0.5, 0.05);
+    put($('r4'), p);
+    const rise = L.r5.start + 1.05;
+    const stoneK = eo(lin(t, a + 0.1, a + 0.9));
+    const quake = t > L.r5.start + 0.2 && t < rise + 0.6 ? Math.sin(t * 70) * 5 : 0;
+    $('stone').style.transform = `translate(${quake}px, ${120 * (1 - stoneK)}px) rotate(${quake * 0.3}deg)`;
+    $('stone').style.opacity = stoneK;
+    $('moon').style.transform = `translateY(${40 * (1 - eo(lin(t, a, a + 1.5)))}px)`;
+    $('moon').style.opacity = eo(lin(t, a, a + 1.2)) * (1 - lin(t, L.r6.start, L.r6.start + 0.5) * 0.6);
+    const gk = springK(t - rise);
+    const bob = Math.sin((t - rise) * 3.2) * 10;
+    put($('ghost'), t < rise ? 0 : Math.min(1, (t - rise) / 0.2), `translateY(${-240 * Math.min(gk, 1.05) + bob}px) rotate(${Math.sin((t - rise) * 2.6) * 6}deg)`);
+    // lightning
+    const f1 = L.r5.start + 0.1;
+    let fl = 0;
+    for (const [ft, d] of [[f1, 0.06], [f1 + 0.16, 0.05], [rise - 0.05, 0.08]]) if (t >= ft && t < ft + d) fl = 0.85;
+    // banner + final flash into the site
+    const bIn = L.r6.start + 0.15;
+    const bk = springK(t - bIn);
+    put($('banner'), t < bIn ? 0 : Math.min(1, (t - bIn) / 0.15), `translateY(${380 * (1 - Math.min(1, bk))}px) scale(${0.9 + 0.1 * Math.min(1, bk)})`);
+    const fadeScene = lin(t, bIn - 0.1, bIn + 0.4);
+    $('stone').style.filter = `brightness(${1 - 0.6 * fadeScene})`;
+    $('ghost').style.filter = `drop-shadow(0 0 ${20 + 20 * Math.sin(t * 4)}px rgba(255,255,255,.35))`;
+    const end = s.end;
+    const white = lin(t, end - 0.35, end);
+    $('flash').style.opacity = Math.max(fl, white);
+  }
+}
+
+function placePhone(id, o, x, y, r = 0, s = 1) { put($(id), o, `translate(${x}px, ${y}px) rotate(${r}deg) scale(${s})`); }
+function lockCard(k, { title, body, btns, tint, time }) {
+  $(k + 'Ttl').textContent = title; $(k + 'Bdy').textContent = body; $(k + 'Time').textContent = time;
+  $(k + 'Btns').innerHTML = btns.map((b) => `<div style="background:${b.bg}; color:${b.ink}">${b.label}</div>`).join('');
+  $(k + 'Card').style.boxShadow = `inset 0 1px 0 rgba(255,255,255,.25), 0 0 0 2px ${tint}55`;
+}
+function ripple(el, t, t0) { const k = (t - t0) / 0.5; if (k < 0 || k > 1) return put(el, 0); put(el, 0.9 * (1 - k), `scale(${0.3 + 1.1 * k})`); }
+
+function renderApp(t) {
+  const s = S.app;
+  put($('app'), Math.min(1, eo(lin(t, s.start - 0.5, s.start + 0.1))) * (1 - eio(lin(t, s.end - 0.3, s.end + 0.1))));
+  const headIn = L.a1.start + 0.3, headOut = L.a3.start;
+  put($('appHead'), pres(t, headIn, headOut + 0.3, 0.5, 0.4), `translateY(${20 * (1 - eo(lin(t, headIn, headIn + 0.5)))}px)`);
+  const W = 380, H = 801;
+  const cx = 960 - W / 2, cy = 215;
+  // A2: three phones dealt, fanned out like on the site
+  const deal = (i) => springK(t - (L.a2.start + 0.15 + i * 0.18));
+  const toPair = eio(lin(t, L.a3.start - 0.1, L.a3.start + 0.6));
+  const toSolo = eio(lin(t, L.a4.start - 0.2, L.a4.start + 0.5));
+  const gone = lin(t, L.a7.start - 0.5, L.a7.start - 0.1);
+  if (t < L.a2.start) { ['pMorning', 'pNight', 'pHistory'].forEach((id) => put($(id), 0)); }
+  else {
+    const kM = Math.min(1, deal(0)), kN = Math.min(1, deal(1)), kH = Math.min(1, deal(2));
+    // fan → pair (morning, night) → morning alone on the left
+    const mx = mix(mix(cx - 250, cx - 230, toPair), 330, toSolo), my = mix(mix(cy + 30, cy - 10, toPair), 60, toSolo), mr = mix(mix(-10, -4, toPair), 0, toSolo);
+    placePhone('pMorning', kM * (1 - gone), mx, my + 300 * (1 - kM), mr, mix(0.78, 0.86, toPair) * mix(1, 1.04, toSolo));
+    const nx = mix(cx, cx + 230, toPair), nr = mix(0, 4, toPair);
+    placePhone('pNight', kN * (1 - toSolo), nx + 300 * toSolo, cy - 10 + 300 * (1 - kN), nr, 0.86);
+    placePhone('pHistory', kH * (1 - toPair), cx + 250 + 200 * toPair, cy + 30 + 300 * (1 - kH), 10, 0.78);
+  }
+  // A3: dials glow
+  // A4-A6: tap Set Alarm; the window; nobody knows
+  const tapAt = L.a4.start + 0.75;
+  ripple($('ripSet'), t, tapAt);
+  $('ripSet').style.left = '196px'; $('ripSet').style.top = '642px';
+  put($('pmDim'), 0.55 * eo(lin(t, L.a6.start + 0.2, L.a6.start + 0.8)));
+  {
+    const a = L.a5.start - 0.3, b = L.a7.start - 0.1, p = pres(t, a, b, 0.45, 0.35);
+    put($('winBar'), p, `translateY(${20 * (1 - eo(lin(t, a, a + 0.5)))}px)`);
+    const hideAt = L.a6.start + 0.3;
+    const pos = t < hideAt ? 0.5 + 0.45 * Math.sin((t - a) * 5.3) * Math.cos((t - a) * 2.1) : 0.5;
+    $('winMark').style.left = `${pos * 760}px`;
+    $('winMark').style.background = t < hideAt ? '#FFC03D' : '#fff';
+    $('winMark').innerHTML = t < hideAt ? '' : '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2a1530" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  }
+  // A7-A9: rang early, snooze, rings again at the target
+  {
+    const a = L.a7.start - 0.2, b = L.a10.start - 0.05, p = pres(t, a, b, 0.45, 0.3);
+    const ringing = (t < L.a8.start + 1.3) || (t > L.a9.start + 0.9);
+    const shake = p > 0 && ringing ? Math.sin(t * 60) * 3 : 0;
+    placePhone('pLockWin', p, cx + shake, 60 + 30 * (1 - eo(lin(t, a, a + 0.5))), shake * 0.4, 1);
+    const snoozeTap = L.a8.start + 1.2;
+    if (t < snoozeTap) lockCard('lw', { title: 'Snooze until 7:30 AM', body: 'You won 9 minutes of extra sleep', time: '7:21', tint: '#FFC03D',
+      btns: [{ label: 'Snooze', bg: '#FFC03D', ink: '#432344' }, { label: 'Stop', bg: 'rgba(255,255,255,.2)', ink: '#fff' }] });
+    else if (t < L.a9.start + 0.9) {
+      const left = Math.max(0, 9 * 60 - Math.floor((t - snoozeTap) / (L.a9.start + 0.9 - snoozeTap) * 540));
+      const mm = Math.floor(left / 60), ss = left % 60;
+      const now = 7 * 60 + 21 + Math.floor((540 - left) / 60);
+      lockCard('lw', { title: 'Snoozing till 7:30 AM', body: '', time: `7:${String(now % 60).padStart(2, '0')}`, tint: '#FFC03D', btns: [] });
+      $('lwBdy').innerHTML = `<div class="cd">${mm}:${String(ss).padStart(2, '0')}</div>`;
+    } else lockCard('lw', { title: '7:30 AM', body: 'Target time', time: '7:30', tint: '#FFC03D', btns: [{ label: 'Stop', bg: '#fff', ink: '#432344' }] });
+    ripple($('lwRip'), t, snoozeTap);
+    $('lwRip').style.left = '96px'; $('lwRip').style.top = '700px';
+  }
+  // A10: rang late, no snooze
+  {
+    const a = L.a10.start - 0.15, b = L.a11.start - 0.05, p = pres(t, a, b, 0.4, 0.3);
+    const shake = p > 0 ? Math.sin(t * 60) * 3 : 0;
+    placePhone('pLockLate', p, cx + shake, 60 + 30 * (1 - eo(lin(t, a, a + 0.5))), shake * 0.4, 1);
+    lockCard('ll', { title: 'No snooze. Up you get', body: 'You lost 11 minutes', time: '7:41', tint: '#FF6B35', btns: [{ label: 'Stop', bg: '#FF6B35', ink: '#2E1530' }] });
+  }
+  // A11: the clock rolls and lands on when it really rang
+  {
+    const a = L.a11.start - 0.1, b = L.a12.start - 0.05, p = pres(t, a, b, 0.4, 0.3);
+    put($('revealWrap'), p);
+    const landAt = L.a11.start + 2.4;
+    if (t < landAt) {
+      const step = Math.floor((t - a) * (t < landAt - 0.8 ? 16 : 7));
+      reveal.set(7 * 60 + 30 - 11 + Math.floor(hash(step + 99) * 23));
+    } else reveal.set(7 * 60 + 41, { color: '#FFC03D' });
+    put($('revealLbl'), t < landAt ? 0 : eo(lin(t, landAt, landAt + 0.35)), `translateY(${14 * (1 - eo(lin(t, landAt, landAt + 0.4)))}px)`);
+    const pk = t >= landAt ? springK(t - landAt) : 0;
+    $('revealClock').style.transform = `scale(${1 + 0.06 * (1 - Math.min(1, pk)) * (t >= landAt ? 1 : 0)})`;
+  }
+  // A12-A13: history
+  {
+    const a = L.a12.start - 0.15, b = s.end + 0.1, p = pres(t, a, b, 0.45, 0.3);
+    if (t >= a) placePhone('pHistory', p, cx, 70 + 30 * (1 - eo(lin(t, a, a + 0.5))) - 20 * eio(lin(t, a + 0.5, b)), 0, 1.0 + 0.04 * eio(lin(t, a, b)));
+  }
+}
+
+function renderClose(t) {
+  const s = S.close;
+  put($('close'), eo(lin(t, s.start - 0.45, s.start + 0.1)));
+  const night = eio(lin(t, L.x2.start - 0.5, L.x2.start + 0.7));
+  put($('skyNight'), night);
+  put($('skyDusk'), Math.sin(Math.PI * clamp(night * 0.999)) * 0.9);
+  put($('closeStars'), night);
+  $('closeStars').querySelectorAll('.st').forEach((el, i) => { el.style.opacity = 0.2 + 0.6 * (0.5 + 0.5 * Math.sin(t * (1.2 + hash(i) * 2) + i)); });
+  put($('closeMoon'), night, `translateY(${60 * (1 - night)}px)`);
+  const ink = `rgb(${mix(67, 231, night)}, ${mix(35, 238, night)}, ${mix(68, 251, night)})`;
+  $('logo').style.color = ink;
+  const lk = springK(t - (s.start + 0.05));
+  put($('logo'), Math.min(1, (t - s.start) / 0.25), `scale(${0.85 + 0.15 * Math.min(1.03, lk)})`);
+  // the clock hand spins round, like it's deciding
+  const ang = t < L.x1.end ? (t - s.start) * 540 : (L.x1.end - s.start) * 540;
+  $('hand').setAttribute('transform', `rotate(${ang} 7.5 7.5)`);
+  const uk = springK(t - (L.x1.start + 0.25));
+  put($('url'), t < L.x1.start + 0.25 ? 0 : Math.min(1, (t - L.x1.start - 0.25) / 0.15), `translateY(${30 * (1 - Math.min(1, uk))}px)`);
+  $('urlPill').style.background = night > 0.5 ? '#FFC03D' : '#432344';
+  $('urlPill').style.color = night > 0.5 ? '#2a1530' : '#fff';
+  const sw = L.x2.start + 0.35;
+  put($('sweet'), t < sw ? 0 : eo(lin(t, sw, sw + 0.5)), `translateY(${20 * (1 - eo(lin(t, sw, sw + 0.6)))}px)`);
+  $('lockup').style.transform = `translateY(${-60 * night}px)`;
+}
+
+const SECS = [
+  ['cold', renderCold, S.cold.start, S.cold.end],
+  ['story', renderStory, S.story.start - 0.05, S.story.end],
+  ['res', renderRes, S.resurrection.start - 0.05, S.resurrection.end + 0.2],
+  ['app', renderApp, S.app.start - 0.6, S.app.end + 0.1],
+  ['close', renderClose, S.close.start - 0.5, S.close.end + 1],
+];
+window.render = (t) => {
+  for (const [id, fn, a, b] of SECS) {
+    const on = t >= a && t <= b;
+    show(id, on);
+    if (on) fn(t);
+  }
+};
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]);
+</script>
+</body>
+</html>

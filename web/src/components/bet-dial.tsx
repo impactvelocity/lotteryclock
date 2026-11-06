@@ -82,7 +82,7 @@ export function BetDial({
   const sweep = range * DEG_PER_MIN;
   const [hx, hy] = pt(sweep, TRACK_R);
   const glowPx = Math.round(p * 22 * t.glow);
-  /** "+ 45 mins" under the time: the same colour as the tier label below the dial. */
+  /** "- 45 mins +" under the time: the same colour as the tier label below the dial. */
   const rangeInk = t.tierInk ? css(ramp(t.tierInk, p)) : arcColor;
   /** Darker shades of the arc colour, for the handle's inner edge and its shadow. */
   const shade = (k: number) =>
@@ -617,19 +617,10 @@ export function BetDial({
                 className="inline-flex items-center"
                 aria-label={`plus or minus ${range} ${range === 1 ? "minute" : "minutes"}`}
               >
-                {/* A plus icon in front of the minutes */}
-                <svg
-                  aria-hidden
-                  viewBox="0 0 24 24"
-                  className="mr-[0.15em] h-[0.85em] w-[0.85em]"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
+                {/* Minus and plus either side of the minutes: it can ring this early, or this late */}
+                <SignIcon d="M5 12h14" className="mr-[0.35em]" />
                 {range} {range === 1 ? "min" : "mins"}
+                <SignIcon d="M12 5v14M5 12h14" className="ml-[0.35em]" />
               </motion.span>
             </>
           ) : null}
@@ -704,5 +695,22 @@ export function BetDial({
         )}
       </div>
     </div>
+  );
+}
+
+/** A small stroked plus or minus sign, sized to the text around it. */
+function SignIcon({ d, className = "" }: { d: string; className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      className={`h-[0.8em] w-[0.8em] ${className}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3}
+      strokeLinecap="round"
+    >
+      <path d={d} />
+    </svg>
   );
 }

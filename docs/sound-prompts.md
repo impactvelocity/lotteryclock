@@ -238,7 +238,7 @@ To keep it playful rather than a plain ramp:
 | Theme | Instrument | Scale | Recorded notes (MIDI) | Tier chords (tiers 1–5) |
 |---|---|---|---|---|
 | Classic | Marimba | C major pentatonic, G3–G5 (11 notes) | 9 takes: 60.1, 60.1, 60.13, 65.07, 65.16, 66.05, 67.05, 67.05, 73.04 | Marimba C major chord as C, F, G, low G, C (I–IV–V–V–I) |
-| Día de Muertos | Nylon-string flamenco guitar | E Phrygian dominant, E3–E5 (15 notes) | 12 takes: 47.99, 52.2, 56.33, 56.95, 57.2, 59.18, 60.16, 66.27, 71.1, 74.05, 74.12, 77.05 | Rasgueado strum (7 strokes, F and E strongest) as A, G, F, E, E: the Andalusian cadence |
+| Día de Muertos | Nylon-string flamenco guitar | E Phrygian, E3–E5 (15 notes) | 12 takes: 47.99, 52.2, 56.33, 56.95, 57.2, 59.18, 60.16, 66.27, 71.1, 74.05, 74.12, 77.05 | Rasgueado strum (7 strokes, F and E strongest) as A, G, F, E, E: the Andalusian cadence |
 
 Prompts used:
 
@@ -247,7 +247,21 @@ Prompts used:
 - Guitar: "Single plucked note on a low / middle string (high: high on the top string) of a nylon-string flamenco guitar, clean, close-mic, dry, no strum, nothing else"
 - Guitar strum: "One fast flamenco guitar rasgueado strum flourish on nylon strings, bright and percussive, close-mic, dry"
 
-The time picker keeps the plain synthesized tick. Themes without their own dial instrument borrow Classic's marimba (and its chord progression) rather than falling back to the tick.
+Every other theme's dial plays a synthesized instrument (`SYNTHS` in `sfx.ts`), built from a few struck partials so there's nothing to load. Each sits in its theme's key, mostly matching the draw song, and plays through the same wandering melody, take-free:
+
+| Theme | Instrument | Scale |
+|---|---|---|
+| Good Night | Music box: a tine, a soft octave and a glint, with a faint echo | C major pentatonic, C5–C7 |
+| Prize wheel | Game-show vibraphone with motor tremolo | F major pentatonic, F4–F6 |
+| Slot machine | Casino bell (FM, inharmonic) | C major arpeggio, C5–C7 |
+| Poker | Lounge electric piano (FM, a little bark on the attack) | D blues, D3–D5 |
+| Ouija | Ghostly glass: two detuned voices that swell in, waver and sag into pitch | D harmonic minor, D4–D6 |
+| Tarot | Hang drum: fundamental, octave and fifth | D minor pentatonic, D3–D5 |
+| Digital | Square-wave chip blip flicking down from the octave, with an 8-bit echo | E minor pentatonic, E4–E6 |
+| Magic 8 Ball | Rising bubble, with a smaller one after | Whole tone, C5–C7 |
+| Caffè | Mandolin (Karplus–Strong, two strings to a course), picked twice | G major, G3–G5 |
+
+Each has a `gain` levelling it against the recorded marimba. Until Día de Muertos's recorded notes have loaded, its dial borrows Classic's marimba. The time picker keeps the plain synthesized tick.
 
 ---
 

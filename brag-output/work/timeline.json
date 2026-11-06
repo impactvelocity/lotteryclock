@@ -1,0 +1,428 @@
+{
+ "fps": 30,
+ "total": 224.531,
+ "sections": [
+  {
+   "id": "cold",
+   "start": 0,
+   "end": 11.636
+  },
+  {
+   "id": "story",
+   "start": 11.636,
+   "end": 59.006
+  },
+  {
+   "id": "resurrection",
+   "start": 59.006,
+   "end": 81.462
+  },
+  {
+   "id": "how",
+   "start": 81.462,
+   "end": 126.016
+  },
+  {
+   "id": "themes",
+   "start": 126.016,
+   "end": 169.297
+  },
+  {
+   "id": "app",
+   "start": 169.297,
+   "end": 217.657
+  },
+  {
+   "id": "close",
+   "start": 217.657,
+   "end": 224.531
+  }
+ ],
+ "lines": {
+  "c1": {
+   "id": "c1",
+   "text": "Gather round. I've got a scary story.",
+   "start": 1.6,
+   "end": 4.364,
+   "section": "cold"
+  },
+  "c2": {
+   "id": "c2",
+   "text": "It's about a kid, his snooze button, and an alarm clock that came back from the dead.",
+   "start": 4.644,
+   "end": 10.656,
+   "section": "cold"
+  },
+  "s1": {
+   "id": "s1",
+   "text": "Dylan was always late for school.",
+   "start": 12.036,
+   "end": 14.255,
+   "section": "story"
+  },
+  "s2": {
+   "id": "s2",
+   "text": "Not because he overslept. Because he snoozed. Professionally.",
+   "start": 14.335,
+   "end": 17.643,
+   "section": "story"
+  },
+  "s3": {
+   "id": "s3",
+   "text": "One day he cleaned his room, which is honestly the scariest part of this story.",
+   "start": 18.023,
+   "end": 23.346,
+   "section": "story"
+  },
+  "s4": {
+   "id": "s4",
+   "text": "He tripped over the cord, the alarm clock went dark,",
+   "start": 23.626,
+   "end": 27.224,
+   "section": "story"
+  },
+  "s5": {
+   "id": "s5",
+   "text": "and he plugged it back in like nothing happened.",
+   "start": 27.604,
+   "end": 30.858,
+   "section": "story"
+  },
+  "s6": {
+   "id": "s6",
+   "text": "It blinked back to life. But it wasn't the same clock.",
+   "start": 31.138,
+   "end": 35.281,
+   "section": "story"
+  },
+  "s7": {
+   "id": "s7",
+   "text": "The next morning it went off, and his hand stopped halfway to snooze.",
+   "start": 35.861,
+   "end": 40.493,
+   "section": "story"
+  },
+  "s8": {
+   "id": "s8",
+   "text": "Is that the real time? How long was it dead?",
+   "start": 40.773,
+   "end": 44.572,
+   "section": "story"
+  },
+  "s9": {
+   "id": "s9",
+   "text": "Five minutes? Twenty?",
+   "start": 44.752,
+   "end": 46.136,
+   "section": "story"
+  },
+  "s10": {
+   "id": "s10",
+   "text": "He had no idea. So he got up.",
+   "start": 46.616,
+   "end": 49.725,
+   "section": "story"
+  },
+  "s11": {
+   "id": "s11",
+   "text": "He was on time for days.",
+   "start": 50.305,
+   "end": 52.524,
+   "section": "story"
+  },
+  "s12": {
+   "id": "s12",
+   "text": "Then he worked out the offset, fixed the clock, and was late again by Monday.",
+   "start": 52.804,
+   "end": 58.126,
+   "section": "story"
+  },
+  "r1": {
+   "id": "r1",
+   "text": "Dylan grew up, but he never forgot that clock.",
+   "start": 59.306,
+   "end": 62.56,
+   "section": "resurrection"
+  },
+  "r2": {
+   "id": "r2",
+   "text": "In 2012 he built it as an iPhone app that looked like a slot machine.",
+   "start": 62.64,
+   "end": 67.962,
+   "section": "resurrection"
+  },
+  "r3": {
+   "id": "r3",
+   "text": "He tried to buy LotteryClock.com. The owner said no.",
+   "start": 68.242,
+   "end": 71.696,
+   "section": "resurrection"
+  },
+  "r4": {
+   "id": "r4",
+   "text": "The app never shipped. The idea died.",
+   "start": 72.276,
+   "end": 75.039,
+   "section": "resurrection"
+  },
+  "r5": {
+   "id": "r5",
+   "text": "But some things don't stay dead.",
+   "start": 75.619,
+   "end": 77.838,
+   "section": "resurrection"
+  },
+  "r6": {
+   "id": "r6",
+   "text": "This Kiroween, Dylan dug it back up.",
+   "start": 78.218,
+   "end": 80.782,
+   "section": "resurrection"
+  },
+  "h1": {
+   "id": "h1",
+   "text": "This is LotteryClock.",
+   "start": 82.462,
+   "end": 83.762,
+   "section": "how"
+  },
+  "h2": {
+   "id": "h2",
+   "text": "Pick when you want to wake up.",
+   "start": 84.442,
+   "end": 87.006,
+   "section": "how"
+  },
+  "h3": {
+   "id": "h3",
+   "text": "Then drag the dial to pick how much you're willing to gamble:",
+   "start": 87.986,
+   "end": 92.274,
+   "section": "how"
+  },
+  "h4": {
+   "id": "h4",
+   "text": "five minutes, ten, or forty-five if you're truly unwell.",
+   "start": 92.354,
+   "end": 95.607,
+   "section": "how"
+  },
+  "h5": {
+   "id": "h5",
+   "text": "LotteryClock hides the real alarm somewhere in that window.",
+   "start": 96.287,
+   "end": 99.541,
+   "section": "how"
+  },
+  "h6": {
+   "id": "h6",
+   "text": "Could be early. Could be late. You don't get to know.",
+   "start": 99.821,
+   "end": 104.164,
+   "section": "how"
+  },
+  "h7": {
+   "id": "h7",
+   "text": "Rings early? You win. Snooze guilt-free until your target time.",
+   "start": 104.644,
+   "end": 108.642,
+   "section": "how"
+  },
+  "h8": {
+   "id": "h8",
+   "text": "Rings late? You lose. Get up. You're already late.",
+   "start": 109.922,
+   "end": 113.776,
+   "section": "how"
+  },
+  "h9": {
+   "id": "h9",
+   "text": "And because you can't tell which one it is, you get up anyway.",
+   "start": 114.656,
+   "end": 119.288,
+   "section": "how"
+  },
+  "h10": {
+   "id": "h10",
+   "text": "That's the trick.",
+   "start": 119.568,
+   "end": 120.868,
+   "section": "how"
+  },
+  "h11": {
+   "id": "h11",
+   "text": "Once your clock can't be trusted, your brain can't snooze on autopilot.",
+   "start": 121.248,
+   "end": 125.536,
+   "section": "how"
+  },
+  "t1": {
+   "id": "t1",
+   "text": "Every theme has its own way of telling you you're late.",
+   "start": 126.516,
+   "end": 130.459,
+   "section": "themes"
+  },
+  "t2": {
+   "id": "t2",
+   "text": "Good Night. It counts sheep while it decides your fate.",
+   "start": 130.839,
+   "end": 134.638,
+   "section": "themes"
+  },
+  "t3": {
+   "id": "t3",
+   "text": "Día de Muertos. Win, and you rest in peace.",
+   "start": 136.318,
+   "end": 139.771,
+   "section": "themes"
+  },
+  "t4": {
+   "id": "t4",
+   "text": "Lose, and you rise from the dead. Which is basically every Monday.",
+   "start": 142.051,
+   "end": 146.539,
+   "section": "themes"
+  },
+  "t5": {
+   "id": "t5",
+   "text": "Ouija. Let the spirits pick. The spirits say: rise.",
+   "start": 147.219,
+   "end": 151.072,
+   "section": "themes"
+  },
+  "t6": {
+   "id": "t6",
+   "text": "Tarot. Push your luck and the card catches fire.",
+   "start": 151.952,
+   "end": 155.406,
+   "section": "themes"
+  },
+  "t7": {
+   "id": "t7",
+   "text": "Upright, you sleep. Reversed, you're up.",
+   "start": 157.686,
+   "end": 160.105,
+   "section": "themes"
+  },
+  "t8": {
+   "id": "t8",
+   "text": "And for the high rollers: a prize wheel and a poker table.",
+   "start": 161.185,
+   "end": 165.673,
+   "section": "themes"
+  },
+  "t9": {
+   "id": "t9",
+   "text": "Two ways to go bust before breakfast.",
+   "start": 166.053,
+   "end": 168.617,
+   "section": "themes"
+  },
+  "a1": {
+   "id": "a1",
+   "text": "One more thing.",
+   "start": 170.097,
+   "end": 171.397,
+   "section": "app"
+  },
+  "a2": {
+   "id": "a2",
+   "text": "The website is the game. The iPhone app is the real thing.",
+   "start": 171.777,
+   "end": 176.264,
+   "section": "app"
+  },
+  "a3": {
+   "id": "a3",
+   "text": "Same themes, same dial.",
+   "start": 176.644,
+   "end": 178.174,
+   "section": "app"
+  },
+  "a4": {
+   "id": "a4",
+   "text": "But tap Set Alarm, and it schedules a real alarm with Apple's AlarmKit,",
+   "start": 178.454,
+   "end": 183.087,
+   "section": "app"
+  },
+  "a5": {
+   "id": "a5",
+   "text": "at a random moment inside your window.",
+   "start": 183.167,
+   "end": 185.73,
+   "section": "app"
+  },
+  "a6": {
+   "id": "a6",
+   "text": "The phone knows when. You don't.",
+   "start": 186.01,
+   "end": 188.429,
+   "section": "app"
+  },
+  "a7": {
+   "id": "a7",
+   "text": "When it rings, the alarm tells you how it went.",
+   "start": 189.109,
+   "end": 192.708,
+   "section": "app"
+  },
+  "a8": {
+   "id": "a8",
+   "text": "Rang early? Hit snooze, and you get exactly the minutes you won,",
+   "start": 193.088,
+   "end": 197.576,
+   "section": "app"
+  },
+  "a9": {
+   "id": "a9",
+   "text": "then it rings again at your target time.",
+   "start": 197.656,
+   "end": 200.564,
+   "section": "app"
+  },
+  "a10": {
+   "id": "a10",
+   "text": "Rang late? No snooze. Up you get.",
+   "start": 201.044,
+   "end": 204.008,
+   "section": "app"
+  },
+  "a11": {
+   "id": "a11",
+   "text": "Open the app and the clock rolls to reveal when it really went off.",
+   "start": 204.688,
+   "end": 209.666,
+   "section": "app"
+  },
+  "a12": {
+   "id": "a12",
+   "text": "Every morning lands in your history,",
+   "start": 210.046,
+   "end": 212.264,
+   "section": "app"
+  },
+  "a13": {
+   "id": "a13",
+   "text": "so you can see exactly how many minutes of sleep you've gambled away.",
+   "start": 212.344,
+   "end": 216.977,
+   "section": "app"
+  },
+  "x1": {
+   "id": "x1",
+   "text": "Try it at LotteryClock.app.",
+   "start": 218.257,
+   "end": 219.787,
+   "section": "close"
+  },
+  "x2": {
+   "id": "x2",
+   "text": "Sweet dreams. Maybe.",
+   "start": 220.467,
+   "end": 221.851,
+   "section": "close"
+  }
+ }
+}

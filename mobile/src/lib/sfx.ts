@@ -3,6 +3,9 @@
  * A simpler cut of web/src/lib/sfx.ts: a latch when the alarm is set, beeps while the target
  * blinks, the theme's draw song (or the shared roll) during the draw, and a win / lose /
  * jackpot sting when it lands. `alarm` loops while the alarm rings with the app open.
+ *
+ * Also, like the website: each theme has a background song that plays while it's chosen (unless
+ * the music button on Play turns it off) and fades out when the alarm is set.
  */
 import { type AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
@@ -29,6 +32,22 @@ const DRAW: Record<string, number> = {
   wheel: require('../../assets/sfx/draw-wheel.mp3'),
   digital: require('../../assets/sfx/draw-digital.mp3'),
 };
+
+/**
+ * Each theme's background song: a seamless loop where the website has one, otherwise the
+ * theme's own song (its draw song) on repeat.
+ */
+const SONGS: Record<string, number> = {
+  ...DRAW,
+  classic: require('../../assets/sfx/loop-classic.mp3'),
+  muertos: require('../../assets/sfx/loop-muertos.mp3'),
+};
+/** The songs sit well under everything else, as on the website. */
+const MUSIC_VOLUME = 0.45;
+/** Seconds to fade a song in, or out when the theme changes. */
+const MUSIC_FADE = 1.2;
+/** Seconds to fade the song out when the alarm is set. */
+const MUSIC_FADE_OUT = 1.6;
 
 type Name = keyof typeof FILES;
 
@@ -63,6 +82,53 @@ function play(name: Name, volume = 1) {
   p.play();
 }
 
+/** Volume fades in progress, per player, so a new fade replaces the old one. */
+const fades = new Map<AudioPlayer, ReturnType<typeof setInterval>>();
+
+/** Fade `p` to `to` over `seconds`; at silence, pause it. */
+function fade(p: AudioPlayer, to: number, seconds: number) {
+  clearInterval(fades.get(p));
+  const from = p.volume;
+  const steps = Math.max(1, Math.round(seconds * 30));
+  let i = 0;
+  fades.set(
+    p,
+    setInterval(() => {
+      i++;
+      p.volume = from + (to - from) * Math.min(1, i / steps);
+      if (i < steps) return;
+      clearInterval(fades.get(p));
+      fades.delete(p);
+      if (to === 0) p.pause();
+    }, (seconds * 1000) / steps),
+  );
+}
+
+/** The background song playing (or fading in), and its theme. */
+let song: { theme: string; player: AudioPlayer } | null = null;
+
+/** Start, change or stop the background song; null fades it out. */
+function music(themeId: string | null, fadeOut = MUSIC_FADE) {
+  const want = !muted && themeId && SONGS[themeId] ? themeId : null;
+  if (song && song.theme === want) {
+    // Same song: carry on (and pick up again if iOS paused it while the app was away)
+    if (!song.player.playing) song.player.play();
+    fade(song.player, MUSIC_VOLUME, MUSIC_FADE);
+    return;
+  }
+  if (song) fade(song.player, 0, fadeOut);
+  song = null;
+  if (!want) return;
+  init();
+  const p = player(`song-${want}`, SONGS[want]);
+  p.loop = true;
+  p.volume = 0;
+  p.seekTo(0).catch(() => {});
+  p.play();
+  fade(p, MUSIC_VOLUME, MUSIC_FADE);
+  song = { theme: want, player: p };
+}
+
 function stopDraw() {
   drawPlayer?.pause();
   drawPlayer = null;
@@ -74,6 +140,7 @@ export const sfx = {
     if (m) {
       stopDraw();
       sfx.stopAlarm();
+      music(null, 0.3);
     }
   },
   /** Load the short sounds ahead of time, so the first press isn't silent. */
@@ -109,6 +176,11 @@ export const sfx = {
     play(outcome === 'early' ? 'win' : outcome === 'late' ? 'loss' : 'jackpot');
   },
   stopDraw,
+  /**
+   * The theme's background song: pass the theme while it should play (it carries on, or
+   * crossfades to a new theme's song), or null to fade it out (the alarm was set).
+   */
+  music: (themeId: string | null) => music(themeId, themeId ? MUSIC_FADE : MUSIC_FADE_OUT),
   /** Rings in the app when the alarm goes off with it open. */
   startAlarm() {
     if (muted) return;
@@ -124,3 +196,4 @@ export const sfx = {
     alarmPlayer = null;
   },
 };
+

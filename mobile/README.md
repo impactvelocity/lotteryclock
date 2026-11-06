@@ -44,7 +44,8 @@ shows up in the app.
 - Fonts are Geist (Sans, Mono, Serif, Serif Triangle, Serif Heart, Pixel Square), bundled from
   `assets/fonts` by the expo-font config plugin.
 - Sounds are the web's recordings (`assets/sfx`): latch, beeps, each theme's draw song, and the
-  win / lose / jackpot stings.
+  win / lose / jackpot stings. Each theme's song also plays in the background while it's chosen
+  (fading out when the alarm is set), using the web's seamless loop where there is one.
 
 ## Code
 

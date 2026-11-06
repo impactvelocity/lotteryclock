@@ -1,0 +1,266 @@
+{
+ "events": [
+  {
+   "t": 2.5,
+   "type": "show"
+  },
+  {
+   "t": 3.32,
+   "type": "move"
+  },
+  {
+   "t": 4.17,
+   "type": "click"
+  },
+  {
+   "t": 4.77,
+   "type": "move"
+  },
+  {
+   "t": 5.57,
+   "type": "click"
+  },
+  {
+   "t": 6.724,
+   "type": "move"
+  },
+  {
+   "t": 7.724,
+   "type": "press"
+  },
+  {
+   "t": 10.642,
+   "type": "drag"
+  },
+  {
+   "t": 11.542,
+   "type": "drag"
+  },
+  {
+   "t": 12.142,
+   "type": "drag"
+  },
+  {
+   "t": 14.925,
+   "type": "drag"
+  },
+  {
+   "t": 15.975,
+   "type": "release"
+  },
+  {
+   "t": 17.327,
+   "type": "move"
+  },
+  {
+   "t": 18.327,
+   "type": "force",
+   "offset": -9
+  },
+  {
+   "t": 18.377,
+   "type": "click"
+  },
+  {
+   "t": 18.827,
+   "type": "move"
+  },
+  {
+   "t": 24.182,
+   "type": "move"
+  },
+  {
+   "t": 25.465,
+   "type": "force",
+   "offset": 11
+  },
+  {
+   "t": 25.515,
+   "type": "click"
+  },
+  {
+   "t": 35.011,
+   "type": "force",
+   "offset": -4
+  },
+  {
+   "t": 35.061,
+   "type": "click"
+  },
+  {
+   "t": 41.186,
+   "type": "move"
+  },
+  {
+   "t": 45.254,
+   "type": "click"
+  },
+  {
+   "t": 45.704,
+   "type": "move"
+  },
+  {
+   "t": 46.304,
+   "type": "press"
+  },
+  {
+   "t": 46.354,
+   "type": "drag"
+  },
+  {
+   "t": 47.154,
+   "type": "release"
+  },
+  {
+   "t": 47.254,
+   "type": "move"
+  },
+  {
+   "t": 48.072,
+   "type": "force",
+   "offset": -7
+  },
+  {
+   "t": 48.122,
+   "type": "click"
+  },
+  {
+   "t": 48.572,
+   "type": "move"
+  }
+ ],
+ "status": [
+  {
+   "t": 0,
+   "status": "A Little Spice"
+  },
+  {
+   "t": 12.4,
+   "status": "A Little Spice Feeling Lucky"
+  },
+  {
+   "t": 12.533,
+   "status": "Feeling Lucky"
+  },
+  {
+   "t": 12.7,
+   "status": "Feeling Lucky Risky Business"
+  },
+  {
+   "t": 12.833,
+   "status": "Risky Business Pure Chaos"
+  },
+  {
+   "t": 12.967,
+   "status": "Pure Chaos"
+  },
+  {
+   "t": 13.2,
+   "status": "Pure Chaos All In · Full 45"
+  },
+  {
+   "t": 13.333,
+   "status": "All In · Full 45"
+  },
+  {
+   "t": 15.033,
+   "status": "All In · Full 45 Pure Chaos"
+  },
+  {
+   "t": 15.167,
+   "status": "Pure Chaos"
+  },
+  {
+   "t": 15.333,
+   "status": "Pure Chaos Risky Business"
+  },
+  {
+   "t": 15.467,
+   "status": "Risky Business Feeling Lucky"
+  },
+  {
+   "t": 15.6,
+   "status": "Feeling Lucky"
+  },
+  {
+   "t": 18.4,
+   "status": "ALARM SET… OR IS IT? A L A R M S E T … O R I S I T ?"
+  },
+  {
+   "t": 20.267,
+   "status": "ROLLING THE DICE R O L L I N G T H E D I C E"
+  },
+  {
+   "t": 23.067,
+   "status": "SNOOZE UNTIL 7:30 AM Z Z Z You won 9 minutes of extra sleep ↻ Roll Again"
+  },
+  {
+   "t": 25.567,
+   "status": "ROLLING THE DICE R O L L I N G T H E D I C E"
+  },
+  {
+   "t": 28.4,
+   "status": "NO SNOOZE. UP YOU GET You lost 11 minutes ↻ Roll Again"
+  },
+  {
+   "t": 35.1,
+   "status": "ROLLING THE DICE R O L L I N G T H E D I C E"
+  },
+  {
+   "t": 37.933,
+   "status": "SNOOZE UNTIL 7:30 AM Z Z Z You won 4 minutes of extra sleep ↻ Roll Again"
+  },
+  {
+   "t": 45.3,
+   "status": "Lights Out"
+  },
+  {
+   "t": 46.5,
+   "status": "Lights Out Restless"
+  },
+  {
+   "t": 46.633,
+   "status": "Restless"
+  },
+  {
+   "t": 46.767,
+   "status": "Restless Night Owl"
+  },
+  {
+   "t": 46.9,
+   "status": "Night Owl"
+  },
+  {
+   "t": 48.133,
+   "status": "TUCKED IN… OR ARE YOU? T U C K E D I N … O R A R E Y O U ?"
+  },
+  {
+   "t": 49.967,
+   "status": "COUNTING SHEEP C O U N T I N G S H E E P"
+  },
+  {
+   "t": 50.233,
+   "status": "COUNTING SHEEP C O U N T I N G S H E E P 1"
+  },
+  {
+   "t": 50.833,
+   "status": "COUNTING SHEEP C O U N T I N G S H E E P 2"
+  },
+  {
+   "t": 51.433,
+   "status": "COUNTING SHEEP C O U N T I N G S H E E P 3"
+  },
+  {
+   "t": 52.033,
+   "status": "COUNTING SHEEP C O U N T I N G S H E E P 4"
+  },
+  {
+   "t": 52.633,
+   "status": "COUNTING SHEEP C O U N T I N G S H E E P 5"
+  },
+  {
+   "t": 52.8,
+   "status": "BACK TO SLEEP TILL 7:30 AM Z Z Z 7 minutes more under the covers ↻ Roll Again"
+  }
+ ]
+}

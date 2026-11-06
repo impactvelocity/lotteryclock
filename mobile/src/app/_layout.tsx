@@ -63,6 +63,15 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ statusBarStyle: isLightTheme(theme) ? 'dark' : 'light' }} />
             <Stack.Screen name="preview" options={{ animation: 'none' }} />
             <Stack.Screen
+              name="themes"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: 'fitToContents',
+                sheetGrabberVisible: true,
+                sheetCornerRadius: 28,
+              }}
+            />
+            <Stack.Screen
               name="time"
               options={{
                 presentation: 'formSheet',
