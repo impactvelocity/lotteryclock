@@ -89,6 +89,8 @@ export function Candle({
   dur,
   delay,
   defs,
+  wait = 0,
+  smoke = false,
 }: {
   x: number;
   y: number;
@@ -102,8 +104,13 @@ export function Candle({
   delay: number;
   /** Id prefix of the strip's <CandleDefs>. */
   defs: string;
+  /** Seconds before the flame catches or goes out, so a row can light one after another. */
+  wait?: number;
+  /** Just snuffed: smoke curls up from the wick. */
+  smoke?: boolean;
 }) {
-  const on = { opacity: lit ? 1 : 0, transition: "opacity 450ms ease-out" };
+  const fade = `opacity 450ms ease-out ${wait}s`;
+  const on = { opacity: lit ? 1 : 0, transition: fade };
   // candle-body.svg's top, moved so its rim (centred on y = 2.6 there) sits on y = -h.
   const top = `translate(-9 ${-h - 2.6})`;
   return (
@@ -114,7 +121,7 @@ export function Candle({
         cy={-h - 12}
         r={30 * flare}
         fill={`url(#${defs}-glow)`}
-        style={{ ...on, transition: "opacity 450ms ease-out, r 400ms" }}
+        style={{ ...on, transition: `${fade}, r 400ms` }}
       />
       {/* Body with a rounded foot, and its shade band */}
       <path d={`M-9 ${-h}H9V-2.6C9 .8-9 .8-9-2.6Z`} fill={MU.wax} />
@@ -125,10 +132,32 @@ export function Candle({
       <g transform={top}>{CANDLE_RIM}</g>
       {/* Wick */}
       <line x1={0} y1={-h} x2={0} y2={-h - 5.5} stroke="#3A2A20" strokeWidth={1.3} strokeLinecap="round" />
+      {/* Smoke from a snuffed wick: two wisps, one after the other */}
+      {smoke && !lit && (
+        // (Placed by the group: the animation's transform would replace one on the path itself.)
+        <g transform={`translate(0 ${-h - 6})`}>
+          {[0, 1].map((i) => (
+            <path
+              key={i}
+              d="M0 0C-2.4-3.5 2.4-6.5 0-10S2.2-16 0-19"
+              fill="none"
+              stroke="rgba(246,235,211,0.8)"
+              strokeWidth={1.6}
+              strokeLinecap="round"
+              style={{
+                opacity: 0,
+                transformBox: "fill-box",
+                transformOrigin: "50% 100%",
+                animation: `lc-mu-smoke 2.6s ease-out ${(0.3 + i * 1.3 - delay * 0.4).toFixed(2)}s infinite`,
+              }}
+            />
+          ))}
+        </g>
+      )}
       {/* Flame, its base just over the wick */}
       <g
         transform={`translate(0 ${-h - 4}) scale(${flare})`}
-        style={{ ...on, transition: "opacity 450ms ease-out, transform 400ms" }}
+        style={{ ...on, transition: `${fade}, transform 400ms` }}
       >
         <g
           style={{
@@ -154,10 +183,119 @@ export function Calaverita({ x, y, s = 1 }: { x: number; y: number; s?: number }
   return <g transform={`translate(${x} ${y}) scale(${s})`}>{CALAVERITA}</g>;
 }
 
-/** A headstone, 28 wide and 44 tall, standing on (x, y); `cross` carves a cross in it. */
-export function Headstone({ x, y, s = 1, cross = false }: { x: number; y: number; s?: number; cross?: boolean }) {
+/**
+ * A headstone, 28 wide and 44 tall, standing on (x, y); `cross` carves a cross in it.
+ * `jolt` rattles it every couple of seconds, as whoever's under it gets up.
+ */
+export function Headstone({
+  x,
+  y,
+  s = 1,
+  cross = false,
+  jolt = false,
+}: {
+  x: number;
+  y: number;
+  s?: number;
+  cross?: boolean;
+  jolt?: boolean;
+}) {
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>{cross ? HEADSTONE_CROSS : HEADSTONE_LINES}</g>
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <g
+        style={{
+          transformBox: "fill-box",
+          transformOrigin: "50% 100%",
+          animation: jolt ? "lc-mu-jolt 2.2s ease-in-out infinite" : "none",
+        }}
+      >
+        {cross ? HEADSTONE_CROSS : HEADSTONE_LINES}
+      </g>
+    </g>
+  );
+}
+
+const BONE_STROKE = { stroke: MU.bone, strokeLinecap: "round", fill: "none" } as const;
+/** Clods of earth thrown up as a hand breaks through: where each flies to. */
+const DIRT = [
+  { dx: -14, dy: -16, r: 1.8 },
+  { dx: -6, dy: -24, r: 1.3 },
+  { dx: 5, dy: -21, r: 1.6 },
+  { dx: 13, dy: -13, r: 1.4 },
+  { dx: 1, dy: -28, r: 1.1 },
+];
+
+/**
+ * A skeleton hand reaching up out of the ground at (x, y), about 28 wide and 50 tall: it
+ * bursts up through the earth after `delay` seconds, throwing up clods, then waves about.
+ * `clip` is the id of a clipPath that hides everything below y = 0 (in the hand's own units),
+ * so it rises out of the ground rather than appearing whole.
+ */
+export function BonyHand({
+  x,
+  y,
+  s = 1,
+  delay = 0,
+  flip = false,
+  clip,
+}: {
+  x: number;
+  y: number;
+  s?: number;
+  delay?: number;
+  flip?: boolean;
+  clip: string;
+}) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`}>
+      <g clipPath={`url(#${clip})`}>
+        <g style={{ animation: `lc-mu-rise 0.75s cubic-bezier(0.25, 0.9, 0.35, 1) ${delay}s both` }}>
+          <g
+            style={{
+              transformBox: "fill-box",
+              transformOrigin: "50% 100%",
+              animation: `lc-mu-wave 1.1s ease-in-out ${(delay + 0.75).toFixed(2)}s infinite`,
+            }}
+          >
+            {/* Forearm: radius and ulna, running on down into the ground */}
+            <path d="M-2.6 10L-3-17M2.6 10L3.2-17" strokeWidth={3.6} {...BONE_STROKE} />
+            {/* Wrist */}
+            <ellipse cx={0} cy={-20.5} rx={6.8} ry={4.6} fill={MU.bone} />
+            {/* Palm bones, splaying out to the knuckles */}
+            <path
+              d="M-4.6-22.5L-7.4-31.5M-1.6-23.5L-2.6-34M1.6-23.5L2.4-34M4.6-22.5L7-31"
+              strokeWidth={2.5}
+              {...BONE_STROKE}
+            />
+            {/* Fingers, two joints each */}
+            <path
+              d="M-7.9-33.8L-9.2-39.6M-9.6-41.6L-10.4-45.6M-2.8-36.4L-3.3-43M-3.5-45L-3.8-49.6M2.6-36.4L3.2-43M3.4-45L3.8-49.6M7.5-33.4L8.8-39M9.2-41L10-44.6"
+              strokeWidth={2.3}
+              {...BONE_STROKE}
+            />
+            {/* Thumb */}
+            <path d="M-6-19.5L-10.5-24.5M-11.8-26.2L-13.6-29.6" strokeWidth={2.4} {...BONE_STROKE} />
+          </g>
+        </g>
+      </g>
+      {/* The earth heaving up where it breaks through */}
+      <path d="M-13 1Q-6-4.5 0-5 6-4.5 13 1Z" fill={MU.stoneInk} />
+      {DIRT.map((d, i) => (
+        <circle
+          key={i}
+          cx={0}
+          cy={-3}
+          r={d.r}
+          fill={i % 2 ? MU.stoneInk : "#4A3A5E"}
+          style={{
+            ["--dx" as string]: `${d.dx}px`,
+            ["--dy" as string]: `${d.dy}px`,
+            opacity: 0,
+            animation: `lc-mu-dirt 0.7s cubic-bezier(0.2, 0.7, 0.4, 1) ${(delay + 0.1 + i * 0.03).toFixed(2)}s both`,
+          }}
+        />
+      ))}
+    </g>
   );
 }
 
@@ -200,6 +338,21 @@ export function Petal({ size, color }: { size: number; color: string }) {
         strokeLinecap="round"
         opacity="0.18"
       />
+    </svg>
+  );
+}
+
+/** A maraca (20 × 44 grid), painted like the one the dancing calavera holds. */
+export function Maraca({ className, style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <svg aria-hidden viewBox="0 0 20 44" className={className} style={{ overflow: "visible", ...style }}>
+      <rect x={8.4} y={18} width={3.2} height={25} rx={1.6} fill={MU.teal} />
+      <ellipse cx={10} cy={11} rx={8.5} ry={10.5} fill={MU.orange} />
+      <path d="M1.7 9.2Q10 14.6 18.3 9.2L18.5 12.8Q10 18.6 1.5 12.8Z" fill={MU.rose} />
+      <circle cx={6.5} cy={5.4} r={1.3} fill={MU.gold} />
+      <circle cx={11.8} cy={4.2} r={1.3} fill={MU.gold} />
+      <circle cx={7.6} cy={17.4} r={1.1} fill={MU.gold} />
+      <circle cx={12.6} cy={17} r={1.1} fill={MU.gold} />
     </svg>
   );
 }

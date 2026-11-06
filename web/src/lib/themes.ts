@@ -6,19 +6,15 @@
 import { scallop } from "@/lib/scallop";
 
 const SANS = "var(--font-geist-sans), sans-serif";
-const MONO = "var(--font-geist-mono), monospace";
 const SERIF = "var(--font-geist-serif), serif";
+/** Geist Mono: Magic 8 Ball's terse oracle readout. */
+const MONO = "var(--font-geist-mono), monospace";
 /** Geist Serif's Triangle cut: every dot (i, j, colon, full stop) is a little triangle. */
 const SERIF_TRIANGLE = "var(--font-geist-serif-triangle), var(--font-geist-serif), serif";
-
-/**
- * A worn, letterpressed look for display type: used as a mask, its noise knocks small
- * irregular holes out of the letters (about one in eight pixels), like ink that didn't take.
- */
-const DISTRESS = `url("data:image/svg+xml,${encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='d' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -10 0 0 0 6.4'/></filter><rect width='100%' height='100%' filter='url(#d)'/></svg>",
-)}")`;
-
+/** Geist Pixel's Square cut: every letter built from square pixels, like an arcade screen. */
+const PIXEL = "var(--font-geist-pixel-square), var(--font-geist-mono), monospace";
+/** Geist Serif's Heart cut: every dot (the colon in the time, the i in "quite") is a little heart. */
+const SERIF_HEART = "var(--font-geist-serif-heart), var(--font-geist-serif), serif";
 
 /**
  * A theme's wording. Templates can use {time} (the target time, e.g. "7:30 AM")
@@ -44,6 +40,8 @@ export type ThemeCopy = {
 export type Theme = {
   id: string;
   name: string;
+  /** Left out of the theme picker and cycling (kept in code so it can come back). */
+  hidden?: boolean;
   tagline: string;
   ink: string;
   muted: string;
@@ -76,8 +74,6 @@ export type Theme = {
   handleInk: string;
   handleBorder: string;
   titleFont: string;
-  /** A CSS mask-image laid over the headline, for a worn or printed texture. */
-  titleTexture?: string;
   timeFont: string;
   timeColor: string;
   timeShadow: string;
@@ -101,6 +97,8 @@ export type Theme = {
   /** Late colour, and text on it. */
   loss: string;
   lossInk: string;
+  /** Right-on-time colour, and text on it (default: the Set alarm button's). */
+  jackpotBadge?: { bg: string; ink: string };
   /** The bedside clock shown after "Set alarm". */
   clock: {
     panel: string;
@@ -119,8 +117,27 @@ export type Theme = {
    * "poker": a card table (felt, padded rail, chip stacks, hole cards, lamplight on the dial).
    * "tarot": a tarot card come to life (sun and moon with faces, planets, engraved mountains,
    * flames and lightning as the bet climbs, a wheel of fortune behind the dial).
+   * "digital": an 8-bit arcade screen (pixel starfield, a neon grid floor, power-ups, glitches as
+   * the bet climbs, warp speed during the draw, pixel rings behind the dial).
    */
-  decor: "sun" | "night" | "muertos" | "ouija" | "wheel" | "poker" | "tarot" | "none";
+  /**
+   * "eightball": a studio product shot (a near-black sweep, a key light with dust drifting through
+   * it, bokeh, a giant glossy 8 ball behind the dial with the dial as its window).
+   * "cafe": a Tuscan street café (an awning, swallows, a Vespa, a cat on the sill, cypress hills),
+   * the dial a cappuccino on its saucer, steaming harder as the bet climbs.
+   */
+  decor:
+    | "sun"
+    | "night"
+    | "muertos"
+    | "ouija"
+    | "wheel"
+    | "poker"
+    | "tarot"
+    | "digital"
+    | "eightball"
+    | "cafe"
+    | "none";
   /** Colours for the result flourishes: Zs drifting off a snooze, ring marks round a late one. */
   flourish?: { zzz: string; ring: string };
   /**
@@ -129,7 +146,7 @@ export type Theme = {
    */
   tierIcons?: [string[], string[], string[], string[], string[], string[]];
   /** A mascot with one face per bet tier, shown beside the tier name in place of the icon. */
-  mascot?: "calavera" | "lucky";
+  mascot?: "calavera" | "lucky" | "bit" | "moka";
   /** Tier name colour, ramping with the bet (defaults to the arc colour). */
   tierInk?: [string, string, string];
   /**
@@ -153,17 +170,36 @@ export type Theme = {
   /** "wheel": prize-wheel wedges that light up with the bet, pegs, a hub and a pointer. */
   /** "chip": the dial as a giant poker chip (edge inserts round the rim, a dashed inlay, suits). */
   /** "tarot": the four minor arcana suits (wands, cups, swords, pentacles) inside a fine ring. */
-  ornament?: "suits" | "ouija" | "calavera" | "wheel" | "chip" | "tarot";
+  /** "pixel": an arcade screen (a square-pixel ring, PLAYER 1, three lives that drain as the bet grows). */
+  /** "eightball": the 8 ball's die in the window, framing the time; it sinks into the murk as the bet grows. */
+  /** "latte": latte art poured above the time (fancier with the bet, then stirred), a green band round the lip. */
+  ornament?: "suits" | "ouija" | "calavera" | "wheel" | "chip" | "tarot" | "pixel" | "eightball" | "latte";
+  /**
+   * Draw the track as an LED bar graph: one segment per minute, each lit segment in the arc
+   * colour for its own position (calm at the start, hot at the end), like a level meter.
+   */
+  segments?: boolean;
+  /** A square, pixel-drawn handle and bell in place of the round one. */
+  pixelHandle?: boolean;
   /** Marquee bulbs around the rim. */
   bulbs?: boolean;
   /** Bulb colours, lit and unlit, and the lit glow (default: gold bulbs). */
-  bulbColors?: { on: string; off: string; glow: string };
+  bulbColors?: {
+    on: string;
+    off: string;
+    glow: string;
+    /** Every other lit bulb in this colour (with `chase`). */
+    alt?: string;
+    altGlow?: string;
+    /** A marquee chase round the lit bulbs, and a glint travelling round the unlit ones. */
+    chase?: boolean;
+  };
 };
 
-export const THEMES: Theme[] = [
+const ALL_THEMES: Theme[] = [
   {
     id: "classic",
-    name: "Classic",
+    name: "Good Morning",
     tagline: "Sunrise, one minute at a time",
     ink: "#432344",
     muted: "#5E4861",
@@ -222,15 +258,15 @@ export const THEMES: Theme[] = [
     },
     decor: "sun",
     flourish: { zzz: "#D9547F", ring: "#FF6B35" },
-    // Taller, deeper, barely faded: the window reads clearly on the light sky
-    railTicks: { lit: 2.6, ink: ["#C97A00", "#C2410C", "#B3153F"], tip: 0.7 },
+    // Taller, barely faded, in the village's palette: lilac shade → rose roof → dawn rose
+    railTicks: { lit: 2.6, ink: ["#8F82C4", "#A86F9E", "#C46A80"], tip: 0.7 },
     rail: "#432344",
     button: { face: "#FFC03D", ink: "#432344" },
     // The sunrise scene brings its own sparkle; no generic floating glyphs.
     sparkGlyphs: [],
-    // Golden amber → rust → deep crimson: same direction as the arc, but deep enough to read on
-    // the sky (3.4:1 or better at every bet, past the 3:1 bar for large bold text)
-    tierInk: ["#B86E00", "#B23A0A", "#A8123A"],
+    // Dusk violet → plum → deep plum rose, the village's own tones (its pre-dawn shade, doors and
+    // rose roofs), getting darker as the bet grows: 4.8:1 or better on the sky at every bet
+    tierInk: ["#6B5FA6", "#6A447A", "#58284C"],
     tierIcons: [
       // Play it safe: crescent moon
       ["M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7z"],
@@ -281,16 +317,17 @@ export const THEMES: Theme[] = [
   },
   {
     id: "night",
-    name: "Night",
+    name: "Good Night",
     tagline: "Moonrise over a sleepless city",
     ink: "#E7EEFB",
     muted: "#C3B4C8",
     faint: "rgba(231,238,251,0.2)",
-    // Quiet indigo → plum → wine as the city gets more restless
+    // Quiet indigo → deep plum as the city gets more restless; it gets darker, not brighter,
+    // so the full moon, the windows and the arc carry the heat
     bg: {
       kind: "radial",
-      a: ["#241B45", "#2E1B4C", "#3B1A4E", "#4E1A4C", "#651B48"],
-      b: ["#0B0919", "#100A1F", "#150A21", "#1C0A20", "#25091C"],
+      a: ["#241B45", "#261A47", "#2A1946", "#2F1843", "#33163E"],
+      b: ["#0B0919", "#0B0918", "#0C0817", "#0D0715", "#0E0613"],
     },
     arcStops: ["#FFC03D", "#FF7A3D", "#FF3D5A"],
     disc: "radial-gradient(circle at 38% 30%, #34193B 0%, #2B1430 55%, #23102A 100%)",
@@ -343,12 +380,12 @@ export const THEMES: Theme[] = [
     flourish: { zzz: "#C9B8FF", ring: "#FFC03D" },
     railTicks: { lit: 2.6, ink: ["#FFC03D", "#FF8A4D", "#FF5C7A"], tip: 0.7 },
     rail: "#FFC03D",
-    // Pale moonlight → amber → neon pink; plum text reads on all of it
-    button: { face: "#EDE6FF", ink: "#2E1535" },
+    // Deep night purple, set in the amber housing; moonlight text
+    button: { face: "#3D1F5E", ink: "#F3EAFF" },
     // The night scene brings its own stars; no generic floating glyphs.
     sparkGlyphs: [],
-    // Bright on the dark sky: amber → apricot → neon pink
-    tierInk: ["#FFD27A", "#FFA066", "#FF7E96"],
+    // Vivid on the dark sky: sodium-lamp gold → neon orange → neon pink
+    tierInk: ["#FFD43B", "#FF9A3D", "#FF5FA2"],
     tierIcons: [
       // Lights out: a switched-off bulb
       [
@@ -458,6 +495,8 @@ export const THEMES: Theme[] = [
     winInk: "#08202A",
     loss: "#F23C74",
     lossInk: "#1A0A14",
+    // Right on time: marigold, as the navy button would vanish into the night sky
+    jackpotBadge: { bg: "#FFC23D", ink: "#12193C" },
     clock: {
       panel: "#0A1024",
       panelShadow: "0 24px 50px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,194,61,0.12)",
@@ -470,12 +509,15 @@ export const THEMES: Theme[] = [
     flourish: { zzz: "#7FE3D3", ring: "#FF7A1F" },
     railTicks: { lit: 2.6, ink: ["#FFC23D", "#FF8A3D", "#FF5C8A"], tip: 0.7 },
     rail: "#FFC23D",
-    // Marigold → orange → rose; navy text reads on all of it
-    button: { face: "#FFC23D", ink: "#1A1F3D" },
+    // Midnight navy, like the sky at the top of the hero, set in the marigold housing so it
+    // stands out from the rail, the candles and the white below. (Not teal or rosa: those are
+    // the snooze and late results, and this face is also the on-time one.) White text, 17:1.
+    button: { face: "#12193C", ink: "#FFFFFF" },
     // The scene brings its own petals and sparkles; no generic floating glyphs.
     sparkGlyphs: [],
-    // Light and bright so it reads on the dark sky: sunny yellow → marigold → candy pink
-    tierInk: ["#FFE766", "#FFBB45", "#FF8CC6"],
+    // Full-strength, not pastel, but kept light enough to read on the dark sky and the navy dial
+    // (5:1 or better on both): sunflower → marigold → hot rosa
+    tierInk: ["#FFE135", "#FFA21F", "#FF5CAB"],
     // The calavera's face changes with the tier, in place of the line icons below
     mascot: "calavera",
     tierIcons: [
@@ -583,8 +625,9 @@ export const THEMES: Theme[] = [
     // Snooze: a gold prize. Late: bankrupt pink.
     win: "#FFD23D",
     winInk: "#3A0F4A",
-    loss: "#FF5C8A",
-    lossInk: "#2A0618",
+    // Bankrupt is black on the wheel
+    loss: "#0E0316",
+    lossInk: "#FFFFFF",
     clock: {
       panel: "#1A0828",
       panelShadow: "0 24px 50px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(255,210,61,0.25)",
@@ -597,10 +640,13 @@ export const THEMES: Theme[] = [
     railTicks: { lit: 2.6, ink: ["#FFD23D", "#FF8A3D", "#FF4D97"], tip: 0.7 },
     rail: "#FFD23D",
     // Gold → orange → hot pink, like the arc
-    button: { face: "#FFD23D", ink: "#3A0F4A" },
+    // A hot-pink buzzer, so it stands out from the gold rail it sits on
+    button: { face: "#E0177A", ink: "#FFFFFF" },
     // The scene brings its own sparkle and chips; no generic floating glyphs.
     sparkGlyphs: [],
-    tierInk: ["#FFD66B", "#FFA24D", "#FF6FAE"],
+    // Vivid hot pink → orange → jackpot gold for the tier name and "+ 45 mins". Pink while the
+    // room is dark violet, gold once it turns magenta, so each stays readable (4:1+ on the room)
+    tierInk: ["#FF5CC8", "#FF9A2E", "#FFD93D"],
     // Shown only if the mascot is turned off (art/wheel/tier-icons.json)
     tierIcons: [
       // No spin: an unused ticket
@@ -659,11 +705,19 @@ export const THEMES: Theme[] = [
     mascot: "lucky",
     bulbs: true,
     // Cream bulbs on the gold rim; unlit ones are dark amber dimples
-    bulbColors: { on: "#FFF8E1", off: "#B36A12", glow: "rgba(255,236,170,0.95)" },
+    bulbColors: {
+      on: "#FFF8E1",
+      off: "#B36A12",
+      glow: "rgba(255,236,170,0.95)",
+      alt: "#FF8FD2",
+      altGlow: "rgba(255,120,200,0.95)",
+      chase: true,
+    },
   },
   {
     id: "slot",
     name: "Slot machine",
+    hidden: true,
     tagline: "Marquee lights, jackpot at 45",
     ink: "#FFF3D6",
     muted: "#E0B48F",
@@ -885,7 +939,6 @@ export const THEMES: Theme[] = [
     timeFont: SERIF_TRIANGLE,
     timeColor: "#ECE3CF",
     timeShadow: "0 0 18px rgba(240,138,60,0.18)",
-    titleTexture: DISTRESS,
     scrim: "rgba(6,4,3,0.74)",
     sheet: "#1A1613",
     chip: "#26201B",
@@ -915,10 +968,12 @@ export const THEMES: Theme[] = [
     flourish: { zzz: "#E2C27E", ring: "#FF6A3D" },
     railTicks: { lit: 2.6, ink: ["#D2AE62", "#F08A3C", "#E5432E"], tip: 0.7 },
     rail: "#C9A55A",
-    button: { face: "#D2AE62", ink: "#14100D" },
+    // Oxblood, set deep in the gold housing
+    button: { face: "#5E140E", ink: "#F6EBD9" },
     // The board brings its own stars and candles; no generic floating glyphs.
     sparkGlyphs: [],
-    tierInk: ["#D9B66A", "#F29A4A", "#FF6B4F"],
+    // Bone white, warming to candlelit parchment and a pale ember blush
+    tierInk: ["#F4EDDF", "#FBE3BF", "#FFCDB8"],
     tierIcons: [
       // The spirits rest: a closed eye
       [
@@ -1014,8 +1069,7 @@ export const THEMES: Theme[] = [
     handleRamp: ["#FBF4E6", "#FCE9C4", "#FBD9CF"],
     handleInk: "#17383A",
     handleBorder: "2.5px solid #17383A",
-    titleFont: SERIF,
-    titleTexture: DISTRESS,
+    titleFont: SANS,
     timeFont: SERIF,
     timeColor: "#17383A",
     timeShadow: "none",
@@ -1048,12 +1102,13 @@ export const THEMES: Theme[] = [
     flourish: { zzz: "#2E6E6A", ring: "#D2445A" },
     railTicks: { lit: 2.6, ink: ["#B98318", "#D2553F", "#B32F45"], tip: 0.7 },
     rail: "#17383A",
-    // Gold → coral → crimson (the label turns white once it's dark)
-    button: { face: "#E2AE4A", ink: "#17383A" },
+    // The wheel's mint, with ink on it
+    button: { face: "#9CD3C7", ink: "#17383A" },
     // The scene brings its own stars and planets; no generic floating glyphs.
     sparkGlyphs: [],
-    // Old gold → rust → crimson: 4.5:1 or better on the horizon at every bet
-    tierInk: ["#86600F", "#B0432A", "#A0233F"],
+    // Teal deepening toward the ink, for the tier name and the "+ N mins" under the time. Not the
+    // arc's colours (gold to crimson washes out on the blush horizon): dark enough to read on it.
+    tierInk: ["#1D5A56", "#174A48", "#113A3A"],
     // One per card (the Devil's from art/tarot/tier-icons.json, the rest redrawn to read at 20px)
     tierIcons: [
       // Temperance: one cup pouring into another
@@ -1116,74 +1171,368 @@ export const THEMES: Theme[] = [
   {
     id: "digital",
     name: "Digital",
-    tagline: "LED bedside clock",
-    ink: "#B7FFC9",
-    muted: "#5E8F6B",
-    faint: "rgba(61,255,126,0.25)",
-    bg: { kind: "flat", from: "#060A06", to: "#1E0505" },
-    arcStops: ["#3DFF7E", "#FFD23D", "#FF3D3D"],
-    disc: "#0A120B",
+    hidden: true,
+    tagline: "Insert coin, press snooze",
+    ink: "#E9FFF2",
+    muted: "#9CCFB2",
+    faint: "rgba(92,255,149,0.28)",
+    // An arcade screen glowing phosphor green, overheating to magenta as the bet climbs
+    // (muted text keeps 7:1 or better throughout)
+    bg: {
+      kind: "radial",
+      a: ["#123A2C", "#123631", "#182A3A", "#2A1C40", "#3A1536"],
+      b: ["#04120C", "#05110E", "#070E14", "#0C0816", "#120612"],
+    },
+    // A level meter: lime → yellow → hot pink
+    arcStops: ["#3DFF7E", "#FFE135", "#FF3D8B"],
+    // A dark CRT screen in a bezel: a phosphor hairline, a black gap and a fainter outer edge
+    disc: "radial-gradient(circle at 50% 38%, #10291F 0%, #0C2219 55%, #07160F 100%)",
     discShadow:
-      "0 0 0 1px rgba(61,255,126,0.18), 0 20px 40px rgba(0,0,0,0.6)",
-    track: "#122A1A",
-    trackWidth: 26,
+      "0 0 0 2px rgba(92,255,149,0.38), 0 0 0 7px #06140E, 0 0 0 9px rgba(92,255,149,0.16), 0 26px 60px rgba(0,0,0,0.6), inset 0 0 44px rgba(61,255,126,0.1)",
+    track: "#123A2A",
+    trackWidth: 24,
     glow: 1,
-    dash: "4 6",
-    notch: "#3DFF7E",
-    handle: "#0A120B",
-    handleInk: "#3DFF7E",
-    handleBorder: "2px solid #3DFF7E",
-    titleFont: MONO,
-    timeFont: MONO,
-    timeColor: "#3DFF7E",
-    timeShadow: "0 0 12px rgba(61,255,126,0.6)",
-    scrim: "rgba(0,0,0,0.7)",
-    sheet: "#0C140D",
-    chip: "#122A1A",
-    chipInk: "#B7FFC9",
+    dash: "none",
+    segments: true,
+    pixelHandle: true,
+    notch: "#E9FFF2",
+    handle: "#0C2219",
+    handleInk: "#E9FFF2",
+    handleBorder: "none",
+    titleFont: PIXEL,
+    timeFont: PIXEL,
+    timeColor: "#E9FFF2",
+    timeShadow: "0 0 14px rgba(61,255,126,0.35)",
+    timeGlow: true,
+    scrim: "rgba(2,8,5,0.72)",
+    sheet: "#0E271D",
+    chip: "#163D2D",
+    chipInk: "#E9FFF2",
     chipOn: "#3DFF7E",
-    chipOnInk: "#062812",
+    chipOnInk: "#06210F",
     btnOnBg: "#3DFF7E",
-    btnOnInk: "#062812",
+    btnOnInk: "#06210F",
     btnOnShadow: "0 10px 24px rgba(61,255,126,0.35)",
-    btnOffBg: "#122A1A",
-    btnOffInk: "#B7FFC9",
-    btnOffShadow: "0 0 0 1px rgba(61,255,126,0.3)",
+    btnOffBg: "#E9FFF2",
+    btnOffInk: "#06210F",
+    btnOffShadow: "0 10px 24px rgba(0,0,0,0.4)",
+    // Snooze: an extra life in phosphor green. Late: game-over pink. On the dot: high-score gold.
     win: "#3DFF7E",
-    winInk: "#062812",
-    loss: "#FFB020",
-    lossInk: "#1A1000",
+    winInk: "#06210F",
+    loss: "#FF3D6E",
+    lossInk: "#1A0610",
+    jackpotBadge: { bg: "#FFE135", ink: "#1A1400" },
     clock: {
-      panel: "#040704",
-      panelShadow: "0 0 0 1px rgba(61,255,126,0.18), 0 20px 40px rgba(0,0,0,0.6)",
+      panel: "#050F0A",
+      panelShadow: "0 24px 50px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(92,255,149,0.2)",
       on: "#3DFF7E",
       off: "rgba(61,255,126,0.07)",
       glow: "rgba(61,255,126,0.7)",
     },
-    decor: "none",
+    decor: "digital",
+    flourish: { zzz: "#3DE0FF", ring: "#FF3D8B" },
+    railTicks: { lit: 2.6, ink: ["#3DFF7E", "#FFE135", "#FF3D8B"], tip: 0.7 },
     rail: "#3DFF7E",
-    button: { face: "#0A120B", ink: "#3DFF7E" },
-    sparkGlyphs: ["▮", "▯"],
+    // A candy-pink arcade button (Bit's own casing) in the phosphor-green housing: plum text, 6.2:1
+    button: { face: "#FF4FA3", ink: "#1A0B24" },
+    // The screen brings its own stars and power-ups; no generic floating glyphs.
+    sparkGlyphs: [],
+    // Phosphor green → coin yellow → hot pink, 4.9:1 or better on the screen at every bet
+    tierInk: ["#5CFF95", "#FFE135", "#FF6FB5"],
+    // Bit, a pocket LCD clock, pulls a face per tier in place of these
+    mascot: "bit",
+    // Shown only if the mascot is turned off (art/digital/tier-icons.json)
+    tierIcons: [
+      // Insert coin: a coin dropping into a slot
+      [
+        "M 4 15 H 20 V 21 H 4 Z",
+        "M 8 18 H 16",
+        "M 15 6 L 15 9 L 13 11 H 11 L 9 9 V 4 L 11 2 H 13 L 15 4 Z",
+      ],
+      // Easy mode: a joystick
+      [
+        "M 3 16 H 21 V 22 H 3 Z",
+        "M 11 16 V 9 H 13 V 16",
+        "M 8 3 H 16 V 9 H 8 Z",
+        "M 16 19 H 18",
+      ],
+      // Level up: a chunky up arrow over two bars
+      [
+        "M 4 10 L 12 2 L 20 10 H 15 V 15 H 9 V 10 Z",
+        "M 7 18 H 17 M 7 22 H 17",
+      ],
+      // Hard mode: a sword
+      [
+        "M 6 15 L 16 5 L 21 3 L 19 8 L 9 18 Z",
+        "M 4 12 L 12 20 M 7 17 L 3 21 M 2 20 L 4 22",
+      ],
+      // Boss fight: a horned skull
+      [
+        "M 6 9 L 3 7 V 2 L 8 6 M 18 9 L 21 7 V 2 L 16 6",
+        "M 6 8 H 18 L 20 10 V 16 L 17 18 V 22 H 7 V 18 L 4 16 V 10 Z",
+        "M 8 12 H 10 V 14 H 8 Z M 14 12 H 16 V 14 H 14 Z",
+        "M 11 17 H 13 M 10 19 V 22 M 14 19 V 22",
+      ],
+      // Final boss: a crown with a gem
+      [
+        "M 4 18 L 2 5 L 8 10 L 12 2 L 16 10 L 22 5 L 20 18 Z",
+        "M 4 22 H 20",
+        "M 12 11 L 15 14 L 12 17 L 9 14 Z",
+      ],
+    ],
     copy: {
       tiers: [
-        "Standby",
-        "Low risk",
-        "Nominal",
-        "Elevated",
-        "Overclocked",
-        "Max risk",
+        "Insert coin",
+        "Easy mode",
+        "Level up",
+        "Hard mode",
+        "Boss fight",
+        "Final boss · full 45",
       ],
-      setting: "Alarm armed… pending",
-      rolling: "Computing offset",
-      win: "Snooze extended to {time}",
-      loss: "Snooze disabled. Wake now",
-      jackpot: "Sync perfect",
-      winLine: "+{mins} sleep acquired",
-      lossLine: "−{mins} time deficit",
-      jackpotLine: "Zero offset detected",
+      setting: "Player one ready…",
+      rolling: "Now loading",
+      win: "1UP! Snooze till {time}",
+      loss: "Game over. Up you get",
+      jackpot: "Perfect! Right on time",
+      winLine: "Extra life: {mins} more sleep",
+      lossLine: "{mins} late. Continue?",
+      jackpotLine: "Flawless. Not a minute off",
     },
+    ornament: "pixel",
+  },
+  {
+    id: "eightball",
+    name: "Magic 8 Ball",
+    hidden: true,
+    tagline: "Ask again in the morning",
+    // Unlike the illustrated themes, a glossy studio product shot: one hue (cobalt) on black and
+    // white, no warm colours anywhere, set in Geist Mono
+    ink: "#EEF1FF",
+    muted: "#9CA5C9",
+    faint: "rgba(150,172,255,0.22)",
+    // A black studio sweep, the ball's cobalt glow creeping into it as the bet grows
+    bg: {
+      kind: "radial",
+      a: ["#14172A", "#141832", "#14193A", "#141A44", "#151B50"],
+      b: ["#020205", "#020206", "#030308", "#03040B", "#04050F"],
+    },
+    // Cobalt → electric blue → ice: the window lighting up
+    arcStops: ["#3A4DFF", "#4E8DFF", "#A6EEFF"],
+    // The window: dark liquid behind glass, set into the ball (scenes/eightball-scene.tsx)
+    disc: "radial-gradient(circle at 50% 42%, #17257C 0%, #0C164C 42%, #060B2A 78%, #02040F 100%)",
+    discShadow:
+      "inset 0 22px 44px rgba(0,0,0,0.75), inset 0 -10px 30px rgba(80,110,255,0.18), 0 0 0 2px #000000",
+    track: "#0A1033",
+    trackEdge: "rgba(150,175,255,0.2)",
+    trackEdgeBlend: "screen",
+    tintedHandle: true,
+    // Thinner than the other themes' rings: finely machined
+    trackWidth: 18,
+    glow: 1,
+    dash: "none",
+    notch: "#EEF1FF",
+    // A cue-ball white handle, cooling to ice
+    handle: "#FFFFFF",
+    handleRamp: ["#FFFFFF", "#E6EDFF", "#D2F4FF"],
+    handleInk: "#06070D",
+    handleBorder: "none",
+    titleFont: MONO,
+    timeFont: MONO,
+    timeColor: "#FFFFFF",
+    // Moulded into the die: a hard little shadow under the white
+    timeShadow: "0 2px 0 rgba(2,4,20,0.45)",
+    timeGlow: false,
+    scrim: "rgba(2,3,9,0.74)",
+    sheet: "#0D1024",
+    chip: "#191D36",
+    chipInk: "#EEF1FF",
+    chipOn: "#3A4DFF",
+    chipOnInk: "#FFFFFF",
+    btnOnBg: "#3A4DFF",
+    btnOnInk: "#FFFFFF",
+    btnOnShadow: "0 10px 24px rgba(58,77,255,0.4)",
+    btnOffBg: "#EEF1FF",
+    btnOffInk: "#06070D",
+    btnOffShadow: "0 10px 24px rgba(0,0,0,0.45)",
+    // Snooze: the die's cobalt ("yes"). Late: stark white ("no"). On the dot: ice.
+    win: "#3A4DFF",
+    winInk: "#FFFFFF",
+    loss: "#F2F4FF",
+    lossInk: "#06070D",
+    jackpotBadge: { bg: "#A6EEFF", ink: "#04121C" },
+    clock: {
+      panel: "#03050F",
+      panelShadow: "0 24px 50px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(120,150,255,0.18)",
+      on: "#EEF1FF",
+      off: "rgba(238,241,255,0.06)",
+      glow: "rgba(90,130,255,0.7)",
+    },
+    decor: "eightball",
+    // No Zs or ring marks: the die beside the badge answers instead
+    railTicks: { lit: 2.6, ink: ["#3A4DFF", "#2F7BEA", "#1AA6D6"], tip: 0.7 },
+    rail: "#3A4DFF",
+    // Glossy black, like the ball, set in the cobalt housing
+    button: { face: "#0B0C12", ink: "#FFFFFF" },
+    // The studio brings its own dust and bokeh; no generic floating glyphs.
+    sparkGlyphs: [],
+    // Pale ice blues: they read on the black studio and on the die behind the time (4:1 or better)
+    tierInk: ["#BCC8FF", "#C8DBFF", "#D8F5FF"],
+    // The die's face, answering; the full 45 is the ball itself
+    tierIcons: [
+      // It is certain: a tick
+      ["M4 5.5h16a1 1 0 0 1 .86 1.5l-8 13.6a1 1 0 0 1-1.72 0L3.14 7A1 1 0 0 1 4 5.5z", "M9.3 10.3l1.9 1.9 3.6-3.8"],
+      // Most likely: an arrow up
+      ["M4 5.5h16a1 1 0 0 1 .86 1.5l-8 13.6a1 1 0 0 1-1.72 0L3.14 7A1 1 0 0 1 4 5.5z", "M12 13V8.6M9.9 10.7 12 8.6l2.1 2.1"],
+      // Reply hazy: ripples
+      [
+        "M4 5.5h16a1 1 0 0 1 .86 1.5l-8 13.6a1 1 0 0 1-1.72 0L3.14 7A1 1 0 0 1 4 5.5z",
+        "M8.7 9.3c1.1-.8 2.2.8 3.3 0s2.2.8 3.3 0",
+        "M9.8 12.2c.75-.6 1.5.6 2.2 0s1.5.6 2.2 0",
+      ],
+      // Cannot predict now: a question mark
+      [
+        "M4 5.5h16a1 1 0 0 1 .86 1.5l-8 13.6a1 1 0 0 1-1.72 0L3.14 7A1 1 0 0 1 4 5.5z",
+        "M10.3 9.2a1.75 1.75 0 1 1 2.4 1.6c-.45.2-.7.55-.7 1v.2",
+        "M12 14.3h.01",
+      ],
+      // Very doubtful: a cross
+      ["M4 5.5h16a1 1 0 0 1 .86 1.5l-8 13.6a1 1 0 0 1-1.72 0L3.14 7A1 1 0 0 1 4 5.5z", "M10.2 8.6l3.6 3.6M13.8 8.6l-3.6 3.6"],
+      // The ball decides: the ball, with the die in its window
+      ["M12 2.5a9.5 9.5 0 1 1 0 19 9.5 9.5 0 0 1 0-19z", "M8.6 9.4h6.8L12 15.3z"],
+    ],
+    copy: {
+      tiers: [
+        "It is certain",
+        "Most likely",
+        "Reply hazy",
+        "Cannot predict now",
+        "Very doubtful",
+        "The ball decides · full 45",
+      ],
+      setting: "Give it a shake…",
+      rolling: "The answer is rising",
+      win: "Outlook good. Snooze till {time}",
+      loss: "My sources say: get up",
+      jackpot: "Without a doubt. On time",
+      winLine: "You may rely on {mins} more sleep",
+      lossLine: "{mins} late, as foretold",
+      jackpotLine: "Not a minute either way",
+    },
+    ornament: "eightball",
+  },
+  {
+    id: "cafe",
+    name: "Caffè",
+    hidden: true,
+    tagline: "Espresso in the Tuscan sun",
+    // A vintage Italian travel poster: espresso-brown ink on a morning sky that warms from pale
+    // sage to apricot as the coffee gets stronger (ink 8:1 or better, muted 4.6:1 or better)
+    ink: "#3A2418",
+    muted: "#6A4632",
+    faint: "rgba(58,36,24,0.22)",
+    bg: {
+      kind: "linear",
+      a: ["#D6E4D8", "#E6E3CF", "#F5DCBE", "#F7CBA4", "#F2B486"],
+      b: ["#FBF2E0", "#FCEDD5", "#FCE4C4", "#FAD7AE", "#F6C696"],
+    },
+    // Tuscany: olive → saffron → terracotta
+    arcStops: ["#8E9F5C", "#E2A23B", "#C4512F"],
+    // A cappuccino seen from above: foam, a ring of crema, then the cup's porcelain wall and lip
+    disc: "radial-gradient(circle closest-side, #FFFBF2 0%, #FBF0DD 42%, #F5E2C3 62%, #EFD3AC 69%, #DDAE76 72%, #B97A44 74.6%, #8A5129 76.4%, #FFFDF8 76.7%, #FFFDF8 93%, #F1E7D7 100%)",
+    discShadow: "0 0 0 1.5px rgba(58,36,24,0.32), 0 10px 22px rgba(58,36,24,0.2)",
+    track: "#F1E7D7",
+    trackEdge: "rgba(58,36,24,0.3)",
+    tintedHandle: true,
+    trackWidth: 26,
+    glow: 0.35,
+    dash: "none",
+    notch: "#3A2418",
+    handle: "#FFFBF2",
+    // Porcelain → crema → a terracotta blush
+    handleRamp: ["#FFFBF2", "#FBE8C6", "#F8D3C1"],
+    handleInk: "#3A2418",
+    handleBorder: "none",
+    titleFont: SERIF_HEART,
+    timeFont: SERIF_HEART,
+    timeColor: "#3A2418",
+    timeShadow: "none",
+    timeGlow: false,
+    scrim: "rgba(58,36,24,0.45)",
+    sheet: "#FBF3E4",
+    chip: "#FBF3E4",
+    chipInk: "#3A2418",
+    chipOn: "#3A2418",
+    chipOnInk: "#FBF3E4",
+    btnOnBg: "#E2A23B",
+    btnOnInk: "#3A2418",
+    btnOnShadow: "0 10px 24px rgba(226,162,59,0.4)",
+    btnOffBg: "#3A2418",
+    btnOffInk: "#FBF3E4",
+    btnOffShadow: "0 10px 24px rgba(58,36,24,0.25)",
+    // Snooze: sage, the café shut for riposo. Late: terracotta. On the dot: saffron.
+    win: "#A8BC7E",
+    winInk: "#3A2418",
+    loss: "#B4462A",
+    lossInk: "#FFF4E4",
+    jackpotBadge: { bg: "#E8AE45", ink: "#3A2418" },
+    clock: {
+      panel: "#FBF3E4",
+      panelShadow: "0 0 0 2.5px #3A2418, 7px 9px 0 rgba(58,36,24,0.14)",
+      on: "#3A2418",
+      off: "rgba(58,36,24,0.07)",
+      glow: null,
+    },
+    decor: "cafe",
+    flourish: { zzz: "#5E7A3A", ring: "#C4512F" },
+    // On the white below the hero: olive → burnt saffron → terracotta (3.5:1 or better)
+    railTicks: { lit: 2.6, ink: ["#6E7F41", "#B97A1C", "#B4462A"], tip: 0.7 },
+    rail: "#3A2418",
+    // Shutter green, set in the espresso housing
+    button: { face: "#2F5D46", ink: "#FBF3E4" },
+    // The street brings its own swallows and steam; no generic floating glyphs.
+    sparkGlyphs: [],
+    // Dark olive → burnt saffron → deep terracotta: 4:1 or better on the wheat field and the road
+    tierInk: ["#55652F", "#8A4A12", "#9A3519"],
+    // The moka pot pulls a face per tier in place of these
+    mascot: "moka",
+    tierIcons: [
+      // Decaf: a cup, not a wisp of steam
+      ["M5 9.5h12V14a6 6 0 0 1-12 0z", "M17 11h1.2a2.4 2.4 0 0 1 0 4.8H16.4", "M3 21h16"],
+      // Latte: a tall glass in layers
+      ["M7 3h10l-1.6 18H8.6z", "M7.9 10h8.2", "M8.4 15h7.2"],
+      // Cappuccino: a heart in the foam
+      ["M4 8h13v4.5a6.5 6.5 0 0 1-13 0z", "M17 9.5h1.3a2.5 2.5 0 0 1 0 5h-1.6", "M10.5 13.2c-.9-.7-2.2-1.5-2.2-2.5a1.1 1.1 0 0 1 2.2-.4 1.1 1.1 0 0 1 2.2.4c0 1-1.3 1.8-2.2 2.5z", "M2.5 21H18.5"],
+      // Espresso: a demitasse, steaming
+      ["M6.5 11h9v3a4.5 4.5 0 0 1-9 0z", "M15.5 12h1a2 2 0 0 1 0 4h-1.4", "M4 20h15", "M9.5 7.5c-1-1 1-2 0-3.5M12.5 7.5c-1-1 1-2 0-3.5"],
+      // Doppio: two of them
+      ["M2.5 12h7v2.5a3.5 3.5 0 0 1-7 0z", "M13 12h7v2.5a3.5 3.5 0 0 1-7 0z", "M1.5 20h9M12 20h9", "M6 8.5c-.8-.8.8-1.6 0-2.8M16.5 8.5c-.8-.8.8-1.6 0-2.8"],
+      // The whole moka: a moka pot
+      ["M9 2.5h6", "M6.5 5h11l-2 7h-7z", "M8.5 12h7", "M8.5 13.5h7l3 7.5H5.5z", "M17.5 6h3l-1.6 5.5", "M6.5 5 3.5 4"],
+    ],
+    copy: {
+      tiers: [
+        "Decaf",
+        "Latte",
+        "Cappuccino",
+        "Espresso",
+        "Doppio",
+        "The whole moka · full 45",
+      ],
+      setting: "Putting the moka on…",
+      rolling: "The moka's gurgling",
+      win: "Dolce far niente till {time}",
+      loss: "Andiamo! Up you get",
+      jackpot: "Perfetto. Right on time",
+      winLine: "{mins} more to sip slowly",
+      lossLine: "{mins} late. Drink it standing",
+      jackpotLine: "Not a drop spilled",
+    },
+    ornament: "latte",
   },
 ];
+
+/** The themes on offer: everything not marked hidden. */
+export const THEMES: Theme[] = ALL_THEMES.filter((t) => !t.hidden);
 
 export const MAX_RANGE = 45;
 

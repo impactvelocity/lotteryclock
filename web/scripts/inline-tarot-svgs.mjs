@@ -92,14 +92,12 @@ const moon = faces("moon", MOONS);
 
 const wheel = parse(read("fortune-wheel"));
 const wreath = parse(read("wreath"));
-const mountains = parse(read("mountains"));
 const planets = parse(read("planets"));
 const lightning = parse(read("lightning"));
-const flames = parse(read("flames"));
 const suits = parse(read("suits"));
 const clouds = parse(read("clouds"));
 const eye = parse(read("eye"));
-const bones = parse(read("bones"));
+const cardBack = parse(read("card-back"));
 
 const suitPath = (id) => {
   const paths = need(suits, id).kids;
@@ -132,27 +130,15 @@ ${MOONS.map((n, i) => `  // ${n}\n  ${moon.faces[i]},`).join("\n")}
 
 /**
  * The wheel of fortune (400 × 400, centred on 200, 200): its band (r 136 to 176), split into 12
- * segments, with a glyph in each. (The minute ticks inside it would sit under the dial.)
+ * segments, with a glyph in each. (The minute ticks inside it would sit under the dial, and the
+ * gold rim with its finials read poorly on the sky, so both are left out.)
  */
 export const WHEEL_BAND = ${frag([need(wheel, "band"), need(wheel, "glyphs")])};
-
-/** The wheel's gold rim at r 184, with eight ball finials. */
-export const WHEEL_RIM = ${kids(wheel, "rim")};
 
 /** The World's laurel wreath (400 × 400, centred on 200, 200; clear inside r 114). */
 export const WREATH_LEAVES = [${kids(wreath, "leaves-left", 2)}, ${kids(wreath, "leaves-right", 2)}];
 
 export const WREATH_RIBBONS = [${kids(wreath, "ribbon-top", 2)}, ${kids(wreath, "ribbon-bottom", 2)}];
-
-/**
- * The mountain strip (1600 × 220, flat bottom). The two ridges have no fill of their own,
- * so the scene can colour them; the hatching is ink.
- */
-export const MOUNTAIN_BACK = ${kids(mountains, "back", 0, ["fill"])};
-
-export const MOUNTAIN_FRONT = ${kids(mountains, "front", 0, ["fill"])};
-
-export const MOUNTAIN_HATCHING = ${frag([need(mountains, "hatch-back"), need(mountains, "hatch-front")])};
 
 /** Four planets, each in a 64 × 64 cell of a 286 × 64 sheet (cells at x = 0, 74, 148, 222). */
 export const PLANETS = [
@@ -164,27 +150,26 @@ export const BOLT_TALL = ${kids(lightning, "bolt-tall")};
 
 export const BOLT_SHORT = ${kids(lightning, "bolt-short")};
 
-/** Three flames (70 × 110 cells at x = 0, 80, 160, bases on y = 110), each in three layers. */
-export const FLAMES = [
-${[1, 2, 3]
-  .map(
-    (n) =>
-      `  {\n${["outer", "middle", "inner"].map((l) => `    ${l}: ${kids(flames, `flame-${n}-${l}`, 4)},`).join("\n")}\n  },`,
-  )
-  .join("\n")}
-];
-
 /** Minor arcana suits on a 24 × 24 grid: one evenodd path each, drawn in currentColor. */
 export const SUIT_PATHS = {
 ${["wands", "cups", "swords", "pentacles"].map((id) => `  ${id}: "${suitPath(id)}",`).join("\n")}
 } as const;
 
-/** Three scalloped clouds on a 280 × 160 grid, flat bottoms on y = 132. */
+/**
+ * Three scalloped clouds on a 280 × 160 grid, flat bottoms on y = 132. The outlines have no fill
+ * of their own, so the scene can colour them.
+ */
 export const CLOUDS = [
 ${[1, 2, 3]
-  .map((n) => `  {\n    outline: ${kids(clouds, `cloud-${n}-outline`, 4)},\n    creases: ${kids(clouds, `cloud-${n}-creases`, 4)},\n  },`)
+  .map(
+    (n) =>
+      `  {\n    outline: ${kids(clouds, `cloud-${n}-outline`, 4, ["fill"])},\n    creases: ${kids(clouds, `cloud-${n}-creases`, 4)},\n  },`,
+  )
   .join("\n")}
 ];
+
+/** The back of a tarot card (140 × 240), the same either way up. */
+export const CARD_BACK = ${frag([need(cardBack, "field"), need(cardBack, "filigree"), need(cardBack, "medallion")])};
 
 /** The all-seeing eye (160 × 110, eye centred on 80, 70): rays and crown, the white, the iris, the lid. */
 export const EYE_TOP = ${frag([need(eye, "rays"), need(eye, "crown")])};
@@ -194,9 +179,6 @@ export const EYE_WHITE = ${frag(need(eye, "eye").kids.slice(0, 1))};
 export const EYE_IRIS = ${frag(need(eye, "eye").kids.slice(1))};
 
 export const EYE_LID = ${kids(eye, "lid")};
-
-/** A memento mori for the bottom-left corner (260 × 140, flat bottom on y = 140). */
-export const BONES = ${frag([need(bones, "skull"), need(bones, "bones"), need(bones, "sprig")])};
 `;
 
 writeFileSync(outFile, out);

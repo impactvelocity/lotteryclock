@@ -48,6 +48,29 @@ const BEAMS = [
 ];
 const BEAMS_AT = [2, 2, 2, 3, 4, 4];
 
+/**
+ * A spotlight's beam: a soft cone fanning up from the lamp at the bottom centre, ±8°, drawn as
+ * a conic gradient (no blur or clipping, so no box shows round it). The element is 2:5, wide
+ * enough to hold the whole cone at the top.
+ */
+const beamCone = (rgb: string, a = 0.5) =>
+  `conic-gradient(from -8deg at 50% 100%, rgba(${rgb},0) 0deg, rgba(${rgb},${a * 0.7}) 4deg, rgba(${rgb},${a}) 8deg, rgba(${rgb},${a * 0.7}) 12deg, rgba(${rgb},0) 16deg)`;
+/** Beams fade out as they climb. */
+const BEAM_FADE = "linear-gradient(to top, #000 0%, rgba(0,0,0,0.5) 45%, transparent 95%)";
+/** Bankrupt: the one cold spotlight left on, shining down from the top. */
+const LONE_CONE =
+  "conic-gradient(from 168deg at 50% 0%, rgba(214,205,255,0) 0deg, rgba(214,205,255,0.26) 6deg, rgba(214,205,255,0.34) 12deg, rgba(214,205,255,0.26) 18deg, rgba(214,205,255,0) 24deg)";
+const LONE_FADE = "linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.8) 55%, transparent 100%)";
+/** A win swings every spotlight in gold. */
+const GOLD = "255,205,90";
+/**
+ * The payout fan: faint gold rays turning slowly round the Reset Alarm button (the bottom centre
+ * of the scene, where the rail runs), clear right round the button and fading out as they spread.
+ */
+const FAN_RAYS = `repeating-conic-gradient(from 0deg, rgba(${GOLD},0.11) 0deg 5deg, rgba(${GOLD},0) 5deg 12deg)`;
+const FAN_FADE =
+  "radial-gradient(circle closest-side, transparent 9%, #000 20%, rgba(0,0,0,0.55) 55%, transparent 100%)";
+
 type TokenKind = ChipColor | CharmKind | "coin";
 
 type Token = {
@@ -118,14 +141,15 @@ const RAIN = Array.from({ length: 26 }, (_, i) => ({
 }));
 
 export function WheelScene({ p, tier, mood }: Props) {
-  // A snooze takes the heat out of the room; jackpot runs it at full tilt.
-  const hot = clamp(mood === "jackpot" ? 1 : mood === "win" ? p * 0.5 : p);
-  // Bankrupt: the house lights drop.
-  const lights = mood === "loss" ? 0.18 : 1;
-  const beams = BEAMS_AT[mood === "jackpot" ? 5 : tier];
-  const tokens = mood === "loss" ? 0 : TOKENS_AT[mood === "jackpot" ? 5 : tier];
-  const sparksOut = (0.08 + hot * 0.92) * (mood === "loss" ? 0.2 : 1);
   const payout = mood === "win" || mood === "jackpot";
+  // A snooze is a payout, so the room celebrates; jackpot runs it at full tilt.
+  const hot = clamp(mood === "jackpot" ? 1 : mood === "win" ? 0.8 : p);
+  // Bankrupt: the house lights drop, the spotlights sputter out and the chips fall off the table.
+  const bankrupt = mood === "loss";
+  const lights = bankrupt ? 0.18 : 1;
+  const beams = payout ? BEAMS.length : BEAMS_AT[tier];
+  const tokens = TOKENS_AT[mood === "jackpot" ? 5 : tier];
+  const sparksOut = (0.08 + hot * 0.92) * (bankrupt ? 0.2 : 1);
 
   const floor = rampN(["#7A3DCC", "#C24FC0", "#FF8A4D"], hot);
 
@@ -141,35 +165,68 @@ export function WheelScene({ p, tier, mood }: Props) {
         }}
       />
 
-      {/* Spotlights sweeping up from the floor */}
+      {/* Payout: a fan of rays rising from the button, turning slowly */}
+      <AnimatePresence>
+        {payout && (
+          <motion.div
+            key="fan"
+            className="absolute bottom-0 left-1/2 h-[1800px] w-[1800px] -translate-x-1/2 translate-y-1/2"
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: mood === "jackpot" ? 1 : 0.8, scale: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
+            transition={{ duration: 0.9, ease: [0.2, 0.8, 0.3, 1] }}
+            style={{ mixBlendMode: "screen" }}
+          >
+            <div
+              className="h-full w-full rounded-full"
+              style={{
+                background: FAN_RAYS,
+                maskImage: FAN_FADE,
+                WebkitMaskImage: FAN_FADE,
+                animation: "lc-spin 90s linear infinite",
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Spotlights sweeping up from the floor. A snooze swings them all in gold, a jackpot in
+          every colour and faster still; bankrupt makes each one sputter and go out. */}
       <AnimatePresence>
         {BEAMS.slice(0, beams).map((b, i) => (
           <motion.div
             key={i}
-            className="absolute bottom-0 h-[135%] w-[240px] -translate-x-1/2"
+            className="absolute bottom-0 aspect-[2/5] h-[135%] -translate-x-1/2"
             style={{ left: `${b.x}%` }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: (0.28 + hot * 0.6) * lights }}
+            animate={{ opacity: bankrupt ? 0.7 : 0.28 + hot * 0.6 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
             <div
               className="h-full w-full"
-              style={
-                {
-                  "--from": `${b.from}deg`,
-                  "--to": `${b.to}deg`,
-                  transform: `rotate(${b.from}deg)`,
-                  transformOrigin: "50% 100%",
-                  willChange: "transform",
-                  animation: `lc-sweep ${b.dur}s ease-in-out ${b.delay}s infinite`,
-                  background: `linear-gradient(0deg, rgba(${b.rgb},0.5) 0%, rgba(${b.rgb},0.16) 45%, rgba(${b.rgb},0) 92%)`,
-                  clipPath: "polygon(46% 100%, 54% 100%, 100% 0, 0 0)",
-                  filter: "blur(6px)",
-                  mixBlendMode: "screen",
-                } as CSSProperties
-              }
-            />
+              style={{
+                animation: bankrupt ? `lc-beam-die 1.3s linear ${(i * 0.2).toFixed(1)}s forwards` : "none",
+              }}
+            >
+              <div
+                className="h-full w-full"
+                style={
+                  {
+                    "--from": `${b.from}deg`,
+                    "--to": `${b.to}deg`,
+                    transform: `rotate(${b.from}deg)`,
+                    transformOrigin: "50% 100%",
+                    willChange: "transform",
+                    animation: `lc-sweep ${payout ? (b.dur * (mood === "jackpot" ? 0.3 : 0.45)).toFixed(2) : b.dur}s ease-in-out ${b.delay}s infinite`,
+                    background: beamCone(mood === "win" ? GOLD : b.rgb),
+                    maskImage: BEAM_FADE,
+                    WebkitMaskImage: BEAM_FADE,
+                    mixBlendMode: "screen",
+                  } as CSSProperties
+                }
+              />
+            </div>
           </motion.div>
         ))}
       </AnimatePresence>
@@ -209,7 +266,17 @@ export function WheelScene({ p, tier, mood }: Props) {
             className={`absolute -translate-1/2 max-sm:scale-[0.6] ${tk.inner ? "max-sm:hidden" : ""}`}
             style={{ left: `${tk.x}%`, top: `${tk.y}%` }}
             initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 0.92, y: 0 }}
+            animate={
+              bankrupt
+                ? // Off the table: each one drops out of the bottom, tumbling
+                  {
+                    opacity: 1,
+                    y: 1400,
+                    rotate: tk.tilt * 3 + (i % 2 ? 200 : -200),
+                    transition: { duration: 1.2, ease: [0.5, 0, 0.9, 0.5], delay: 0.25 + (i % 5) * 0.1 },
+                  }
+                : { opacity: 0.92, y: 0, rotate: 0 }
+            }
             exit={{ opacity: 0, y: 24 }}
             transition={{ type: "spring", stiffness: 160, damping: 18 }}
           >
@@ -218,7 +285,8 @@ export function WheelScene({ p, tier, mood }: Props) {
                 {
                   "--tilt": `${tk.tilt}deg`,
                   transform: `rotate(${tk.tilt}deg)`,
-                  animation: `lc-float-spin ${tk.dur}s ease-in-out ${tk.delay}s infinite`,
+                  // A payout gets them bouncing
+                  animation: `lc-float-spin ${payout ? (tk.dur * 0.3).toFixed(2) : tk.dur}s ease-in-out ${tk.delay}s infinite`,
                   filter: "drop-shadow(0 8px 10px rgba(10,2,20,0.45))",
                 } as CSSProperties
               }
@@ -272,10 +340,29 @@ export function WheelScene({ p, tier, mood }: Props) {
         className="absolute inset-0"
         style={{
           background: "radial-gradient(ellipse 80% 70% at 50% 45%, transparent 30%, rgba(8,2,14,0.55) 100%)",
-          opacity: mood === "loss" ? 1 : 0,
+          opacity: bankrupt ? 1 : 0,
           transition: "opacity 700ms ease-out",
         }}
       />
+
+      {/* ...and once the spotlights are out, one cold light clunks on overhead */}
+      <AnimatePresence>
+        {bankrupt && (
+          <motion.div
+            key="lone"
+            className="absolute top-0 left-1/2 aspect-[3/4] h-[85%] -translate-x-1/2"
+            style={{
+              background: LONE_CONE,
+              maskImage: LONE_FADE,
+              WebkitMaskImage: LONE_FADE,
+              mixBlendMode: "screen",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0.4, 1], transition: { delay: 1.5, duration: 0.5, times: [0, 0.2, 0.45, 1] } }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -300,7 +387,7 @@ export function WheelBurst({
 }) {
   const burstRef = useRef<HTMLDivElement>(null);
   const speed = useRef(0);
-  speed.current = 5 + p * p * 70; // degrees per second
+  speed.current = 4 + p * p * 20; // degrees per second: a slow turn even at the full 45
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

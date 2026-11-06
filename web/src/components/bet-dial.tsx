@@ -1,12 +1,15 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { PIXEL_BELL, PIXEL_HEART, PIXEL_HEART_EMPTY, Pixels } from "@/components/scenes/digital-art";
+import { EightBallDie } from "@/components/scenes/eightball-scene";
+import { LatteArt } from "@/components/scenes/cafe-art";
 import { SUIT_PATHS } from "@/components/scenes/tarot-svg";
 import { WheelFace, WheelPointer } from "@/components/scenes/wheel-art";
 import { scallop } from "@/lib/scallop";
 import { sfx } from "@/lib/sfx";
-import { css, cssA, MAX_RANGE, ramp, type Theme } from "@/lib/themes";
+import { css, cssA, MAX_RANGE, ramp, tierIndex, type Theme } from "@/lib/themes";
 
 /** Everything is laid out in a 358-unit square (the size in the mobile design) and scaled. */
 const SIZE = 358;
@@ -42,6 +45,16 @@ const CALAVERA_DOTS = Array.from({ length: 40 }, (_, i) => {
   return { x, y, r: i % 2 ? 1.4 : 2, fill: CALAVERA_COLORS[i % 4] };
 });
 const CALAVERA_FLOWERS = [112, 246].map((x) => ({ x, y: 118, d: scallop(x, 118, 5, 7, 1.05) }));
+
+/** LED segments (themes with `segments`): one per minute, with a small gap either side. */
+const SEG_GAP = 1.1;
+const SEGMENTS = Array.from({ length: MAX_RANGE }, (_, i) =>
+  arc(i * DEG_PER_MIN + SEG_GAP, (i + 1) * DEG_PER_MIN - SEG_GAP, TRACK_R),
+);
+/** The "pixel" ornament's lives, per tier: three at first, draining to none at the full 45. */
+const LIVES = [3, 3, 2, 2, 1, 0];
+/** A life heart's pixel size, in dial units. */
+const HEART_PX = 1.7;
 
 type Props = {
   theme: Theme;
@@ -190,16 +203,37 @@ export function BetDial({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className="absolute inset-0 h-full w-full overflow-visible"
       >
-        <circle
-          cx={C}
-          cy={C}
-          r={TRACK_R}
-          fill="none"
-          stroke={t.track}
-          strokeWidth={t.trackWidth}
-          strokeDasharray={t.dash}
-        />
-        {t.dash !== "none" && (
+        {t.segments ? (
+          // An LED bar graph: every minute its own segment, the lit ones in the colour for their
+          // place on the ramp (calm at the start, hot at the end), glowing together
+          <>
+            {SEGMENTS.map((d, i) => (
+              <path key={i} d={d} fill="none" stroke={t.track} strokeWidth={t.trackWidth} />
+            ))}
+            <g style={{ filter: glowPx > 0 ? `drop-shadow(0 0 ${glowPx}px ${cssA(arcRGB, 0.85)})` : "none" }}>
+              {SEGMENTS.slice(0, range).map((d, i) => (
+                <path
+                  key={i}
+                  d={d}
+                  fill="none"
+                  stroke={css(ramp(t.arcStops, (i + 0.5) / MAX_RANGE))}
+                  strokeWidth={t.trackWidth}
+                />
+              ))}
+            </g>
+          </>
+        ) : (
+          <circle
+            cx={C}
+            cy={C}
+            r={TRACK_R}
+            fill="none"
+            stroke={t.track}
+            strokeWidth={t.trackWidth}
+            strokeDasharray={t.dash}
+          />
+        )}
+        {t.dash !== "none" && !t.segments && (
           <path
             d={
               sweep >= 360
@@ -220,7 +254,7 @@ export function BetDial({
         )}
       </svg>
 
-      {t.dash === "none" && (
+      {t.dash === "none" && !t.segments && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -272,6 +306,10 @@ export function BetDial({
       >
         {/* Prize wheel: wedges, pegs and the hub, under the ticks */}
         {t.ornament === "wheel" && <WheelFace range={range} />}
+        {/* Magic 8 Ball: the die in the window, framing the time, under the ticks */}
+        {t.ornament === "eightball" && <EightBallDie p={p} />}
+        {/* Caffè: latte art in the foam, under the ticks */}
+        {t.ornament === "latte" && <LatteArt tier={tierIndex(range)} />}
 
         {/* Minute ticks; the ones inside the bet light up */}
         {Array.from({ length: MAX_RANGE - 1 }, (_, k) => k + 1).map((i) => {
@@ -304,24 +342,41 @@ export function BetDial({
           fill={t.notch}
         />
 
-        {bulbs.map((b) => (
-          <circle
-            key={b.i}
-            cx={b.x}
-            cy={b.y}
-            r={4.5}
-            fill={b.lit ? (t.bulbColors?.on ?? "#FFE28A") : (t.bulbColors?.off ?? "rgba(255,226,138,0.16)")}
-            style={{
-              filter: b.lit
-                ? `drop-shadow(0 0 5px ${t.bulbColors?.glow ?? "rgba(255,210,100,0.9)"})`
-                : "none",
-              animation:
-                b.lit && p > 0.85
-                  ? `lc-blink 0.7s linear ${(b.i * 0.07).toFixed(2)}s infinite`
-                  : "none",
-            }}
-          />
-        ))}
+        {bulbs.map((b) => {
+          const bc = t.bulbColors;
+          const on = bc?.on ?? "#FFE28A";
+          const off = bc?.off ?? "rgba(255,226,138,0.16)";
+          // Marquee themes alternate two bulb colours and run a chase round the lit ones
+          const alt = bc?.chase && bc.alt && b.i % 2 === 1;
+          const chaseS = p > 0.85 ? 0.5 : 1.1;
+          return (
+            <circle
+              key={b.i}
+              cx={b.x}
+              cy={b.y}
+              r={4.5}
+              fill={b.lit ? (alt ? bc.alt : on) : off}
+              style={
+                {
+                  "--bulb-on": on,
+                  "--bulb-off": off,
+                  filter: b.lit
+                    ? `drop-shadow(0 0 5px ${(alt && bc.altGlow) || bc?.glow || "rgba(255,210,100,0.9)"})`
+                    : "none",
+                  animation: bc?.chase
+                    ? b.lit
+                      ? // Three-phase chase, running clockwise: every third bulb at full brightness
+                        `lc-bulb-chase ${chaseS}s linear ${(-(((3 - (b.i % 3)) % 3) * chaseS) / 3).toFixed(2)}s infinite`
+                      : // Unlit bulbs: one dim glint travelling round, like a sign waiting for players
+                        `lc-bulb-attract 2.4s linear ${((b.i * 2.4) / 22).toFixed(2)}s infinite`
+                    : b.lit && p > 0.85
+                      ? `lc-blink 0.7s linear ${(b.i * 0.07).toFixed(2)}s infinite`
+                      : "none",
+                } as CSSProperties
+              }
+            />
+          );
+        })}
         {t.ornament === "wheel" && <WheelPointer range={range} />}
         {t.ornament === "chip" && (
           // A giant poker chip: eight edge inserts round the rim (clear of the 12 o'clock notch)
@@ -463,6 +518,49 @@ export function BetDial({
             ))}
           </g>
         )}
+        {t.ornament === "pixel" && (
+          // An arcade screen: a ring of square pixels, PLAYER 1 above the time, and three lives
+          // below it that drain as the bet grows (the last one blinks)
+          <g>
+            <circle
+              cx={C}
+              cy={C}
+              r={108}
+              fill="none"
+              stroke={t.faint}
+              strokeWidth={3}
+              strokeDasharray={`3 ${((2 * Math.PI * 108) / 84 - 3).toFixed(3)}`}
+            />
+            <text
+              x={C}
+              y={126}
+              fontSize={11}
+              textAnchor="middle"
+              letterSpacing="0.16em"
+              fill={t.muted}
+              opacity={0.75}
+              style={{ fontFamily: t.titleFont }}
+            >
+              PLAYER 1
+            </text>
+            {[-1, 0, 1].map((k) => {
+              const lives = LIVES[tierIndex(range)];
+              const full = k + 1 < lives;
+              const last = lives === 1 && k === -1;
+              const x = C + k * 17 - (7 * HEART_PX) / 2;
+              return (
+                <g
+                  key={k}
+                  transform={`translate(${x} 236) scale(${HEART_PX})`}
+                  shapeRendering="crispEdges"
+                  style={{ animation: last ? "lc-blink 0.8s steps(1) infinite" : "none" }}
+                >
+                  {full ? <Pixels s={PIXEL_HEART} /> : <Pixels s={PIXEL_HEART_EMPTY} pal={{ w: t.faint }} />}
+                </g>
+              );
+            })}
+          </g>
+        )}
       </svg>
 
       {/* Centre: the target time */}
@@ -548,7 +646,7 @@ export function BetDial({
         aria-valuenow={range}
         aria-valuetext={`${range} minutes either side`}
         onKeyDown={onKeyDown}
-        className="absolute flex cursor-grab items-center justify-center rounded-full outline-offset-4 transition-transform duration-150 ease-out hover:scale-110 active:cursor-grabbing"
+        className={`absolute flex cursor-grab items-center justify-center outline-offset-4 transition-transform duration-150 ease-out hover:scale-110 active:cursor-grabbing ${t.pixelHandle ? "rounded-[22%]" : "rounded-full"}`}
         style={{
           left: pct(hx - 22),
           top: pct(hy - 22),
@@ -575,22 +673,35 @@ export function BetDial({
           ].join(", "),
         }}
       >
-        <svg
-          aria-hidden
-          viewBox="0 0 24 24"
-          className="h-[45%] w-[45%]"
-          style={{
-            animation: grabbing ? "lc-ring 0.35s ease-in-out infinite" : "none",
-          }}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
-        </svg>
+        {t.pixelHandle ? (
+          // A pixel bell, in square pixels
+          <svg
+            aria-hidden
+            viewBox="-1 -1 12 11"
+            className="h-[48%] w-[48%]"
+            shapeRendering="crispEdges"
+            style={{ animation: grabbing ? "lc-ring 0.35s steps(2) infinite" : "none" }}
+          >
+            <Pixels s={PIXEL_BELL} pal={{ w: "currentColor" }} />
+          </svg>
+        ) : (
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className="h-[45%] w-[45%]"
+            style={{
+              animation: grabbing ? "lc-ring 0.35s ease-in-out infinite" : "none",
+            }}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+          </svg>
+        )}
       </div>
     </div>
   );

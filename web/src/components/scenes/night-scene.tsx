@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
-import { Bat, MOON_CRATERS } from "@/components/scenes/night-art";
+import { Bat, MOON_SURFACE, StarArt } from "@/components/scenes/night-art";
 import { Skyline } from "@/components/scenes/night-skyline";
 import { Cloud } from "@/components/scenes/sunrise-art";
 import type { SceneMood } from "@/components/scenes/types";
@@ -31,10 +31,6 @@ type Props = {
 };
 
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
-
-/** A four-point sparkle on a 24-unit grid. */
-const SPARKLE =
-  "M12 0C12.8 7 17 11.2 24 12 17 12.8 12.8 17 12 24 11.2 17 7 12.8 0 12 7 11.2 11.2 7 12 0z";
 
 /** Stars come out in a fixed order (`order`), so the same ones are always first. */
 const STARS = Array.from({ length: 72 }, (_, i) => ({
@@ -84,16 +80,16 @@ export function NightScene({ p, tier, mood }: Props) {
   const bats = mood === "win" ? 0 : BATS_AT[tier];
   const shooters = mood === "win" ? 0 : SHOOTERS_AT[tier];
 
-  const cityGlow = rampN(["#6B3A7A", "#A2456E", "#E0705A"], restless);
+  const cityGlow = rampN(["#5A3470", "#86396A", "#B4505E"], restless);
   const dawnGlow = "255,150,90";
 
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* Glow over the city: violet when it's quiet, hot amber when nobody's sleeping */}
       <div
-        className="absolute inset-x-0 bottom-0 h-[60%]"
+        className="absolute inset-x-0 bottom-0 h-[50%]"
         style={{
-          background: `radial-gradient(ellipse 70% 60% at 50% 100%, ${cssA(cityGlow, 0.18 + restless * 0.3)} 0%, ${cssA(cityGlow, 0.06 + restless * 0.1)} 50%, transparent 78%)`,
+          background: `radial-gradient(ellipse 75% 55% at 50% 100%, ${cssA(cityGlow, 0.14 + restless * 0.14)} 0%, ${cssA(cityGlow, 0.04 + restless * 0.05)} 50%, transparent 78%)`,
           transition: "background 600ms ease-out",
         }}
       />
@@ -124,12 +120,12 @@ export function NightScene({ p, tier, mood }: Props) {
               viewBox="0 0 24 24"
               className="block"
               style={{
-                width: s.r * 8,
-                height: s.r * 8,
+                width: s.r * 11,
+                height: s.r * 11,
                 animation: `lc-twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
               }}
             >
-              <path d={SPARKLE} fill="#FFF1D6" />
+              <StarArt tint="#FFF1D6" />
             </svg>
           ) : (
             <span
@@ -209,11 +205,7 @@ export function NightScene({ p, tier, mood }: Props) {
                 animation: `lc-bob ${(1.8 + i * 0.25).toFixed(2)}s ease-in-out infinite`,
               }}
             >
-              <Bat
-                width={b.size}
-                beat={0.34 + (i % 3) * 0.06}
-                style={{ filter: "drop-shadow(0 0 3px rgba(255,214,170,0.25))" }}
-              />
+              <Bat width={b.size} beat={0.34 + (i % 3) * 0.06} />
             </div>
           </motion.div>
         ))}
@@ -225,14 +217,17 @@ export function NightScene({ p, tier, mood }: Props) {
   );
 }
 
-
-/** The moon waxes from a thin crescent to full as the bet grows, and glows warmer. */
+/**
+ * The moon waxes from a thin crescent to full as the bet grows, and glows warmer. The unlit
+ * part still shows, faintly (earthshine), and the lit face shades off towards its edge.
+ */
 function Moon({ phase, dawn }: { phase: number; dawn: number }) {
   // The shadow disc slides off the moon: at 2r apart, it's full.
   const r = 30;
   const shift = r * (0.42 + phase * 1.75);
-  const fill = css(rampN(["#F4F0FF", "#FFF3DA", "#FFE7BC", "#FFD9A8"], phase));
-  const glow = 0.35 + phase * 0.5;
+  const fill = rampN(["#F4F0FF", "#FFF3DA", "#FFE7BC", "#FFD9A8"], phase);
+  const limb = rampN(["#D9CFEA", "#EBD9BC", "#E8C9A0", "#E2B88E"], phase);
+  const glow = 0.18 + phase * 0.3;
   return (
     <div
       className="absolute top-[9%] right-[9%] max-sm:top-[7%] max-sm:right-[5%]"
@@ -255,24 +250,46 @@ function Moon({ phase, dawn }: { phase: number; dawn: number }) {
               />
             )}
           </mask>
+          {/* Lit from the upper right; darker towards the limb */}
+          <radialGradient id="lc-night-moon-face" cx="0.58" cy="0.4" r="0.62">
+            <stop offset="0" stopColor={css(fill)} />
+            <stop offset="0.75" stopColor={css(fill)} />
+            <stop offset="1" stopColor={css(limb)} />
+          </radialGradient>
         </defs>
+        {/* Earthshine: the dark side, only just there */}
+        <circle
+          cx="40"
+          cy="40"
+          r={r}
+          fill="#C9B8FF"
+          opacity={0.035 * (1 - phase)}
+        />
+        {/* The glow follows the lit part, two layers: a tight rim and a wide, faint bloom */}
+        {/* (Filter on the outside: on the same element, the mask would clip the glow off) */}
         <g
-          mask="url(#lc-night-moon)"
           style={{
-            filter: `drop-shadow(0 0 ${Math.round(8 + phase * 18)}px rgba(255,220,160,${glow.toFixed(2)}))`,
+            filter: `drop-shadow(0 0 3px rgba(255,226,180,${(glow * 0.9).toFixed(2)})) drop-shadow(0 0 ${Math.round(10 + phase * 14)}px rgba(255,214,160,${glow.toFixed(2)}))`,
           }}
         >
-          <circle cx="40" cy="40" r={r} fill={fill} />
-          {/* Craters, as shading so they follow the moon's colour as it warms */}
-          {MOON_CRATERS.map((c, i) => (
-            <circle
-              key={i}
-              cx={c.cx}
-              cy={c.cy}
-              r={c.r}
-              fill={c.deep ? "rgba(150,105,60,0.2)" : "rgba(150,105,60,0.15)"}
-            />
-          ))}
+          <g mask="url(#lc-night-moon)">
+            <circle cx="40" cy="40" r={r} fill="url(#lc-night-moon-face)" />
+            {/* Seas, crater rims and craters, as warm shading so they follow the moon's colour */}
+            <g fill="#6E4A2C">
+              <g opacity={MOON_SURFACE.maria.opacity}>
+                {MOON_SURFACE.maria.d.map((d, i) => (
+                  <path key={i} d={d} />
+                ))}
+              </g>
+              {[MOON_SURFACE.rims, MOON_SURFACE.craters].map((set, k) => (
+                <g key={k} opacity={set.opacity}>
+                  {set.circles.map(([cx, cy, r], i) => (
+                    <circle key={i} cx={cx} cy={cy} r={r} />
+                  ))}
+                </g>
+              ))}
+            </g>
+          </g>
         </g>
       </svg>
     </div>
@@ -280,39 +297,41 @@ function Moon({ phase, dawn }: { phase: number; dawn: number }) {
 }
 
 /**
- * Constellations round the dial, on a 200-unit box (the dial's edge is at ~53 from the
- * centre): twelve stars in a ring, in three constellations of four, each with a branch star.
+ * The moon-phase ring round the dial, on a 200-unit box (the dial's edge is at ~53 from the
+ * centre): eight little moons through one lunar cycle, the new moon at the bottom, waxing up
+ * the left, full at the top, waning down the right.
  */
-const HALO = (() => {
-  const ring = Array.from({ length: 12 }, (_, i) => {
-    const a = ((i * 30 + (frac(i, 61) - 0.5) * 14 - 75) * Math.PI) / 180;
-    const r = 58 + frac(i, 62) * 9;
-    return { x: 100 + Math.cos(a) * r, y: 100 + Math.sin(a) * r, s: 2.6 + frac(i, 63) * 2.4 };
-  });
-  const branch = [0, 1, 2].map((g) => {
-    const base = ring[g * 4 + 1];
-    const a = Math.atan2(base.y - 100, base.x - 100) + 0.14;
-    return { x: 100 + Math.cos(a) * 75, y: 100 + Math.sin(a) * 75, s: 2.2 };
-  });
-  const stars = [...ring, ...branch];
-  const links: [number, number][] = [];
-  for (let g = 0; g < 3; g++) {
-    for (let k = 0; k < 3; k++) links.push([g * 4 + k, g * 4 + k + 1]);
-    links.push([g * 4 + 1, 12 + g]);
-  }
-  // Stars come out a constellation at a time-ish, from ~8 min; the branch stars last, just before 45
-  const reveal = stars.map((_, i) =>
-    i < 12 ? 0.18 + ((i % 4) * 3 + Math.floor(i / 4)) * 0.055 : 0.86 + (i - 12) * 0.045,
-  );
-  return { stars, links, reveal };
-})();
+const PHASE_R = 4.2;
+const PHASE_ORBIT = 61;
+const PHASES = Array.from({ length: 8 }, (_, k) => {
+  const a = ((90 + k * 45) * Math.PI) / 180;
+  // They light up a step per bet tier, outward from the new moon in pairs, so the full moon
+  // only comes on at the full 45 (12, 24, 36 and 45 minutes are the tier lines).
+  const step = Math.min(k, 8 - k);
+  const reveal = [0.001, 12 / 45, 24 / 45, 36 / 45, 1][step];
+  return { k, x: 100 + Math.cos(a) * PHASE_ORBIT, y: 100 + Math.sin(a) * PHASE_ORBIT, reveal };
+});
+
+/**
+ * The lit part of a moon at `f` through its cycle (0 new, 0.5 full), centred on (0, 0): the
+ * bright limb is a half circle, closed by the terminator, a half ellipse that bulges out for a
+ * crescent and in for a gibbous moon. Waxing moons are lit on the right; waning, the left.
+ */
+function litPath(f: number, r: number) {
+  const waxing = f <= 0.5;
+  const rx = Math.abs(Math.cos(2 * Math.PI * f)) * r;
+  const gibbous = f > 0.25 && f < 0.75;
+  const side = waxing ? 1 : 0;
+  const term = gibbous === waxing ? 1 : 0;
+  return `M0 ${-r}A${r} ${r} 0 0 ${side} 0 ${r}A${rx.toFixed(2)} ${r} 0 0 ${term} 0 ${-r}Z`;
+}
 
 /**
  * Night's counterpart to Classic's sun rays: moonlight on the dial. A soft glow that warms from
- * lavender to amber; stars that gather round the dial and join up into constellations as the bet
- * grows, slowly wheeling (faster the bigger the bet); and from about halfway, a pastel lunar
- * corona. At 45 the stars align: every line is drawn, the stars twinkle and the corona breathes.
- * Fades out while the alarm is set.
+ * lavender to amber; a ring of moon phases that light up a step per bet tier, outward from the
+ * new moon, until the full moon comes on at 45; the ring drifts slowly round (each moon stays
+ * upright); and from about halfway, a pastel lunar corona. At 45 the full moon glows and the
+ * corona breathes. Fades out while the alarm is set.
  */
 export function MoonHalo({
   p,
@@ -328,7 +347,7 @@ export function MoonHalo({
 }) {
   const spinRef = useRef<HTMLDivElement>(null);
   const speed = useRef(0);
-  speed.current = 1.5 + p * p * 7; // degrees per second
+  speed.current = 1.2 + p * p * 3; // degrees per second
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -337,7 +356,8 @@ export function MoonHalo({
     let id = requestAnimationFrame(function frame(now) {
       angle = (angle + ((now - last) / 1000) * speed.current) % 360;
       last = now;
-      if (spinRef.current) spinRef.current.style.transform = `rotate(${angle.toFixed(2)}deg)`;
+      // The ring turns one way; each moon turns back, so its lit side stays put
+      spinRef.current?.style.setProperty("--spin", `${angle.toFixed(2)}deg`);
       id = requestAnimationFrame(frame);
     });
     return () => cancelAnimationFrame(id);
@@ -346,6 +366,8 @@ export function MoonHalo({
   const glow = rampN(["#9E8CFF", "#C7A8FF", "#FFC9A0", "#FFB07A"], p);
   const corona = clamp((p - 0.4) / 0.5);
   const allIn = range === MAX_RANGE;
+  // Moonlight warms with the bet, like the moon in the sky
+  const lit = css(rampN(["#F4F0FF", "#FFF3DA", "#FFE7BC", "#FFD9A8"], p));
 
   return (
     <div
@@ -362,64 +384,85 @@ export function MoonHalo({
       <div
         className="absolute inset-0 rounded-full"
         style={{
-          background: `radial-gradient(circle, ${cssA(glow, 0.3)} 0%, ${cssA(glow, 0.1)} 36%, ${cssA(glow, 0)} 60%)`,
-          opacity: 0.5 + p * 0.5,
+          background: `radial-gradient(circle, ${cssA(glow, 0.16)} 0%, ${cssA(glow, 0.05)} 36%, ${cssA(glow, 0)} 58%)`,
+          opacity: 0.45 + p * 0.4,
         }}
       />
       {/* Lunar corona: soft pastel bands, violet inside to peach and rose outside */}
       <div
         className="absolute inset-0 rounded-full"
         style={{
-          opacity: corona,
-          filter: "blur(6px)",
+          opacity: corona * 0.8,
+          filter: "blur(10px)",
           background:
-            "radial-gradient(circle, transparent 51%, rgba(176,160,255,0.26) 55%, rgba(255,218,176,0.22) 59.5%, rgba(255,150,170,0.14) 64%, transparent 70%)",
-          animation: allIn ? "lc-pulse 2.6s ease-in-out infinite" : "none",
+            "radial-gradient(circle, transparent 52%, rgba(176,160,255,0.11) 55.5%, rgba(255,218,176,0.09) 59.5%, rgba(255,150,170,0.05) 63.5%, transparent 69%)",
+          animation: allIn ? "lc-corona 5s ease-in-out infinite" : "none",
           transition: "opacity 400ms",
         }}
       />
-      {/* The constellations, slowly wheeling round the dial */}
-      <div ref={spinRef} className="absolute inset-0">
+      {/* The phases, slowly drifting round the dial */}
+      <div
+        ref={spinRef}
+        className="absolute inset-0"
+        style={{ transform: "rotate(var(--spin, 0deg))" }}
+      >
         <svg viewBox="0 0 200 200" className="h-full w-full" style={{ overflow: "visible" }}>
-          {HALO.links.map(([a, b], i) => {
-            const on = p >= Math.max(HALO.reveal[a], HALO.reveal[b]);
-            const s = HALO.stars;
+          {/* The orbit: a faint dotted track the moons ride on */}
+          <circle
+            cx="100"
+            cy="100"
+            r={PHASE_ORBIT}
+            fill="none"
+            stroke="#C9B8FF"
+            strokeWidth={0.4}
+            strokeLinecap="round"
+            strokeDasharray="0.01 2.6"
+            opacity={0.22 + p * 0.18}
+          />
+          {PHASES.map((m) => {
+            const on = p >= m.reveal;
+            const f = m.k / 8;
+            const full = m.k === 4;
             return (
-              <line
-                key={i}
-                x1={s[a].x}
-                y1={s[a].y}
-                x2={s[b].x}
-                y2={s[b].y}
-                stroke="#FFE9C8"
-                strokeWidth={0.5}
-                strokeLinecap="round"
-                opacity={on ? (allIn ? 0.48 : 0.28) : 0}
-                style={{ transition: "opacity 500ms" }}
-              />
+              <g key={m.k} transform={`translate(${m.x.toFixed(2)} ${m.y.toFixed(2)})`}>
+                <g
+                  style={{
+                    transform: "rotate(calc(var(--spin, 0deg) * -1))",
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  }}
+                >
+                  {/* Unlit: a faint shadow of the moon, waiting (the dark side, once it's lit) */}
+                  <circle
+                    r={PHASE_R}
+                    fill="#C9B8FF"
+                    fillOpacity={on ? 0.12 : 0.07}
+                    style={{ transition: "fill-opacity 500ms" }}
+                  />
+                  {/* Lit: the bright part, popping in with a soft glow (bigger for the full moon) */}
+                  <g
+                    style={{
+                      opacity: on ? 1 : 0,
+                      transform: on ? "scale(1)" : "scale(0.6)",
+                      transformBox: "fill-box",
+                      transformOrigin: "center",
+                      transition:
+                        "opacity 450ms ease-out, transform 550ms cubic-bezier(0.3, 1.5, 0.5, 1)",
+                      filter: `drop-shadow(0 0 ${full ? 4 : 2}px ${cssA(glow, full ? 0.85 : 0.5)})`,
+                      animation: full && allIn ? "lc-corona 2.6s ease-in-out infinite" : undefined,
+                    }}
+                  >
+                    {m.k === 0 ? (
+                      // The new moon: no light, only a thin bright rim
+                      <circle r={PHASE_R - 0.2} fill="none" stroke={lit} strokeWidth={0.45} strokeOpacity={0.75} />
+                    ) : (
+                      <path d={litPath(f, PHASE_R)} fill={lit} />
+                    )}
+                  </g>
+                </g>
+              </g>
             );
           })}
-          {HALO.stars.map((s, i) => (
-            <g
-              key={i}
-              transform={`translate(${(s.x - s.s).toFixed(2)} ${(s.y - s.s).toFixed(2)}) scale(${(s.s / 12).toFixed(3)})`}
-              opacity={p >= HALO.reveal[i] ? 1 : 0}
-              style={{ transition: "opacity 500ms" }}
-            >
-              <path
-                d={SPARKLE}
-                fill="#FFF3DC"
-                style={{
-                  transformBox: "fill-box",
-                  transformOrigin: "center",
-                  filter: "drop-shadow(0 0 3px rgba(255,226,180,0.9))",
-                  animation: allIn
-                    ? `lc-halo-twinkle ${(1.1 + frac(i, 65)).toFixed(2)}s ease-in-out ${(frac(i, 64) * 1.5).toFixed(2)}s infinite`
-                    : "none",
-                }}
-              />
-            </g>
-          ))}
         </svg>
       </div>
     </div>

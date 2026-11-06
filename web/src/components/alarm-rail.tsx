@@ -8,6 +8,13 @@ import { contrast, css, edgeColor, isDark, MAX_RANGE, mixHex, ramp, type Theme }
 
 type Phase = "idle" | RevealPhase;
 
+/**
+ * Where the minute ticks sit on the rail: "above" the line (into the hero), "below" it
+ * (mirrored, hanging under the hero, so busy scene bottoms don't clash with them), or
+ * "both" (full ticks below, faint ones above).
+ */
+export type TickPlacement = "above" | "below" | "both";
+
 type Props = {
   theme: Theme;
   phase: Phase;
@@ -18,6 +25,8 @@ type Props = {
   /** e.g. "7:23 AM": when it actually rang, shown under the pin. */
   rangLabel: string;
   onPress: () => void;
+  /** Defaults to "below". */
+  ticks?: TickPlacement;
 };
 
 /**
@@ -25,7 +34,16 @@ type Props = {
  * time, ticks run out a minute at a time on each side, and the ones inside the
  * bet light up. After a draw, a pin drops where the alarm really rang.
  */
-export function AlarmRail({ theme: t, phase, range, offset, rollId, rangLabel, onPress }: Props) {
+export function AlarmRail({
+  theme: t,
+  phase,
+  range,
+  offset,
+  rollId,
+  rangLabel,
+  onPress,
+  ticks = "below",
+}: Props) {
   const pinSide = phase === "result" && offset !== 0 ? (offset < 0 ? "left" : "right") : null;
 
   const half = (side: "left" | "right") => (
@@ -35,6 +53,7 @@ export function AlarmRail({ theme: t, phase, range, offset, rollId, rangLabel, o
       range={range}
       wave={phase !== "idle"}
       rollId={rollId}
+      placement={ticks}
       pin={
         pinSide === side ? (
           <Pin
@@ -45,6 +64,8 @@ export function AlarmRail({ theme: t, phase, range, offset, rollId, rangLabel, o
             color={edgeColor(t, range / MAX_RANGE)}
             rail={t.rail}
             label={`Rang ${rangLabel}`}
+            // Under the line either way; when the ticks hang down there, just past their tips
+            labelTop={ticks === "above" ? 14 : tickHeight(t) + 6}
           />
         ) : null
       }
@@ -86,6 +107,7 @@ function Ticks({
   range,
   wave,
   rollId,
+  placement,
   pin,
 }: {
   side: "left" | "right";
@@ -93,14 +115,28 @@ function Ticks({
   range: number;
   wave: boolean;
   rollId: number;
+  placement: TickPlacement;
   pin: React.ReactNode;
 }) {
   const maskId = `lc-fade-${useId().replace(/:/g, "")}`;
   // Lit ticks grow to this multiple of their height; the SVG is tall enough for the tallest.
   const litScale = t.railTicks?.lit ?? 2;
-  const tickH = Math.ceil(BASE_LONG * litScale) + 2;
+  const tickH = tickHeight(t);
   const tip = t.railTicks?.tip ?? 0.15;
   const tailColor = `color-mix(in srgb, ${t.rail} 28%, transparent)`;
+  // Each layer is the same ticks, drawn up from the line or mirrored down from it.
+  const layers =
+    placement === "both"
+      ? [
+          { down: true, faint: false },
+          { down: false, faint: true },
+        ]
+      : [{ down: placement === "below", faint: false }];
+  // Sits on the line, on the layer's side of it; mirrored layers are flipped about the line.
+  const anchor = (down: boolean) => (down ? "top-1/2 mt-0.5" : "bottom-1/2 mb-0.5");
+  const flipY = (down: boolean) => (down ? " scaleY(-1)" : "");
+  const FAINT = 0.3;
+
   return (
     <div
       // --tail: outer strip past 45 min (10% of the screen each side, so 45 min spans ~80%).
@@ -111,28 +147,32 @@ function Ticks({
           The container (for cqw) lives on this inner layer, not the half itself: a container makes
           a stacking context, which would trap the pin underneath the button. */}
       <div className="pointer-events-none absolute inset-0" style={{ containerType: "inline-size" }}>
-        <div
-          aria-hidden
-          className="absolute bottom-1/2 mb-0.5 max-sm:hidden"
-          style={
-            {
-              [side === "right" ? "right" : "left"]: 0,
-              width: "var(--tail)",
-              height: BASE_LONG,
-              "--step": `calc((100cqw - var(--tail) - ${ZERO_GAP}px) / ${MAX_RANGE})`,
-              backgroundImage: `linear-gradient(90deg, ${tailColor} 0 1.5px, transparent 1.5px), linear-gradient(90deg, ${tailColor} 0 2.5px, transparent 2.5px)`,
-              backgroundSize: `var(--step) ${BASE_SHORT}px, calc(var(--step) * 5) ${BASE_LONG}px`,
-              backgroundPosition:
-                "calc(var(--step) / 2 - 0.75px) 100%, calc(var(--step) * 4.5 - 1.25px) 100%",
-              backgroundRepeat: "repeat-x",
-              // Taper the heights down towards the edge, and fade them out
-              clipPath: "polygon(0 0, 100% 75%, 100% 100%, 0 100%)",
-              maskImage: "linear-gradient(90deg, #000 20%, transparent)",
-              WebkitMaskImage: "linear-gradient(90deg, #000 20%, transparent)",
-              transform: side === "left" ? "scaleX(-1)" : undefined,
-            } as React.CSSProperties
-          }
-        />
+        {layers.map(({ down, faint }) => (
+          <div
+            key={String(down)}
+            aria-hidden
+            className={`absolute max-sm:hidden ${anchor(down)}`}
+            style={
+              {
+                [side === "right" ? "right" : "left"]: 0,
+                width: "var(--tail)",
+                height: BASE_LONG,
+                opacity: faint ? FAINT : undefined,
+                "--step": `calc((100cqw - var(--tail) - ${ZERO_GAP}px) / ${MAX_RANGE})`,
+                backgroundImage: `linear-gradient(90deg, ${tailColor} 0 1.5px, transparent 1.5px), linear-gradient(90deg, ${tailColor} 0 2.5px, transparent 2.5px)`,
+                backgroundSize: `var(--step) ${BASE_SHORT}px, calc(var(--step) * 5) ${BASE_LONG}px`,
+                backgroundPosition:
+                  "calc(var(--step) / 2 - 0.75px) 100%, calc(var(--step) * 4.5 - 1.25px) 100%",
+                backgroundRepeat: "repeat-x",
+                // Taper the heights down towards the edge, and fade them out
+                clipPath: "polygon(0 0, 100% 75%, 100% 100%, 0 100%)",
+                maskImage: "linear-gradient(90deg, #000 20%, transparent)",
+                WebkitMaskImage: "linear-gradient(90deg, #000 20%, transparent)",
+                transform: `${side === "left" ? "scaleX(-1)" : ""}${flipY(down)}` || undefined,
+              } as React.CSSProperties
+            }
+          />
+        ))}
       </div>
       {/* The 45 minutes themselves */}
       <div
@@ -144,66 +184,76 @@ function Ticks({
             : { left: "var(--tail)", right: ZERO_GAP }
         }
       >
-        <svg
-          aria-hidden
-          viewBox={`0 0 ${MAX_RANGE * 10} ${tickH}`}
-          preserveAspectRatio="none"
-          className="absolute inset-x-0 bottom-1/2 mb-0.5 w-full overflow-visible"
-          style={{ height: tickH }}
-        >
-          {/* Bars fade out towards their tops */}
-          <defs>
-            <linearGradient id={`${maskId}-g`} x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0" stopColor="#fff" stopOpacity="1" />
-              <stop offset="0.45" stopColor="#fff" stopOpacity="0.85" />
-              <stop offset="1" stopColor="#fff" stopOpacity={tip} />
-            </linearGradient>
-            <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y={-tickH} width={MAX_RANGE * 10} height={tickH * 2}>
-              <rect x="0" y={-tickH} width={MAX_RANGE * 10} height={tickH * 2} fill={`url(#${maskId}-g)`} />
-            </mask>
-          </defs>
-          {/* Re-keyed per draw so the wave replays */}
-          <g key={rollId} mask={`url(#${maskId})`}>
-            {Array.from({ length: MAX_RANGE }, (_, k) => k + 1).map((m) => {
-              const x = side === "right" ? (m - 0.5) * 10 : (MAX_RANGE - m + 0.5) * 10;
-              const long = m % 5 === 0;
-              const lit = m <= range;
-              // Lit bars grow to litScale × their height, stepping down over the last few minutes
-              // of the window so its edge reads as a soft slope.
-              const taper = lit ? Math.min(1, (range - m + 1) / 4) : 0;
-              // Ticks also rise out of the button: shorter for the first few minutes.
-              const rise = Math.min(1, 0.45 + (0.55 * (m - 1)) / 4);
-              const scale = (1 + (litScale - 1) * taper) * rise;
-              return (
-                <line
-                  key={m}
-                  x1={x}
-                  x2={x}
-                  y1={tickH}
-                  y2={tickH - (long ? BASE_LONG : BASE_SHORT)}
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinecap="round"
-                  strokeWidth={long ? 2.5 : 1.5}
-                  stroke={lit ? css(ramp(t.railTicks?.ink ?? t.arcStops, m / MAX_RANGE)) : t.rail}
-                  strokeOpacity={lit ? 1 : 0.28}
-                  className={long ? undefined : "max-sm:hidden"}
-                  style={
-                    {
-                      "--k": scale,
-                      transform: `scaleY(${scale})`,
-                      transition:
-                        "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2), stroke 150ms, stroke-opacity 150ms",
-                      transformBox: "fill-box",
-                      transformOrigin: "50% 100%",
-                      animation:
-                        wave && lit ? `lc-tick-wave 0.5s ease-out ${m * 14}ms both` : undefined,
-                    } as React.CSSProperties
-                  }
-                />
-              );
-            })}
-          </g>
-        </svg>
+        {layers.map(({ down, faint }) => {
+          const id = `${maskId}-${down ? "d" : "u"}`;
+          return (
+            <svg
+              key={String(down)}
+              aria-hidden
+              viewBox={`0 0 ${MAX_RANGE * 10} ${tickH}`}
+              preserveAspectRatio="none"
+              className={`absolute inset-x-0 w-full overflow-visible ${anchor(down)}`}
+              style={{
+                height: tickH,
+                opacity: faint ? FAINT : undefined,
+                transform: flipY(down) || undefined,
+              }}
+            >
+              {/* Bars fade out towards their tips */}
+              <defs>
+                <linearGradient id={`${id}-g`} x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0" stopColor="#fff" stopOpacity="1" />
+                  <stop offset="0.45" stopColor="#fff" stopOpacity="0.85" />
+                  <stop offset="1" stopColor="#fff" stopOpacity={tip} />
+                </linearGradient>
+                <mask id={id} maskUnits="userSpaceOnUse" x="0" y={-tickH} width={MAX_RANGE * 10} height={tickH * 2}>
+                  <rect x="0" y={-tickH} width={MAX_RANGE * 10} height={tickH * 2} fill={`url(#${id}-g)`} />
+                </mask>
+              </defs>
+              {/* Re-keyed per draw so the wave replays */}
+              <g key={rollId} mask={`url(#${id})`}>
+                {Array.from({ length: MAX_RANGE }, (_, k) => k + 1).map((m) => {
+                  const x = side === "right" ? (m - 0.5) * 10 : (MAX_RANGE - m + 0.5) * 10;
+                  const long = m % 5 === 0;
+                  const lit = m <= range;
+                  // Lit bars grow to litScale × their height, stepping down over the last few minutes
+                  // of the window so its edge reads as a soft slope.
+                  const taper = lit ? Math.min(1, (range - m + 1) / 4) : 0;
+                  // Ticks also rise out of the button: shorter for the first few minutes.
+                  const rise = Math.min(1, 0.45 + (0.55 * (m - 1)) / 4);
+                  const scale = (1 + (litScale - 1) * taper) * rise;
+                  return (
+                    <line
+                      key={m}
+                      x1={x}
+                      x2={x}
+                      y1={tickH}
+                      y2={tickH - (long ? BASE_LONG : BASE_SHORT)}
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinecap="round"
+                      strokeWidth={long ? 2.5 : 1.5}
+                      stroke={lit ? css(ramp(t.railTicks?.ink ?? t.arcStops, m / MAX_RANGE)) : t.rail}
+                      strokeOpacity={lit ? 1 : 0.28}
+                      className={long ? undefined : "max-sm:hidden"}
+                      style={
+                        {
+                          "--k": scale,
+                          transform: `scaleY(${scale})`,
+                          transition:
+                            "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2), stroke 150ms, stroke-opacity 150ms",
+                          transformBox: "fill-box",
+                          transformOrigin: "50% 100%",
+                          animation:
+                            wave && lit ? `lc-tick-wave 0.5s ease-out ${m * 14}ms both` : undefined,
+                        } as React.CSSProperties
+                      }
+                    />
+                  );
+                })}
+              </g>
+            </svg>
+          );
+        })}
         {pin}
       </div>
     </div>
@@ -216,12 +266,15 @@ function Pin({
   color,
   rail,
   label,
+  labelTop,
 }: {
   minute: number;
   side: "left" | "right";
   color: string;
   rail: string;
   label: string;
+  /** How far under the line the "Rang …" label starts, in px. */
+  labelTop: number;
 }) {
   const pos = side === "right" ? minute - 0.5 : MAX_RANGE - minute + 0.5;
   // Near the button, run the label outward so it doesn't slide under the housing.
@@ -266,8 +319,9 @@ function Pin({
       />
       {/* Phones: no room beside the button; the status line already says what happened */}
       <span
-        className="absolute top-3.5 text-xs font-bold whitespace-nowrap tabular-nums transition-[opacity,margin] duration-300 ease-out max-sm:hidden"
+        className="absolute text-xs font-bold whitespace-nowrap tabular-nums transition-[opacity,margin] duration-300 ease-out max-sm:hidden"
         style={{
+          top: labelTop,
           color: "var(--foreground)",
           transform: labelShift,
           opacity: arrived ? 1 : 0,
@@ -285,6 +339,11 @@ const BASE_SHORT = 9;
 /** Breathing room between the button housing and minute 1, in px. */
 const ZERO_GAP = 18;
 const BASE_LONG = 17;
+
+/** Room for the tallest tick (a lit long one), in px. */
+function tickHeight(t: Theme) {
+  return Math.ceil(BASE_LONG * (t.railTicks?.lit ?? 2)) + 2;
+}
 
 
 /** Edge depth of the 3D button, in px. */
@@ -315,7 +374,7 @@ function PushButton({
   const edge = css(mixHex(face, "#000000", 0.35));
   const shine = "inset 0 2px 0 rgba(255,255,255,0.35)";
 
-  const label = phase === "idle" ? "Set Alarm" : phase === "result" ? "Reset Alarm" : "Setting…";
+  const label = phase === "idle" ? "Set Alarm" : phase === "result" ? "Reset Alarm" : "Locked In";
 
   return (
     <div className="relative">
@@ -336,7 +395,7 @@ function PushButton({
           aria-pressed={latched}
           disabled={busy}
           onClick={onPress}
-          className="group flex h-14 min-w-44 cursor-pointer items-center justify-center gap-2.5 rounded-full px-8 text-base font-bold disabled:cursor-wait"
+          className="group relative flex h-14 min-w-44 cursor-pointer items-center justify-center gap-2.5 rounded-full px-8 text-base font-bold disabled:cursor-wait"
           style={{
             background: face,
             color: faceInk,
@@ -345,12 +404,17 @@ function PushButton({
           }}
           variants={{
             rest: { y: 0, scaleX: 1, scaleY: 1, boxShadow: `${shine}, 0 ${EDGE}px 0 0 ${edge}` },
-            // Flat: no edge or shadow. The face doesn't move; only its colour and edge change.
+            // Pressed flat (no edge or shadow), with a squash-and-stretch bounce as it latches
             latched: {
               y: 0,
-              scaleX: 1,
-              scaleY: 1,
+              scaleX: [1, 1.09, 0.97, 1.01, 1],
+              scaleY: [1, 0.8, 1.06, 0.99, 1],
               boxShadow: `inset 0 0px 0 rgba(255,255,255,0), 0 0px 0 0 ${edge}`,
+              transition: {
+                default: { type: "spring", stiffness: 700, damping: 22 },
+                scaleX: { duration: 0.5, times: [0, 0.22, 0.55, 0.8, 1], ease: "easeOut" },
+                scaleY: { duration: 0.5, times: [0, 0.22, 0.55, 0.8, 1], ease: "easeOut" },
+              },
             },
           }}
           initial={false}

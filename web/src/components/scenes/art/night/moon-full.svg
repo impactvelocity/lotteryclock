@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-  <circle cx="40" cy="40" r="30" fill="#FFF3DA"/>
-  <circle cx="29" cy="26" r="6" fill="#EBD9BC"/>
-  <circle cx="51" cy="23" r="3.5" fill="#E5CFAE"/>
-  <circle cx="55" cy="42" r="7" fill="#EBD9BC"/>
-  <circle cx="24" cy="45" r="3.5" fill="#E5CFAE"/>
-  <circle cx="37" cy="56" r="5" fill="#EBD9BC"/>
-  <circle cx="42" cy="35" r="2.5" fill="#E5CFAE"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="30" fill="#FFF3DA"/><g id="maria" fill="#000000" opacity="0.12"><path d="M 24 20 C 29 15 39 15 42 21 C 44 25 39 27 38 31 C 36 35 30 34 27 30 C 24 27 20 26 24 20 Z" fill="#000000"/><path d="M 46 28 C 53 23 63 30 63 37 C 62 43 55 46 51 43 C 47 41 50 37 46 35 C 43 33 43 30 46 28 Z" fill="#000000"/><path d="M 30 41 C 34 37 43 39 45 44 C 48 47 46 50 49 54 C 50 60 43 64 38 61 C 34 58 35 54 31 53 C 26 51 26 45 30 41 Z" fill="#000000"/><path d="M 19 39 C 22 37 26 39 26 42 C 27 46 22 49 19 46 C 17 44 17 41 19 39 Z" fill="#000000"/></g><g id="crater-rims" fill="#000000" opacity="0.06"><circle cx="24" cy="31" r="3.7"/><circle cx="58" cy="47" r="4.3"/><circle cx="52" cy="57" r="3.4"/></g><g id="craters" fill="#000000" opacity="0.18"><circle cx="24" cy="31" r="2.5"/><circle cx="42" cy="22" r="2"/><circle cx="58" cy="47" r="3"/><circle cx="31" cy="58" r="2"/><circle cx="52" cy="57" r="2.4"/><circle cx="48" cy="41" r="1.8"/><circle cx="36" cy="34" r="1.5"/></g></svg>

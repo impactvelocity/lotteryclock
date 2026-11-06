@@ -288,7 +288,8 @@ export const MOON_FACES = [
 
 /**
  * The wheel of fortune (400 × 400, centred on 200, 200): its band (r 136 to 176), split into 12
- * segments, with a glyph in each. (The minute ticks inside it would sit under the dial.)
+ * segments, with a glyph in each. (The minute ticks inside it would sit under the dial, and the
+ * gold rim with its finials read poorly on the sky, so both are left out.)
  */
 export const WHEEL_BAND = <>
   <g>
@@ -363,19 +364,6 @@ export const WHEEL_BAND = <>
       <path d="M 0 -7 L 1.6 -2.3 L 6.7 -2.2 L 2.7 0.9 L 4.1 5.7 L 0 2.8 L -4.1 5.7 L -2.7 0.9 L -6.7 -2.2 L -1.6 -2.3 Z" fill="#F07F68" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   </g>
-</>;
-
-/** The wheel's gold rim at r 184, with eight ball finials. */
-export const WHEEL_RIM = <>
-  <circle cx="200" cy="200" r="184" fill="none" stroke="#E2AE4A" strokeWidth="2" />
-  <circle cx="200" cy="16" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="330.1" cy="69.9" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="384" cy="200" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="330.1" cy="330.1" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="200" cy="384" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="69.9" cy="330.1" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="16" cy="200" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
-  <circle cx="69.9" cy="69.9" r="6" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
 </>;
 
 /** The World's laurel wreath (400 × 400, centred on 200, 200; clear inside r 114). */
@@ -471,47 +459,6 @@ export const WREATH_RIBBONS = [<>
     <path d="M 175 353 l 7 4 M 175 358 l 7 4 M 225 353 l -7 4 M 225 358 l -7 4" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </>];
 
-/**
- * The mountain strip (1600 × 220, flat bottom). The two ridges have no fill of their own,
- * so the scene can colour them; the hatching is ink.
- */
-export const MOUNTAIN_BACK = <>
-  <path d="M 0 150 L 90 105 L 150 138 L 260 80 L 310 107 L 430 40 L 550 146 L 620 174 L 700 191 L 800 181 L 900 192 L 980 174 L 1050 143 L 1170 40 L 1290 107 L 1340 80 L 1450 138 L 1510 105 L 1600 150 L 1600 220 H 0 Z" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-</>;
-
-export const MOUNTAIN_FRONT = <>
-  <path d="M 0 183 L 100 161 L 190 179 L 280 139 L 350 166 L 430 120 L 520 177 L 620 191 L 720 207 L 800 200 L 880 207 L 980 191 L 1080 177 L 1170 120 L 1250 166 L 1320 139 L 1410 179 L 1500 161 L 1600 183 L 1600 220 H 0 Z" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-</>;
-
-export const MOUNTAIN_HATCHING = <>
-  <g>
-    <path d="M 0 159.1 L 90 120 L 150 148.7 L 260 98.2 L 310 121.7 L 430 63.4 L 550 155.6 L 620 180 L 700 194.8 L 800 186.1 L 900 195.6 L 980 180 L 1050 153 L 1170 63.4 L 1290 121.7 L 1340 98.2 L 1450 148.7 L 1510 120 L 1600 159.1" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 168.2 L 90 134.9 L 150 159.3 L 260 116.4 L 310 136.4 L 430 86.8 L 550 165.2 L 620 186 L 700 198.5 L 800 191.1 L 900 199.3 L 980 186 L 1050 163 L 1170 86.8 L 1290 136.4 L 1340 116.4 L 1450 159.3 L 1510 134.9 L 1600 168.2" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 178 L 90 151 L 150 170.8 L 260 136 L 275.5 141" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 312.3 151.4 L 430 112 L 550 175.6 L 606 189" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 663.1 197.9 L 700 202.6 L 800 196.6 L 900 203.2 L 924 200" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 991.1 189.4 L 1050 173.8 L 1170 112 L 1287.7 151.4" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 1324.5 141 L 1340 136 L 1450 170.8 L 1510 151 L 1600 178" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 173.4 175.7 L 227.9 162.2" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 335.2 160.3 L 380.7 148.3" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 500.6 164.7 L 535.4 179.2" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 712.4 205.8 L 758.8 203.6" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 846.6 204.1 L 885.6 206.1" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 1059.9 179.8 L 1103 162.4" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 1219.3 148.3 L 1264.8 160.3" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 1372.1 162.2 L 1426.6 175.7" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </g>
-  <g>
-    <path d="M 0 188.9 L 100 170.4 L 190 185.6 L 280 152 L 350 174.6 L 430 136 L 520 183.9 L 620 195.6 L 720 209.1 L 800 203.2 L 880 209.1 L 980 195.6 L 1080 183.9 L 1170 136 L 1250 174.6 L 1320 152 L 1410 185.6 L 1500 170.4 L 1600 188.9" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 195.2 L 100 180.5 L 190 192.5 L 280 165.7 L 350 183.8 L 430 153 L 520 191.2 L 620 200.6 L 720 211.3 L 800 206.6 L 880 211.3 L 980 200.6 L 1080 191.2 L 1170 153 L 1250 183.8 L 1320 165.7 L 1410 192.5 L 1500 180.5 L 1600 195.2" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 201.5 L 100 190.5 L 190 199.5 L 280 179.5 L 350 193 L 430 170 L 520 198.5 L 620 205.5 L 720 213.5 L 800 210 L 880 213.5 L 980 205.5 L 1080 198.5 L 1170 170 L 1250 193 L 1320 179.5 L 1410 199.5 L 1500 190.5 L 1600 201.5" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 206.7 L 100 198.8 L 190 205.2 L 280 190.8 L 350 200.6 L 430 184 L 520 204.5 L 620 209.6 L 720 215.3 L 800 212.8 L 880 215.3 L 980 209.6 L 1080 204.5 L 1170 184 L 1250 200.6 L 1320 190.8 L 1410 205.2 L 1500 198.8 L 1600 206.7" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 211.1 L 100 205.8 L 190 210.2 L 280 200.6 L 350 207 L 430 196 L 520 209.7 L 620 213 L 720 216.9 L 800 215.2 L 880 216.9 L 980 213 L 1080 209.7 L 1170 196 L 1250 207 L 1320 200.6 L 1410 210.2 L 1500 205.8 L 1600 211.1" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 214.8 L 100 211.7 L 190 214.3 L 280 208.7 L 350 212.4 L 430 206 L 520 214 L 620 215.9 L 720 218.2 L 800 217.2 L 880 218.2 L 980 215.9 L 1080 214 L 1170 206 L 1250 212.4 L 1320 208.7 L 1410 214.3 L 1500 211.7 L 1600 214.8" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 0 217.8 L 100 216.5 L 190 217.5 L 280 215.1 L 350 216.8 L 430 214 L 520 217.4 L 620 218.3 L 720 219.2 L 800 218.8 L 880 219.2 L 980 218.3 L 1080 217.4 L 1170 214 L 1250 216.8 L 1320 215.1 L 1410 217.5 L 1500 216.5 L 1600 217.8" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </g>
-</>;
-
 /** Four planets, each in a 64 × 64 cell of a 286 × 64 sheet (cells at x = 0, 74, 148, 222). */
 export const PLANETS = [
   <>
@@ -552,43 +499,6 @@ export const BOLT_SHORT = <>
   <path d="M 182 62 L 153 100 L 169 95 L 135 150" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 </>;
 
-/** Three flames (70 × 110 cells at x = 0, 80, 160, bases on y = 110), each in three layers. */
-export const FLAMES = [
-  {
-    outer: <>
-      <path d="M 5 110 C -1 89 9 72.2 15 59.6 C 12 80.6 28 73.2 24 49.1 C 20 30.2 39 17.6 35 5 C 57 21.8 41 44.9 48 52.2 C 58 57.5 60 42.8 59 35.5 C 76 61.7 60 76.4 63 89 Q 69 102.7 64 110 Z" fill="#F07F68" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-    middle: <>
-      <path d="M 18 110 C 9 94.2 23 81.6 26 70.1 C 26 86.9 38 70.1 36 43.9 C 52 65.9 43 79.5 48 86.9 C 54 79.5 54 76.4 54 73.2 C 65 94.2 54 105.8 54 110 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-    inner: <>
-      <path d="M 28 110 C 20 99.5 36 93.2 35 75.4 C 51 94.2 49 104.8 45 110 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-  },
-  {
-    outer: <>
-      <path d="M 85 110 C 79 94 89 81.2 95 71.6 C 92 87.6 108 82 104 63.6 C 100 49.2 119 39.6 115 30 C 137 42.8 121 60.4 128 66 C 138 70 140 58.8 139 53.2 C 156 73.2 140 84.4 143 94 Q 149 104.4 144 110 Z" fill="#F07F68" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-    middle: <>
-      <path d="M 98 110 C 89 98 103 88.4 106 79.6 C 106 92.4 118 79.6 116 59.6 C 132 76.4 123 86.8 128 92.4 C 134 86.8 134 84.4 134 82 C 145 98 134 106.8 134 110 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-    inner: <>
-      <path d="M 108 110 C 100 102 116 97.2 115 83.6 C 131 98 129 106 125 110 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-  },
-  {
-    outer: <>
-      <path d="M 165 110 C 159 98 169 88.4 175 81.2 C 172 93.2 188 89 184 75.2 C 180 64.4 199 57.2 195 50 C 217 59.6 201 72.8 208 77 C 218 80 220 71.6 219 67.4 C 236 82.4 220 90.8 223 98 Q 229 105.8 224 110 Z" fill="#F07F68" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-    middle: <>
-      <path d="M 178 110 C 169 101 183 93.8 186 87.2 C 186 96.8 198 87.2 196 72.2 C 212 84.8 203 92.6 208 96.8 C 214 92.6 214 90.8 214 89 C 225 101 214 107.6 214 110 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-    inner: <>
-      <path d="M 188 110 C 180 104 196 100.4 195 90.2 C 211 101 209 107 205 110 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </>,
-  },
-];
-
 /** Minor arcana suits on a 24 × 24 grid: one evenodd path each, drawn in currentColor. */
 export const SUIT_PATHS = {
   wands: "M 5 20 L 16 3 Q 17 1 19 3 Q 20 4 19 6 L 8 22 Z M 11 12 C 4 12 3 8 4 5 C 10 5 12 8 11 12 Z M 14 9 C 15 3 20 3 22 5 C 21 10 17 12 14 9 Z",
@@ -597,11 +507,14 @@ export const SUIT_PATHS = {
   pentacles: "M 23 12 A 11 11 0 1 1 1 12 A 11 11 0 1 1 23 12 Z M 12 4 L 14.2 9 L 19.6 9.5 L 15.5 13.1 L 16.7 18.5 L 12 15.7 L 7.3 18.5 L 8.5 13.1 L 4.4 9.5 L 9.8 9 Z",
 } as const;
 
-/** Three scalloped clouds on a 280 × 160 grid, flat bottoms on y = 132. */
+/**
+ * Three scalloped clouds on a 280 × 160 grid, flat bottoms on y = 132. The outlines have no fill
+ * of their own, so the scene can colour them.
+ */
 export const CLOUDS = [
   {
     outline: <>
-      <path d="M 21 132 C 13 112 23 92 47 92 C 43 69 61 55 83 60 C 88 28 126 23 145 48 C 163 38 193 48 195 73 C 220 67 243 85 239 107 C 253 107 263 119 259 132 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 21 132 C 13 112 23 92 47 92 C 43 69 61 55 83 60 C 88 28 126 23 145 48 C 163 38 193 48 195 73 C 220 67 243 85 239 107 C 253 107 263 119 259 132 Z" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
     </>,
     creases: <>
       <path d="M 46 94 Q 57 91 65 99 M 83 61 Q 88 70 84 78 M 195 75 Q 187 82 188 91" fill="none" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -609,7 +522,7 @@ export const CLOUDS = [
   },
   {
     outline: <>
-      <path d="M 21 132 C 15 111 28 95 48 96 C 48 73 71 61 90 71 C 101 43 132 39 151 59 C 174 47 199 64 200 87 C 227 79 245 98 241 112 C 253 111 262 121 259 132 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 21 132 C 15 111 28 95 48 96 C 48 73 71 61 90 71 C 101 43 132 39 151 59 C 174 47 199 64 200 87 C 227 79 245 98 241 112 C 253 111 262 121 259 132 Z" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
     </>,
     creases: <>
       <path d="M 48 97 Q 59 92 67 102 M 91 73 Q 101 77 102 87 M 200 89 Q 190 94 194 104" fill="none" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -617,13 +530,64 @@ export const CLOUDS = [
   },
   {
     outline: <>
-      <path d="M 21 132 C 13 113 26 95 47 97 C 40 72 60 53 83 60 C 86 31 120 20 141 42 C 166 26 194 42 193 67 C 216 63 237 81 235 102 C 252 101 265 118 259 132 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 21 132 C 13 113 26 95 47 97 C 40 72 60 53 83 60 C 86 31 120 20 141 42 C 166 26 194 42 193 67 C 216 63 237 81 235 102 C 252 101 265 118 259 132 Z" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
     </>,
     creases: <>
       <path d="M 47 98 Q 59 94 65 103 M 83 62 Q 92 69 88 78 M 194 69 Q 186 79 192 88" fill="none" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </>,
   },
 ];
+
+/** The back of a tarot card (140 × 240), the same either way up. */
+export const CARD_BACK = <>
+  <g>
+    <rect x="1.5" y="1.5" width="137" height="237" rx="10" fill="#17383A" />
+    <rect x="5.5" y="5.5" width="129" height="229" rx="7" fill="none" stroke="#FBF4E6" strokeWidth="2" />
+    <rect x="10" y="10" width="120" height="220" rx="4" fill="none" stroke="#E2AE4A" strokeWidth="1.5" />
+  </g>
+  <g>
+    <g>
+      <path d="M 70 19 C 50 19 43 35 56 42 C 68 48 78 33 67 28 C 62 25 58 30 61 33 M 70 19 C 90 19 97 35 84 42 C 72 48 62 33 73 28 C 78 25 82 30 79 33 M 20 109 C 19 86 46 92 42 71 C 39 58 22 58 24 73 C 25 81 34 80 35 75 M 120 109 C 121 86 94 92 98 71 C 101 58 118 58 116 73 C 115 81 106 80 105 75" fill="none" stroke="#E2AE4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 30 55 Q 47 42 43 28 Q 32 30 30 55 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 30 91 Q 52 83 43 68 Q 35 73 30 91 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <ellipse cx="30" cy="47" rx="3" ry="5" fill="#F07F68" stroke="#E2AE4A" strokeWidth="1" />
+      <circle cx="30" cy="101" r="2" fill="#9CD3C7" stroke="#17383A" strokeWidth="0" />
+      <path d="M 110 55 Q 93 42 97 28 Q 108 30 110 55 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 110 91 Q 88 83 97 68 Q 105 73 110 91 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <ellipse cx="110" cy="47" rx="3" ry="5" fill="#F07F68" stroke="#E2AE4A" strokeWidth="1" />
+      <circle cx="110" cy="101" r="2" fill="#9CD3C7" stroke="#17383A" strokeWidth="0" />
+      <path d="M 70 51 L 72.1 56.9 L 78 59 L 72.1 61.1 L 70 67 L 67.9 61.1 L 62 59 L 67.9 56.9 Z" fill="#F07F68" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+    <g transform="rotate(180 70 120)">
+      <path d="M 70 19 C 50 19 43 35 56 42 C 68 48 78 33 67 28 C 62 25 58 30 61 33 M 70 19 C 90 19 97 35 84 42 C 72 48 62 33 73 28 C 78 25 82 30 79 33 M 20 109 C 19 86 46 92 42 71 C 39 58 22 58 24 73 C 25 81 34 80 35 75 M 120 109 C 121 86 94 92 98 71 C 101 58 118 58 116 73 C 115 81 106 80 105 75" fill="none" stroke="#E2AE4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 30 55 Q 47 42 43 28 Q 32 30 30 55 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 30 91 Q 52 83 43 68 Q 35 73 30 91 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <ellipse cx="30" cy="47" rx="3" ry="5" fill="#F07F68" stroke="#E2AE4A" strokeWidth="1" />
+      <circle cx="30" cy="101" r="2" fill="#9CD3C7" stroke="#17383A" strokeWidth="0" />
+      <path d="M 110 55 Q 93 42 97 28 Q 108 30 110 55 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 110 91 Q 88 83 97 68 Q 105 73 110 91 Z" fill="#E2AE4A" stroke="#17383A" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      <ellipse cx="110" cy="47" rx="3" ry="5" fill="#F07F68" stroke="#E2AE4A" strokeWidth="1" />
+      <circle cx="110" cy="101" r="2" fill="#9CD3C7" stroke="#17383A" strokeWidth="0" />
+      <path d="M 70 51 L 72.1 56.9 L 78 59 L 72.1 61.1 L 70 67 L 67.9 61.1 L 62 59 L 67.9 56.9 Z" fill="#F07F68" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  </g>
+  <g>
+    <circle cx="70" cy="120" r="34" fill="#E2AE4A" stroke="#17383A" strokeWidth="2" />
+    <circle cx="70" cy="120" r="30" fill="#9CD3C7" stroke="#17383A" strokeWidth="2" />
+    <g>
+      <circle cx="61" cy="109" r="10" fill="#D7EA7B" stroke="#17383A" strokeWidth="2" />
+      <path d="M 54 109 Q 57 112 60 109 M 63 109 Q 66 112 69 109 M 61 112 V 115 M 58 117 Q 61 120 64 117" fill="none" stroke="#17383A" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 83 101 C 68 98 66 119 82 120 C 74 114 75 105 83 101 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="80" cy="108" r="1" fill="#17383A" stroke="#17383A" strokeWidth="0" />
+    </g>
+    <g transform="rotate(180 70 120)">
+      <circle cx="61" cy="109" r="10" fill="#D7EA7B" stroke="#17383A" strokeWidth="2" />
+      <path d="M 54 109 Q 57 112 60 109 M 63 109 Q 66 112 69 109 M 61 112 V 115 M 58 117 Q 61 120 64 117" fill="none" stroke="#17383A" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 83 101 C 68 98 66 119 82 120 C 74 114 75 105 83 101 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="80" cy="108" r="1" fill="#17383A" stroke="#17383A" strokeWidth="0" />
+    </g>
+  </g>
+</>;
 
 /** The all-seeing eye (160 × 110, eye centred on 80, 70): rays and crown, the white, the iris, the lid. */
 export const EYE_TOP = <>
@@ -658,34 +622,4 @@ export const EYE_IRIS = <>
 export const EYE_LID = <>
   <path d="M 25 70 Q 80 17 135 70 Q 80 38 25 70 Z" fill="#F07F68" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
   <path d="M 32 62 Q 80 22 128 62" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-</>;
-
-/** A memento mori for the bottom-left corner (260 × 140, flat bottom on y = 140). */
-export const BONES = <>
-  <g>
-    <path d="M 1.5 139 V 80 C 1.5 46 23 28 54 30 C 88 30 107 55 105 84 C 104 100 94 109 84 114 L 83 134 L 65 139 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 17 80 C 16 61 41 58 42 78 C 43 97 18 99 17 80 Z" fill="#17383A" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 77 64 C 55 63 53 92 76 96 C 65 86 66 74 77 64 Z" fill="#17383A" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 51 93 L 44 106 H 57 Z" fill="#17383A" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 24 119 Q 53 131 82 119 M 35 122 V 134 M 48 125 V 137 M 61 125 V 137 M 74 122 V 134" fill="none" stroke="#17383A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 12 57 l 8 5" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 17 48 l 8 5" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 24 41 l 8 5" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 33 38 l 8 5" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 44 36 l 8 5" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </g>
-  <g>
-    <path d="M 115 116 C 108 116 108 106 114 105 C 113 98 124 99 124 105 L 173 127 C 180 122 185 131 180 135 C 181 142 170 142 170 135 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 120 131 C 113 127 109 135 114 138 C 116 145 124 140 124 136 L 169 110 C 169 103 180 101 180 108 C 188 111 182 119 176 116 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 136 98 C 125 95 126 81 140 79 C 150 78 156 85 156 91 L 177 99 L 153 101 L 144 105 Z" fill="#FBF4E6" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="141" cy="89" r="4" fill="#17383A" stroke="#17383A" strokeWidth="1.5" />
-    <path d="M 153 95 L 166 98" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </g>
-  <g>
-    <path d="M 196 139 Q 203 108 236 91" fill="none" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 201 122 Q 186 105 193 96 Q 209 101 201 122 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 211 111 Q 208 88 220 85 Q 229 101 211 111 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 223 102 Q 229 82 246 85 Q 245 100 223 102 Z" fill="#D7EA7B" stroke="#17383A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 201 122 L 195 103 M 211 111 L 219 92 M 223 102 L 240 89" fill="none" stroke="#17383A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </g>
 </>;

@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import {
   BOLT_SHORT,
   BOLT_TALL,
-  BONES,
+  CARD_BACK,
   CLOUDS,
   EYE_IRIS,
   EYE_LID,
   EYE_TOP,
   EYE_WHITE,
-  FLAMES,
   MOON_FACES,
   MOON_RAYS,
   PLANETS,
@@ -131,59 +130,78 @@ export function Bolt({ tall, className }: { tall: boolean; className?: string })
 }
 
 /**
- * A flash-tattoo flame (70 × 110, base at the bottom middle). Its three layers flicker on
- * their own rhythms. Size it by height.
+ * A scalloped tattoo cloud (280 × 160 grid, flat bottom at y = 132). Give it a pixel `width`, or
+ * size it with `className`.
  */
-export function Flame({
+export function TarotCloud({
   kind,
-  dur,
-  delay,
-  className,
-  style,
+  width,
+  fill = TA.cream,
+  className = "block",
 }: {
   kind: number;
-  dur: number;
-  delay: number;
+  width?: number;
+  fill?: string;
   className?: string;
-  style?: CSSProperties;
 }) {
-  const f = FLAMES[kind % 3];
-  const layer = (k: number): CSSProperties => ({
-    transformBox: "fill-box",
-    transformOrigin: "50% 100%",
-    animation: `lc-flicker ${(dur * (1 - k * 0.18)).toFixed(2)}s ease-in-out ${(delay - k * 0.17).toFixed(2)}s infinite`,
-  });
+  const c = CLOUDS[kind % 3];
   return (
     <svg
       aria-hidden
-      viewBox={`${(kind % 3) * 80} 0 70 110`}
+      viewBox="0 0 280 160"
+      width={width}
+      height={width ? (width * 160) / 280 : undefined}
       className={className}
-      style={{ overflow: "visible", aspectRatio: "70 / 110", ...style }}
     >
-      <g style={layer(0)}>{f.outer}</g>
-      <g style={layer(1)}>{f.middle}</g>
-      <g style={layer(2)}>{f.inner}</g>
-    </svg>
-  );
-}
-
-/** A scalloped tattoo cloud (280 × 160 grid, flat bottom at y = 132). */
-export function TarotCloud({ kind, width }: { kind: number; width: number }) {
-  const c = CLOUDS[kind % 3];
-  return (
-    <svg aria-hidden viewBox="0 0 280 160" width={width} height={(width * 160) / 280} className="block">
-      {c.outline}
+      <g fill={fill} style={{ transition: "fill 600ms" }}>
+        {c.outline}
+      </g>
       {c.creases}
     </svg>
   );
 }
 
-/** A friendly memento mori for the bottom-left corner (260 × 140); mirror it for the right. */
-export function Bones({ className, style }: { className?: string; style?: CSSProperties }) {
+const FACE: CSSProperties = { backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" };
+
+/**
+ * A tarot card (140 × 240), as wide as its container. Face down it shows the card back; `flipped`
+ * turns it over to show `face` (drawn on the same grid) on cream card stock.
+ */
+export function TarotCard({
+  flipped,
+  face,
+  reversed = false,
+}: {
+  flipped: boolean;
+  face?: ReactNode;
+  /** Turns the face upside down: a reversed card. */
+  reversed?: boolean;
+}) {
   return (
-    <svg aria-hidden viewBox="0 0 260 140" className={className} style={style}>
-      {BONES}
-    </svg>
+    <div className="relative aspect-[140/240] w-full" style={{ perspective: 700 }}>
+      <div
+        className="absolute inset-0"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: `rotateY(${flipped ? 180 : 0}deg)`,
+          transition: "transform 700ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        <svg aria-hidden viewBox="0 0 140 240" className="absolute inset-0 h-full w-full" style={FACE}>
+          {CARD_BACK}
+        </svg>
+        <svg
+          aria-hidden
+          viewBox="0 0 140 240"
+          className="absolute inset-0 h-full w-full"
+          style={{ ...FACE, transform: "rotateY(180deg)" }}
+        >
+          <rect x="1.5" y="1.5" width="137" height="237" rx="10" fill={TA.cream} stroke={TA.ink} strokeWidth="3" />
+          <rect x="9" y="9" width="122" height="222" rx="5" fill="none" stroke={TA.ink} strokeWidth="1.5" />
+          <g transform={reversed ? "rotate(180 70 120)" : undefined}>{face}</g>
+        </svg>
+      </div>
+    </div>
   );
 }
 

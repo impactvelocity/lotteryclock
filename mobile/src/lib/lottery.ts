@@ -30,8 +30,9 @@ export type AlarmPlan = {
   snoozeSeconds: number | null;
 };
 
+/** The dial allows 0 (no gamble: it rings on time) up to the full 45. */
 export function clampRisk(minutes: number): number {
-  return Math.min(MAX_RISK_MINUTES, Math.max(MIN_RISK_MINUTES, Math.round(minutes)));
+  return Math.min(MAX_RISK_MINUTES, Math.max(0, Math.round(minutes)));
 }
 
 /** Next occurrence of hour:minute strictly after `nowMs`. */

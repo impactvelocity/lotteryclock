@@ -3,11 +3,14 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import {
+  BonyHand,
   Calaverita,
+  CalaveraFace,
   Candle,
   CandleDefs,
   FLAG_DESIGNS,
   Headstone,
+  Maraca,
   Marigold,
   Monarch,
   MU,
@@ -29,7 +32,9 @@ import { cssA, MAX_RANGE, rampN } from "@/lib/themes";
  *   36–45     raise the spirits → back from the dead: every candle blazing, a petal storm,
  *             a flight of monarchs, the flags flapping in the wind
  *
- * A snooze lets everyone rest (candles out, souls gone); a late result flares every candle.
+ * Setting the alarm lights every candle on the ofrenda, one after another. A snooze lets
+ * everyone rest (candles snuffed and smoking, souls gone); a late result flares every candle
+ * and has skeleton hands bursting out of the ground by rattling headstones.
  * Purely decorative and pointer-transparent.
  */
 
@@ -116,8 +121,25 @@ const CANDLES = [
   delay: +(-frac(i, 72) * 2).toFixed(2),
 }));
 
-function Ofrenda({ side, lit, flare }: { side: 0 | 1; lit: number; flare: number }) {
+/** Skeleton hands that reach up out of the ground on a late result, by the headstones. */
+const HANDS = [
+  { x: 41, s: 1.55, delay: [0.05, 0.3], flip: false },
+  { x: 284, s: 1.35, delay: [0.32, 0.12], flip: true },
+];
+
+function Ofrenda({
+  side,
+  lit,
+  flare,
+  mood,
+}: {
+  side: 0 | 1;
+  lit: number;
+  flare: number;
+  mood: SceneMood;
+}) {
   const defs = `lc-mu-candle-${side}`;
+  const risen = mood === "loss";
   return (
     <svg
       aria-hidden
@@ -127,10 +149,27 @@ function Ofrenda({ side, lit, flare }: { side: 0 | 1; lit: number; flare: number
     >
       <defs>
         <CandleDefs id={defs} />
+        {/* Everything above the ground, in a hand's own units (it stands on y = 0) */}
+        <clipPath id={`${defs}-ground`}>
+          <rect x={-60} y={-160} width={120} height={160} />
+        </clipPath>
       </defs>
       {/* Back row: headstones */}
-      <Headstone x={52} y={GROUND} s={1.45} cross />
-      <Headstone x={262} y={GROUND} s={1.05} />
+      <Headstone x={52} y={GROUND} s={1.45} cross jolt={risen} />
+      <Headstone x={262} y={GROUND} s={1.05} jolt={risen} />
+      {/* Late: the dead reach up out of the ground in front of them */}
+      {risen &&
+        HANDS.map((hd, i) => (
+          <BonyHand
+            key={i}
+            x={hd.x}
+            y={GROUND}
+            s={hd.s}
+            delay={hd.delay[side]}
+            flip={hd.flip}
+            clip={`${defs}-ground`}
+          />
+        ))}
       {/* Candles */}
       {CANDLES.map((c, i) => (
         <Candle
@@ -144,6 +183,10 @@ function Ofrenda({ side, lit, flare }: { side: 0 | 1; lit: number; flare: number
           dur={c.dur}
           delay={c.delay}
           defs={defs}
+          // Setting the alarm lights them one after another, in their usual order
+          wait={mood === "set" ? +(c.on[side] * 0.9).toFixed(2) : 0}
+          // A snooze snuffs them all (every candle burns while the alarm's set)
+          smoke={mood === "win"}
         />
       ))}
       <Calaverita x={168} y={GROUND - 17 * 1.25} s={1.25} />
@@ -251,7 +294,10 @@ function PapelPicado({ side, p, tier, windy }: { side: 0 | 1; p: number; tier: n
 export function MuertosScene({ p, tier, mood }: Props) {
   // A snooze lets the dead rest; a late result wakes every candle at once.
   const lively = clamp(mood === "win" ? p * 0.25 : p);
-  const lit = mood === "loss" ? 1.01 : mood === "win" ? 0.08 : 0.15 + lively * 0.86;
+  const betLit = 0.15 + p * 0.86;
+  // Every candle burns once the alarm's set (and stays lit late or right on time); a snooze
+  // snuffs all but one.
+  const lit = mood === "win" ? 0.08 : mood === "idle" ? betLit : 1.01;
   const flare = mood === "loss" ? 1.3 : 0.85 + lively * 0.3;
   const starsOut = 0.3 + lively * 0.7;
   const petals = mood === "win" ? 0 : mood === "loss" ? 1 : p === 0 ? 0 : 0.15 + p * 0.85;
@@ -378,7 +424,7 @@ export function MuertosScene({ p, tier, mood }: Props) {
         className="absolute bottom-0 left-0 w-[38%] max-w-[440px]"
         style={{ maskImage: OFRENDA_MASK, WebkitMaskImage: OFRENDA_MASK }}
       >
-        <Ofrenda side={0} lit={lit} flare={flare} />
+        <Ofrenda side={0} lit={lit} flare={flare} mood={mood} />
       </div>
       <div
         className="absolute right-0 bottom-0 w-[38%] max-w-[440px]"
@@ -388,7 +434,7 @@ export function MuertosScene({ p, tier, mood }: Props) {
           WebkitMaskImage: OFRENDA_MASK,
         }}
       >
-        <Ofrenda side={1} lit={lit} flare={flare} />
+        <Ofrenda side={1} lit={lit} flare={flare} mood={mood} />
       </div>
     </div>
   );
@@ -402,12 +448,13 @@ const BLOOM = [
   { art: BLOOM_RINGS[1], dir: -0.7 },
   { art: BLOOM_RINGS[2], dir: 0.45 },
 ];
+// Out on the dark sky just past the petal tips (66), not on the petals, where they clashed. At
+// full bloom (× 0.94) that is 65 units out: still inside the labels either side and below (66+).
 const BLOOM_DOTS = Array.from({ length: 30 }, (_, i) => {
   const a = (i * 12 * Math.PI) / 180;
   return {
-    x: Math.round((100 + 64 * Math.sin(a)) * 100) / 100,
-    y: Math.round((100 - 64 * Math.cos(a)) * 100) / 100,
-    fill: i % 2 ? MU.bone : MU.marigold,
+    x: Math.round((100 + 69 * Math.sin(a)) * 100) / 100,
+    y: Math.round((100 - 69 * Math.cos(a)) * 100) / 100,
     delay: ((i % 5) * 0.4).toFixed(1),
   };
 });
@@ -452,7 +499,7 @@ export function MarigoldBloom({
   const allIn = range === MAX_RANGE;
   const warm = rampN(["#FFB347", "#FF8A3D", "#F0446E"], p);
   // Opens up with the bet: a bud peeking out round the dial at 0, in full bloom at 45. Capped
-  // at 0.94 so the petals and dots stay clear of the labels either side and below. All in, it
+  // at 0.94 so the dots out past the petals stay clear of the labels either side and below. All in, it
   // beats: the pulse (up to × 1.07) starts small enough to peak at that same cap.
   const scale = allIn ? 0.94 / 1.07 : 0.84 + p * 0.1;
   return (
@@ -499,22 +546,110 @@ export function MarigoldBloom({
               {b.art}
             </g>
           ))}
-          {BLOOM_DOTS.map((d, i) => (
-            <circle
-              key={i}
-              cx={d.x}
-              cy={d.y}
-              r={1.5}
-              fill={d.fill}
-              style={{
-                transformBox: "fill-box",
-                transformOrigin: "center",
-                animation: `lc-twinkle 2.4s ease-in-out ${d.delay}s infinite`,
-              }}
-            />
-          ))}
+          {/* Small, bone-white and dim: a faint glimmer round the flower, not a second ring */}
+          <g opacity={0.55}>
+            {BLOOM_DOTS.map((d, i) => (
+              <circle
+                key={i}
+                cx={d.x}
+                cy={d.y}
+                r={0.8}
+                fill={MU.bone}
+                style={{
+                  transformBox: "fill-box",
+                  transformOrigin: "center",
+                  animation: `lc-twinkle 2.4s ease-in-out ${d.delay}s infinite`,
+                }}
+              />
+            ))}
+          </g>
         </g>
       </svg>
     </div>
+  );
+}
+
+/** Seeds rattling out of the maracas while the calavera dances: where each starts and flies. */
+const SEEDS = [
+  { left: 42, top: 12, dx: -10, dy: -8, delay: 0 },
+  { left: 46, top: 8, dx: -3, dy: -12, delay: 0.17 },
+  { left: 39, top: 18, dx: -12, dy: -2, delay: 0.35 },
+  { left: 112, top: 14, dx: 9, dy: -9, delay: 0.09 },
+  { left: 116, top: 20, dx: 12, dy: -3, delay: 0.26 },
+  { left: 109, top: 10, dx: 3, dy: -12, delay: 0.44 },
+];
+const SEED_COLORS = [MU.gold, MU.rose, MU.teal];
+
+/**
+ * Shown above the progress bar while the draw rolls ("Rattling the bones"): the calavera
+ * dances, hopping and rocking, a maraca in each hand, seeds rattling out on the beat.
+ */
+export function CalaveraDance() {
+  return (
+    <div aria-hidden className="relative mb-2 h-[60px] w-40">
+      {SEEDS.map((s, i) => (
+        <span
+          key={i}
+          className="absolute block h-[3px] w-[3px] rounded-full"
+          style={{
+            left: s.left,
+            top: s.top,
+            background: SEED_COLORS[i % SEED_COLORS.length],
+            ["--dx" as string]: `${s.dx}px`,
+            ["--dy" as string]: `${s.dy}px`,
+            opacity: 0,
+            animation: `lc-mu-seed 0.7s ease-out ${s.delay}s infinite`,
+          }}
+        />
+      ))}
+      {/* The calavera holds its own maraca on the right; this is the one in its left hand */}
+      <Maraca
+        className="absolute top-[12px] left-[40px] h-[30px] w-[14px]"
+        style={{
+          transformOrigin: "50% 95%",
+          animation: "lc-mu-maraca 0.35s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-[46px] h-[58px] w-[58px]"
+        style={{ transformOrigin: "50% 90%", animation: "lc-mu-dance 0.7s ease-in-out infinite" }}
+      >
+        <CalaveraFace tier={3} className="block h-full w-full" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The calavera beside the result badge: dozing off on a snooze, back from the dead (in flames)
+ * and shaking when late, bobbing among the souls when it's right on time. It pops up as the
+ * result lands. Placed by `className`, against the badge's left edge. Not on phones, where
+ * the badge (and the alarm marks either side of a late one) already fill the width.
+ */
+export function CalaveraVerdict({ mood, className }: { mood: SceneMood; className?: string }) {
+  if (mood !== "win" && mood !== "loss" && mood !== "jackpot") return null;
+  const face = mood === "win" ? 0 : mood === "loss" ? 5 : 4;
+  const move =
+    mood === "win"
+      ? "lc-mu-doze 2.8s ease-in-out 0.45s infinite"
+      : mood === "loss"
+        ? "lc-shake 0.2s linear 0.45s infinite"
+        : "lc-bob 0.9s ease-in-out 0.45s infinite";
+  return (
+    <span
+      aria-hidden
+      className={`pointer-events-none absolute block max-sm:hidden ${className ?? ""}`}
+      // Late, clear of the alarm marks ringing either side of the badge
+      style={{ marginRight: mood === "loss" ? 38 : 8 }}
+    >
+      <span
+        className="block"
+        style={{ animation: "lc-mu-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both" }}
+      >
+        <span className="block" style={{ transformOrigin: "50% 80%", animation: move }}>
+          <CalaveraFace tier={face} className="block h-11 w-11" />
+        </span>
+      </span>
+    </span>
   );
 }

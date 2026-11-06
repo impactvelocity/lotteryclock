@@ -5,7 +5,9 @@
  * the wedges can light up live). Edit those files, then mirror the changes here.
  */
 
-import type { CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
+import { ROLL_MS } from "@/components/alarm-reveal";
+import { sfx } from "@/lib/sfx";
 import { MAX_RANGE } from "@/lib/themes";
 
 /** A four-point sparkle on a 24-unit grid. */
@@ -331,13 +333,49 @@ function wedgePath(a1: number, a2: number, r1: number, r2: number) {
   return `M${x1} ${y1}A${r2} ${r2} 0 0 1 ${x2} ${y2}L${x3} ${y3}A${r1} ${r1} 0 0 0 ${x4} ${y4}z`;
 }
 
-/** Wedge colours, dim until the bet reaches them. The last wedge (40–45 min) is the jackpot. */
+/**
+ * Wedge colours, dim until the bet reaches them. The last wedge (40–45 min) is the jackpot.
+ * Lit wedges shade from `deep` at the hub out to `hi` at the rim, like a lacquered wheel.
+ * `halo` outlines the number so it reads on any wedge; `glint` colours the sparkles beside it.
+ */
 const WEDGE = {
-  a: { on: "#8E4BE6", off: "#3A1858", ink: "#FFFFFF", dimInk: "rgba(255,244,224,0.4)" },
-  b: { on: "#C957D9", off: "#4C1C66", ink: "#FFFFFF", dimInk: "rgba(255,244,224,0.4)" },
+  a: {
+    deep: "#6A2FCF",
+    on: "#8E4BE6",
+    hi: "#B47EFF",
+    off: "#3A1858",
+    ink: "#FFFFFF",
+    dimInk: "rgba(255,244,224,0.8)",
+    halo: "rgba(36,6,58,0.6)",
+    glint: "#FFE38A",
+  },
+  b: {
+    deep: "#A13BB8",
+    on: "#C957D9",
+    hi: "#EF8EF5",
+    off: "#4C1C66",
+    ink: "#FFFFFF",
+    dimInk: "rgba(255,244,224,0.8)",
+    halo: "rgba(60,8,70,0.6)",
+    glint: "#FFF4E0",
+  },
   // Unlit, it stays in the plum family with a gold number, so it doesn't go muddy
-  jackpot: { on: "#FFC93D", off: "#46183F", ink: "#4A1A06", dimInk: "rgba(255,201,61,0.8)" },
+  jackpot: {
+    deep: "#F09A1A",
+    on: "#FFC93D",
+    hi: "#FFE98F",
+    off: "#46183F",
+    ink: "#4A1A06",
+    dimInk: "#FFC93D",
+    halo: "rgba(255,240,190,0.55)",
+    glint: "#B8570E",
+  },
 } as const;
+
+/** The wedge ring as one shape (rim to hub), for the gloss laid over every wedge. */
+const RING = [OUT_R, IN_R]
+  .map((r) => `M${C - r} ${C}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0z`)
+  .join("");
 
 const WEDGE_LIST = Array.from({ length: WEDGES }, (_, k) => {
   const a1 = k * WEDGE_DEG;
@@ -353,6 +391,8 @@ const WEDGE_LIST = Array.from({ length: WEDGES }, (_, k) => {
     // Labels lean with their wedge, but the bottom ones turn round so nothing reads upside down
     rot: mid > 90 && mid < 270 ? mid + 180 : mid,
     edge: [pt(a1, IN_R), pt(a1, OUT_R)] as const,
+    // A sparkle either side of the number
+    glints: [pt(mid - 13, LABEL_R), pt(mid + 13, LABEL_R)] as const,
     peg: pt(a1, OUT_R - 3.5),
   } as const;
 });
@@ -375,6 +415,20 @@ export function WheelFace({ range }: { range: number }) {
           <stop offset="0" stopColor="#4A1868" />
           <stop offset="1" stopColor="#22083A" />
         </radialGradient>
+        {(["a", "b", "jackpot"] as const).map((kind) => (
+          <radialGradient key={kind} id={`lc-wedge-${kind}`} cx={C} cy={C} r={OUT_R} gradientUnits="userSpaceOnUse">
+            <stop offset={r3(IN_R / OUT_R)} stopColor={WEDGE[kind].deep} />
+            <stop offset="0.86" stopColor={WEDGE[kind].on} />
+            <stop offset="1" stopColor={WEDGE[kind].hi} />
+          </radialGradient>
+        ))}
+        {/* Light from above: a sheen over the top of the wheel, a little shade under it */}
+        <linearGradient id="lc-wheel-gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.26" />
+          <stop offset="0.45" stopColor="#FFFFFF" stopOpacity="0" />
+          <stop offset="0.7" stopColor="#14021F" stopOpacity="0" />
+          <stop offset="1" stopColor="#14021F" stopOpacity="0.28" />
+        </linearGradient>
       </defs>
 
       {/* A dark channel between the track and the rim, so a gold arc never runs into the gold rim */}
@@ -389,7 +443,7 @@ export function WheelFace({ range }: { range: number }) {
         const tone = WEDGE[w.kind];
         return (
           <g key={w.k}>
-            <path d={w.d} fill={lit ? tone.on : tone.off} style={{ transition: "fill 180ms" }} />
+            <path d={w.d} fill={lit ? `url(#lc-wedge-${w.kind})` : tone.off} />
             {lit && (
               <path
                 d={w.d}
@@ -397,16 +451,45 @@ export function WheelFace({ range }: { range: number }) {
                 style={{ opacity: 0, animation: "lc-wedge-flash 0.45s ease-out" }}
               />
             )}
+          </g>
+        );
+      })}
+      <path d={RING} fillRule="evenodd" fill="url(#lc-wheel-gloss)" />
+
+      {WEDGE_LIST.map((w) => {
+        const lit = range > w.k * WEDGE_MIN;
+        const tone = WEDGE[w.kind];
+        return (
+          <g key={w.k}>
+            {w.glints.map(([x, y], i) => (
+              <path
+                key={i}
+                d={SPARKLE}
+                fill={tone.glint}
+                transform={`translate(${r3(x - 3.6)} ${r3(y - 3.6)}) scale(0.3)`}
+                style={{
+                  opacity: lit ? 0.95 : 0.22,
+                  transformBox: "fill-box",
+                  transformOrigin: "50% 50%",
+                  transition: "opacity 200ms",
+                }}
+              />
+            ))}
             <text
               x={w.lx}
               y={w.ly}
               textAnchor="middle"
               dominantBaseline="central"
               transform={`rotate(${r3(w.rot)} ${w.lx} ${w.ly})`}
-              fontSize={12}
+              fontSize={13}
               fontWeight={800}
               letterSpacing="-0.02em"
               fill={lit ? tone.ink : tone.dimInk}
+              // A soft outline, so the number reads on the bright and the dim wedges alike
+              stroke={lit ? tone.halo : "rgba(20,4,32,0.55)"}
+              strokeWidth={3}
+              strokeLinejoin="round"
+              paintOrder="stroke"
               style={{ transition: "fill 180ms" }}
             >
               {w.label}
@@ -455,5 +538,110 @@ export function WheelPointer({ range }: { range: number }) {
         <circle cx="20" cy="17" r="2.2" fill="#E3921A" />
       </g>
     </g>
+  );
+}
+
+/* ---------------- The draw: a little wheel spun hard ---------------- */
+
+/** The mini wheel's centre, on a 100 × 106 grid with the pointer above it. */
+const MC = [50, 58] as const;
+
+function mpt(deg: number, r: number): [number, number] {
+  const a = (deg * Math.PI) / 180;
+  return [r3(MC[0] + r * Math.sin(a)), r3(MC[1] - r * Math.cos(a))];
+}
+
+const MINI_WEDGES = WEDGE_LIST.map((w) => {
+  const a1 = w.k * WEDGE_DEG;
+  const [x1, y1] = mpt(a1, 39);
+  const [x2, y2] = mpt(a1 + WEDGE_DEG, 39);
+  const [x3, y3] = mpt(a1 + WEDGE_DEG, 11);
+  const [x4, y4] = mpt(a1, 11);
+  return {
+    k: w.k,
+    kind: w.kind,
+    d: `M${x1} ${y1}A39 39 0 0 1 ${x2} ${y2}L${x3} ${y3}A11 11 0 0 0 ${x4} ${y4}z`,
+    edge: [mpt(a1, 11), mpt(a1, 39)] as const,
+    peg: mpt(a1, 36),
+  };
+});
+
+const MINI_BULBS = Array.from({ length: 12 }, (_, i) => ({ i, at: mpt(i * 30 + 15, 44) }));
+
+/**
+ * Prize wheel's show while the draw rolls: a little prize wheel spun hard, slowing to a stop as
+ * the bar fills, its pointer clacking over every peg and the bulbs chasing round the rim.
+ */
+export function WheelRoll() {
+  const spinRef = useRef<SVGGElement>(null);
+  const flapRef = useRef<SVGGElement>(null);
+
+  useEffect(() => {
+    // With reduced motion it holds still, but the pegs still clack out the draw
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Three to four turns, finishing with the progress bar (it starts 250ms late)
+    const total = 1080 + Math.random() * 360;
+    const dur = ROLL_MS - 250;
+    const start = performance.now();
+    let peg = 0;
+    let id = requestAnimationFrame(function frame(now) {
+      const t = Math.min(1, (now - start) / dur);
+      const angle = total * (1 - (1 - t) ** 3);
+      if (!still) spinRef.current?.setAttribute("transform", `rotate(${angle.toFixed(1)} ${MC[0]} ${MC[1]})`);
+      // Each peg that passes knocks the pointer aside, with a clack
+      const next = Math.floor(angle / WEDGE_DEG);
+      if (next !== peg) {
+        peg = next;
+        sfx.peg();
+        if (!still)
+          flapRef.current?.animate(
+            [{ transform: "rotate(0deg)" }, { transform: "rotate(-24deg)" }, { transform: "rotate(0deg)" }],
+            { duration: 160, easing: "ease-out" },
+          );
+      }
+      if (t < 1) id = requestAnimationFrame(frame);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  return (
+    <svg aria-hidden viewBox="0 0 100 106" className="mb-3 h-[72px] w-auto overflow-visible">
+      <circle cx={MC[0]} cy={MC[1]} r={50} fill="rgba(255,201,61,0.16)" />
+      <g ref={spinRef}>
+        {MINI_WEDGES.map((w) => (
+          <path key={w.k} d={w.d} fill={WEDGE[w.kind].on} />
+        ))}
+        {MINI_WEDGES.map(({ k, edge: [[x1, y1], [x2, y2]] }) => (
+          <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(22,5,36,0.55)" strokeWidth={1} />
+        ))}
+        {MINI_WEDGES.map(({ k, peg: [x, y] }) => (
+          <circle key={k} cx={x} cy={y} r={1.6} fill="#FFE38A" />
+        ))}
+      </g>
+      <circle cx={MC[0]} cy={MC[1]} r={40.5} fill="none" stroke="#16052A" strokeWidth={3} />
+      <circle cx={MC[0]} cy={MC[1]} r={44} fill="none" stroke="#FFC93D" strokeWidth={6} />
+      <circle cx={MC[0]} cy={MC[1]} r={47} fill="none" stroke="#C9761A" strokeWidth={1} />
+      {MINI_BULBS.map(({ i, at: [x, y] }) => (
+        <circle
+          key={i}
+          cx={x}
+          cy={y}
+          r={1.9}
+          fill={i % 2 ? "#FF8FD2" : "#FFF8E1"}
+          style={{ animation: `lc-bulb-chase 0.45s linear ${(-(((3 - (i % 3)) % 3) * 0.15)).toFixed(2)}s infinite` }}
+        />
+      ))}
+      <circle cx={MC[0]} cy={MC[1]} r={11} fill="#2A0C40" stroke="#FFC93D" strokeWidth={2.5} />
+      <path d={SPARKLE} fill="#FFC93D" transform={`translate(${MC[0] - 5} ${MC[1] - 5}) scale(0.4167)`} />
+      <g transform="translate(40 4.5) scale(0.5)" style={{ filter: "drop-shadow(0 2px 2px rgba(20,4,30,0.5))" }}>
+        <g ref={flapRef} style={{ transformBox: "fill-box", transformOrigin: "50% 33%" }}>
+          <circle cx="20" cy="17" r="13" fill="#FFC93D" />
+          <path d="M 8.3 22.6 H 31.7 L 20 49 Z" fill="#FFC93D" />
+          <path d="M 20 4 A 13 13 0 0 1 20 30 Z M 20 17 L 31.7 22.6 L 20 49 Z" fill="#E3921A" />
+          <circle cx="20" cy="17" r="5" fill="#FFF4E0" />
+          <circle cx="20" cy="17" r="2.2" fill="#E3921A" />
+        </g>
+      </g>
+    </svg>
   );
 }

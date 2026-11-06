@@ -46,6 +46,11 @@ const GRAIN = svgUrl(
   "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='g' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.93  0 0 0 0 0.89  0 0 0 0 0.8  7 0 0 0 -3.9'/></filter><rect width='100%' height='100%' filter='url(#g)'/></svg>",
 );
 
+/** Neutral grey film grain, for the overlay that sits over everything (text included). */
+const OVERLAY_GRAIN = svgUrl(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='f' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='2' seed='23' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(#f)'/></svg>",
+);
+
 /** Blotchy, uneven darkness, like a print that's been handled for a century. */
 const MOTTLE = svgUrl(
   "<svg xmlns='http://www.w3.org/2000/svg' width='520' height='520'><filter id='m' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  2.6 0 0 0 -1.15'/></filter><rect width='100%' height='100%' filter='url(#m)'/></svg>",
@@ -65,7 +70,7 @@ const DUST = Array.from({ length: 46 }, (_, i) => ({
   x: frac(i, 61) * 100,
   y: frac(i, 62) * 100,
   s: 1 + frac(i, 63) * 2.4,
-  o: 0.1 + frac(i, 64) * 0.3,
+  o: 0.04 + frac(i, 64) * 0.1,
   // Irregular blobs, not perfect dots
   shape: `${40 + frac(i, 65) * 60}% ${30 + frac(i, 66) * 70}% ${40 + frac(i, 67) * 60}% ${35 + frac(i, 68) * 65}%`,
 }));
@@ -79,12 +84,12 @@ const HAIRS = [
 
 /** Long vertical scratches (left %, top %, height %, tilt), plus one diagonal gouge. */
 const SCRATCHES = [
-  { x: 9, top: 0, h: 74, rot: 0.6, o: 0.08, dur: 3.1 },
-  { x: 23.5, top: 30, h: 70, rot: -0.4, o: 0.05, dur: 4.3 },
-  { x: 67, top: 4, h: 40, rot: 0.3, o: 0.06, dur: 2.7 },
-  { x: 88.5, top: 16, h: 84, rot: -0.8, o: 0.09, dur: 3.7 },
-  { x: 41, top: 56, h: 44, rot: 0.2, o: 0.045, dur: 5.2 },
-  { x: 74, top: 2, h: 20, rot: 58, o: 0.07, dur: 6.1 },
+  { x: 9, top: 0, h: 74, rot: 0.6, o: 0.05, dur: 3.1 },
+  { x: 23.5, top: 30, h: 70, rot: -0.4, o: 0.03, dur: 4.3 },
+  { x: 67, top: 4, h: 40, rot: 0.3, o: 0.035, dur: 2.7 },
+  { x: 88.5, top: 16, h: 84, rot: -0.8, o: 0.05, dur: 3.7 },
+  { x: 41, top: 56, h: 44, rot: 0.2, o: 0.03, dur: 5.2 },
+  { x: 74, top: 2, h: 20, rot: 58, o: 0.04, dur: 6.1 },
 ];
 
 /** Candles per side, on a 100 × 124 strip whose floor is y = 116. */
@@ -249,7 +254,7 @@ export function OuijaScene({ p, tier, mood }: Props) {
         />
       ))}
 
-      <Grunge stir={stir} />
+      <Grunge />
     </div>
   );
 }
@@ -544,18 +549,18 @@ function Candle({
 }
 
 /** Old-film texture on top of the scene: mottling, grain, dust, hairs, scratches, a vignette. */
-function Grunge({ stir }: { stir: number }) {
+function Grunge() {
   return (
     <>
       <div
         className="absolute inset-0"
-        style={{ backgroundImage: MOTTLE, opacity: 0.55, mixBlendMode: "multiply" }}
+        style={{ backgroundImage: MOTTLE, opacity: 0.18, mixBlendMode: "multiply" }}
       />
       <div
         className="absolute -inset-10"
         style={{
           backgroundImage: GRAIN,
-          opacity: 0.09,
+          opacity: 0.05,
           animation: "lc-grain 0.7s steps(1, end) infinite",
         }}
       />
@@ -579,7 +584,7 @@ function Grunge({ stir }: { stir: number }) {
           key={i}
           viewBox="-2 -10 36 20"
           className="absolute h-5 w-9 overflow-visible"
-          style={{ left: `${hr.x}%`, top: `${hr.y}%`, transform: `rotate(${hr.rot}deg)`, opacity: 0.22 }}
+          style={{ left: `${hr.x}%`, top: `${hr.y}%`, transform: `rotate(${hr.rot}deg)`, opacity: 0.08 }}
         >
           <path d={hr.d} fill="none" stroke={BONE} strokeWidth={0.6} />
         </svg>
@@ -610,16 +615,7 @@ function Grunge({ stir }: { stir: number }) {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 85% 75% at 50% 42%, transparent 45%, rgba(0,0,0,0.38) 80%, rgba(0,0,0,0.62) 100%)",
-        }}
-      />
-      {/* Candlelight wavering over everything, more as the spirits stir */}
-      <div
-        className="absolute inset-0 bg-black"
-        style={{
-          opacity: 0,
-          ["--flicker" as string]: (0.04 + stir * 0.08).toFixed(3),
-          animation: "lc-candlelight 5.3s linear infinite",
+            "radial-gradient(ellipse 85% 75% at 50% 42%, transparent 52%, rgba(0,0,0,0.24) 84%, rgba(0,0,0,0.42) 100%)",
         }}
       />
     </>
@@ -907,5 +903,203 @@ export function SpiritRing({
         </svg>
       </motion.div>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------------------------------ */
+
+/** Mini board letters: A–M on an upper arc, N–Z on a lower one (viewBox 168 × 72). */
+const MINI_C = { x: 84, y: 84 };
+const MINI_LETTERS = [
+  ...Array.from("ABCDEFGHIJKLM", (ch, i) => ({ ch, r: 62, a: -60 + (120 / 12) * i })),
+  ...Array.from("NOPQRSTUVWXYZ", (ch, i) => ({ ch, r: 45, a: -60 + (120 / 12) * i })),
+].map(({ ch, r, a }) => {
+  const rad = (a * Math.PI) / 180;
+  return { ch, a, r, x: MINI_C.x + Math.sin(rad) * r, y: MINI_C.y - Math.cos(rad) * r };
+});
+const miniAt = (ch: string) => MINI_LETTERS.find((l) => l.ch === ch)!;
+
+/** Where the glass drifts while the draw rolls, a letter at a time, like it's thinking it over. */
+const DARTS = "KEYNOTAG".split("").map(miniAt);
+/** Seconds per letter: about 60% gliding there, the rest resting on it. */
+const DART_S = 0.55;
+const GLIDE = 0.6;
+const dartKeys = (axis: "x" | "y") => DARTS.flatMap((l) => [l[axis], l[axis]]);
+const DART_TIMES = DARTS.flatMap((_, i) => [
+  (i + GLIDE) / DARTS.length,
+  (i + 1) / DARTS.length,
+]);
+
+/** A planchette with its window at (0, 0), point up. */
+const PLANCHETTE_SMALL =
+  "M0 -18C6 -12 11 -5 11 1C11 7 6 10 0 10C-6 10 -11 7 -11 1C-11 -5 -6 -12 0 -18Z";
+
+/**
+ * Shown above the progress bar while the draw rolls ("Consulting the other side"): a little
+ * spirit board, with the planchette gliding from letter to letter, each one flaring ember as
+ * the glass rests on it.
+ */
+export function OuijaRoll() {
+  const duration = DART_S * DARTS.length;
+  const loop = { duration, repeat: Infinity, ease: "easeInOut" } as const;
+  const first = DARTS[0];
+  return (
+    <svg aria-hidden viewBox="0 0 168 72" className="mb-2 block h-[86px] w-[200px] overflow-visible">
+      <defs>
+        <radialGradient id="lc-ouija-mini-glow">
+          <stop offset="0" stopColor={EMBER} stopOpacity="0.9" />
+          <stop offset="1" stopColor={EMBER} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      {/* The board: charcoal, double gold rule */}
+      <rect x="1" y="1" width="166" height="70" rx="10" fill="#120F0D" fillOpacity="0.85" stroke={GOLD} strokeOpacity="0.7" />
+      <rect x="5" y="5" width="158" height="62" rx="7" fill="none" stroke={GOLD} strokeOpacity="0.3" strokeWidth="0.6" />
+      <g fill={GOLD} style={{ fontFamily: SERIF }} textAnchor="middle">
+        <text x="21" y="17" fontSize="7.5" letterSpacing="0.1em">YES</text>
+        <text x="147" y="17" fontSize="7.5" letterSpacing="0.1em">NO</text>
+        <text x="84" y="65" fontSize="5" letterSpacing="0.3em" fillOpacity="0.7">GOODBYE</text>
+        {/* A tiny sun and moon beside the YES and NO */}
+        <circle cx="21" cy="27" r="3" fill="none" stroke={GOLD} strokeWidth="0.7" />
+        <path d="M144 24a3.4 3.4 0 1 0 4.6 4.6a2.7 2.7 0 0 1 -4.6 -4.6z" />
+        {MINI_LETTERS.map((l) => (
+          <text
+            key={l.ch}
+            x={l.x}
+            y={l.y}
+            fontSize={l.r > 50 ? 8.5 : 7}
+            dominantBaseline="central"
+            fillOpacity="0.85"
+            transform={`rotate(${l.a.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`}
+          >
+            {l.ch}
+          </text>
+        ))}
+      </g>
+      {/* Each letter flares while the glass rests on it */}
+      {DARTS.map((l, i) => {
+        const a = (i + GLIDE) / DARTS.length;
+        const b = (i + 1) / DARTS.length;
+        return (
+          <motion.text
+            key={i}
+            x={l.x}
+            y={l.y}
+            fontSize={l.r > 50 ? 8.5 : 7}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#FFE2C6"
+            style={{ fontFamily: SERIF, filter: `drop-shadow(0 0 3px ${EMBER})` }}
+            transform={`rotate(${l.a.toFixed(1)} ${l.x.toFixed(1)} ${l.y.toFixed(1)})`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0, 1, 1, 0, 0] }}
+            transition={{ ...loop, ease: "linear", times: [0, Math.max(0, a - 0.01), a, b - 0.02, b, 1] }}
+          >
+            {l.ch}
+          </motion.text>
+        );
+      })}
+      {/* The planchette */}
+      <motion.g
+        initial={{ x: first.x, y: first.y }}
+        animate={{ x: dartKeys("x"), y: dartKeys("y") }}
+        transition={{ ...loop, times: DART_TIMES }}
+      >
+        <circle r="9" fill="url(#lc-ouija-mini-glow)" opacity="0.55" />
+        <path d={PLANCHETTE_SMALL} fill={BONE} fillOpacity="0.14" stroke={BONE} strokeWidth="1" strokeLinejoin="round" />
+        <circle r="5" fill="none" stroke={BONE} strokeWidth="1" />
+        <path d="M-1.6 -11.5a2.2 2.2 0 1 0 3.2 0a1.8 1.8 0 0 1 -3.2 0z" fill={BONE} fillOpacity="0.8" />
+      </motion.g>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------------------------------ */
+
+/** Dust and nicks on the print that flash up for a frame or two, then vanish. */
+const SPECKS = Array.from({ length: 16 }, (_, i) => ({
+  x: frac(i, 81) * 100,
+  y: frac(i, 82) * 100,
+  s: 1.5 + frac(i, 83) * 3.5,
+  dur: (2.2 + frac(i, 84) * 5).toFixed(2),
+  delay: (-frac(i, 85) * 7).toFixed(2),
+  dark: frac(i, 86) > 0.55,
+  o: (0.18 + frac(i, 87) * 0.25).toFixed(2),
+  shape: `${40 + frac(i, 88) * 60}% ${30 + frac(i, 89) * 70}% ${45 + frac(i, 90) * 55}% ${35 + frac(i, 91) * 65}%`,
+}));
+
+/** Thin running lines that jump along the frame now and then. */
+const RUN_LINES = [
+  { dur: 7.3, delay: -1.2, o: 0.07 },
+  { dur: 11.9, delay: -6.4, o: 0.05 },
+];
+
+/**
+ * Old-film effects laid over the whole Ouija hero, text and dial included, all kept faint:
+ * moving grain, specks that flash for a frame, running lines that skip across and a slow warm
+ * light leak. No flicker: the board itself holds steady. Pointer-transparent; holds still for
+ * reduced motion (everything but the grain starts hidden).
+ */
+export function FilmFX() {
+  return (
+    <motion.div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <div
+        className="absolute -inset-10"
+        style={{
+          backgroundImage: OVERLAY_GRAIN,
+          opacity: 0.09,
+          mixBlendMode: "overlay",
+          animation: "lc-grain 0.42s steps(1, end) infinite",
+        }}
+      />
+      {SPECKS.map((d, i) => (
+        <span
+          key={i}
+          className="absolute block"
+          style={
+            {
+              left: `${d.x}%`,
+              top: `${d.y}%`,
+              width: d.s,
+              height: d.s * 0.8,
+              borderRadius: d.shape,
+              background: d.dark ? "#000" : BONE,
+              opacity: 0,
+              "--o": d.o,
+              animation: `lc-film-speck ${d.dur}s steps(1, end) ${d.delay}s infinite`,
+            } as CSSProperties
+          }
+        />
+      ))}
+      {RUN_LINES.map((l, i) => (
+        <span
+          key={i}
+          className="absolute inset-y-0 block w-px"
+          style={
+            {
+              background: `linear-gradient(180deg, transparent, ${BONE} 10%, ${BONE} 90%, transparent)`,
+              opacity: 0,
+              "--o": l.o,
+              animation: `lc-film-line ${l.dur}s steps(1, end) ${l.delay}s infinite`,
+            } as CSSProperties
+          }
+        />
+      ))}
+      {/* A warm light leak breathing in from the top right */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse 45% 65% at 100% 15%, rgba(255,140,60,0.9), transparent 70%)",
+          mixBlendMode: "screen",
+          opacity: 0,
+          animation: "lc-film-leak 11s ease-in-out infinite",
+        }}
+      />
+    </motion.div>
   );
 }

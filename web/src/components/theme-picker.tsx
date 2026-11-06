@@ -34,6 +34,8 @@ type Props = {
   themes: Theme[];
   index: number;
   onSelect: (index: number) => void;
+  /** Opens the share sheet for the current theme. */
+  onShare: () => void;
 };
 
 const spring = { type: "spring", stiffness: 500, damping: 26 } as const;
@@ -62,7 +64,7 @@ export const chipStyle = (t: Theme) => {
   } as CSSProperties;
 };
 
-export function ThemePicker({ themes, index, onSelect }: Props) {
+export function ThemePicker({ themes, index, onSelect, onShare }: Props) {
   const t = themes[index];
   const n = themes.length;
   const [open, setOpen] = useState(false);
@@ -149,7 +151,7 @@ export function ThemePicker({ themes, index, onSelect }: Props) {
       whileTap={{ scale: 0.88, x: dir * 3 }}
       transition={spring}
       aria-label={dir < 0 ? "Previous theme" : "Next theme"}
-      className={`grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full ${SEE_THROUGH}`}
+      className={`grid h-10 w-10 shrink-0 sm:h-11 sm:w-11 cursor-pointer place-items-center rounded-full ${SEE_THROUGH}`}
       style={chipStyle(t)}
     >
       <svg
@@ -169,7 +171,7 @@ export function ThemePicker({ themes, index, onSelect }: Props) {
   );
 
   return (
-    <div ref={rootRef} className="relative flex items-center gap-2">
+    <div ref={rootRef} className="relative flex items-center gap-1.5 sm:gap-2">
       {stepButton(-1)}
 
       <motion.button
@@ -207,13 +209,13 @@ export function ThemePicker({ themes, index, onSelect }: Props) {
             </motion.span>
           </AnimatePresence>
         </span>
-        <span className="text-sm tabular-nums opacity-60">
+        <span className="text-sm tabular-nums opacity-60 max-sm:hidden">
           {index + 1}/{n}
         </span>
         <motion.svg
           aria-hidden
           viewBox="0 0 24 24"
-          className="h-4 w-4 opacity-70"
+          className="h-4 w-4 opacity-70 max-sm:hidden"
           fill="none"
           stroke="currentColor"
           strokeWidth={2.4}
@@ -224,6 +226,33 @@ export function ThemePicker({ themes, index, onSelect }: Props) {
         >
           <path d="M6 9l6 6 6-6" />
         </motion.svg>
+      </motion.button>
+
+      <motion.button
+        type="button"
+        onClick={onShare}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.88 }}
+        transition={spring}
+        aria-label={`Share the ${t.name} theme`}
+        aria-haspopup="dialog"
+        className={`grid h-10 w-10 shrink-0 sm:h-11 sm:w-11 cursor-pointer place-items-center rounded-full ${SEE_THROUGH}`}
+        style={chipStyle(t)}
+      >
+        {/* Arrow rising out of a tray */}
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className="h-[19px] w-[19px]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 3.5v11M7.5 8 12 3.5 16.5 8" />
+          <path d="M5 12.5v5.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5.5" />
+        </svg>
       </motion.button>
 
       {stepButton(1)}

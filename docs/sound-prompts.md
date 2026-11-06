@@ -201,6 +201,18 @@ Each sound got four takes. The picks in `web/public/sfx/classic/` were chosen by
 
 Processing: silence trimmed from both ends, a 60 ms fade-out, and every stinger levelled to −18.5 LUFS with peaks below −1 dB. The alarm is left at its full 30 s and levelled to −14.4 LUFS, so it's louder than the stingers on purpose.
 
+### Setting the alarm and the snooze (second pass)
+
+Recorded replacements for the synthesized setting sounds, shared by every theme in `web/public/sfx/common/`, plus a new Classic snooze (`classic/win.mp3`). ElevenLabs Sound Effects v2, flow "LotteryClock · Setting & snooze".
+
+| File | Prompt | Pick | Edit |
+|---|---|---|---|
+| `common/latch.mp3` (Set Alarm locking down) | Chunky plastic bedside alarm clock button pressed down firmly and clicking into place, satisfying mechanical click-clack, close-mic, dry, nothing else | Take 4: the tightest click-clack, two transients 60 ms apart | First 220 ms, peak −3 dB. A soft synthesized thump plays under it |
+| `common/beep.mp3` (while the set time blinks) | Modern digital bedside alarm clock beeping twice, two short bright electronic beeps, clean pure tone, close-mic, dry, nothing else | Take 3: the cleanest steady tone (~2.8 kHz). No take was a clean double beep | One 85 ms beep cut from it, repeated after a 70 ms gap: beep-beep |
+| `classic/win.mp3` (snooze) | Happy snooze reward sound: a soft rising marimba arpeggio, then a gentle descending slide whistle settling down, cozy, sleepy and playful, close-mic, dry | Take 1: rises (B D F G A C), then slides down, settled by about 1.2 s | First 1.6 s, levelled to −18.5 LUFS like the other stingers |
+
+Also tried for the snooze: three 4 s Music v2.5 jingles. One (a single warm C major chord, decaying over 2.4 s) is a calmer alternative; the others ran 4–6 s, too long for a result sound.
+
 ---
 
 ## Dial instruments
@@ -221,6 +233,7 @@ To keep it playful rather than a plain ramp:
 - **Takes alternate.** Each note plays from a random recording within 5 semitones, never the same take twice in a row, at a slightly varied strength, so even a repeated pitch sounds hand-played.
 - **Grace notes.** Sometimes a quick second note follows, a step or two up. The chance rises from about 1 in 8 at low bets to about 1 in 3 near 45.
 - **Tier chords walk a progression** by pitch-shifting `tier.mp3`, and "All in" at 45 strums twice.
+- **Speed sets the density.** The dial's turning speed (minutes per second, smoothed) sets a minimum gap between notes (`noteGap` in `sfx.ts`). A slow turn plays every minute. From about 6 minutes a second notes thin out, and grace notes stop above 20 a second. A one-second full sweep plays about 8 notes, and a half-second flick about 5. Wherever the dial comes to rest, it still plays that note, about 150 ms later. Chords crossed within 0.3 s of each other play once, except All in.
 
 | Theme | Instrument | Scale | Recorded notes (MIDI) | Tier chords (tiers 1–5) |
 |---|---|---|---|---|
@@ -234,10 +247,56 @@ Prompts used:
 - Guitar: "Single plucked note on a low / middle string (high: high on the top string) of a nylon-string flamenco guitar, clean, close-mic, dry, no strum, nothing else"
 - Guitar strum: "One fast flamenco guitar rasgueado strum flourish on nylon strings, bright and percussive, close-mic, dry"
 
-The time picker keeps the plain synthesized tick.
+The time picker keeps the plain synthesized tick. Themes without their own dial instrument borrow Classic's marimba (and its chord progression) rather than falling back to the tick.
+
+---
+
+## Theme songs
+
+Each theme can have a looping background song, `web/public/sfx/<theme>/loop.mp3`, in the same key as its dial so the dial notes play in tune over it. It starts on the first interaction (browsers block sound before that), crossfades over 1.2 s when the theme changes, stops when sound is muted, and dips to 35% while the draw rolls and the result plays.
+
+How a loop is made:
+
+1. Generate about 75 s with ElevenLabs Music v2.5 (instrumental, 2 takes, about 1,125 credits each). Ask for one key and chord cycle, a steady tempo, and "no intro, no build-up, no breakdown, no ending".
+2. Pick the take whose level stays even with no fade, and check its key against the dial scale by measuring its pitch-class profile.
+3. Search every loop length for the point where the music best matches its own start, then fine-tune by waveform correlation. Good seams land on whole bars.
+4. Cut [start, start + length], crossfade the 1.5 s after the end into the first 1.5 s (equal power), level to −20 LUFS, and save as MP3. The exact length goes in `THEME_SOUNDS` (`loop`): the code loops exactly that, skipping any silence the MP3 decoder adds at the start.
+
+| Theme | Prompt (short) | Take | Loop |
+|---|---|---|---|
+| Classic | Gentle, sunny loop in C major, 92 BPM, C–F–G–C; marimba, kalimba, fingerpicked guitar, upright bass, brushes and shaker | 2 (even level, 94% in C major pentatonic) | 52.19 s from 4.23 s = 20 bars |
+| Día de Muertos | Warm, candlelit Spanish and Mexican folk loop, 96 BPM, Am–G–F–E; nylon guitar arpeggios, requinto, guitarrón, cajón, distant muted trumpet | 1 (95% in A minor; take 2 came out in D major) | 59.99 s from 4.96 s = 24 bars, ending before the take's fade-out |
+
+The Día de Muertos song came out in A minor rather than the E Phrygian dominant asked for, so the guitar dial now uses E Phrygian (the same notes as A minor, still with the Spanish F-to-E) instead of Phrygian dominant.
 
 ---
 
 ## Other themes
 
 To do, using the same file list: Night, Día de Muertos, Prize wheel, Slot machine, Poker, Ouija, Digital. Each gets its own motif, key and instruments, for example celesta and soft synth for Night, marimba, guitarrón and trumpet for Día de Muertos, organ and theremin for Ouija, and square-wave chiptune for Digital.
+
+## Shared win and lose, per-theme draw songs (ElevenLabs)
+
+Every theme plays the same win and lose: `sunny.mp3` (rang early) and `buzz.mp3` (rang late) in `web/public/sfx/classic/`, made with ElevenLabs text-to-sound:
+
+- `sunny.mp3`: Bright sunny morning music stinger, cheerful marimba and glockenspiel phrase rising up, ending on a warm sparkling major chord, happy and hopeful, C major, dry close mix
+- `buzz.mp3`: Annoying digital alarm clock going off, harsh shrill rapid beep-beep-beep-beep, insistent and grating, close-mic, dry (levelled to -20 LUFS, since it's shrill)
+
+The one sound a theme has of its own is its **draw song**, `web/public/sfx/<theme id>/draw.mp3`, listed in `DRAW_SONGS` in `web/src/lib/sfx.ts`. It starts when the target time starts blinking and plays through the roll, in place of `set.mp3` and `roll.mp3`. The latch click and the blinking beeps still play over it.
+
+**Timing**, from pressing Set alarm: latch at 0 s, blink (and the draw song) at 0.38 s, roll at 1.78 s, clock lands at 3.65 s. So the song has **3.27 s** (`DRAW_HIT`) from its start to the landing. When the clock lands, the win/lose sound plays over the song and the song fades out over 1.8 s (`DRAW_FADE`). All three draw songs are full songs (`FULL_SONGS`), about a minute long. A song starts the first time the alarm is set, plays on under the win/lose sounds and through Roll again, and stops only when it ends or the alarm is reset (or the theme changes, or sound is muted). After it has ended, rolls use the shared roll sound. The roll itself is 2.8 s (`ROLL_MS`), so the result lands 4.2 s into the song.
+
+Made with ElevenLabs Music (`eleven_music_v2_5`), one generation each, then cut with ffmpeg:
+
+| Theme | Prompt |
+|---|---|
+| Good Morning (`classic`) | One-minute instrumental morning song: soft, gentle, upbeat, bright and happy. Warm marimba melody, glockenspiel sparkles, light acoustic guitar strums and a gentle shaker, 100 BPM, C major. Starts straight away with no long intro, stays soft and relaxed throughout, and ends with a gentle resolved final chord. No vocals. |
+| Good Night (`night`) | Short instrumental nursery lullaby in the style of Twinkle Twinkle Little Star: celesta and music box melody, soft glockenspiel twinkles, warm gentle pads, slow 80 BPM, C major. Starts hushed and builds with a rising shimmer of twinkling notes into one soft bright chord. No vocals, no drums. |
+| Día de Muertos (`muertos`) | One-minute instrumental Mexican flamenco song with a warm night-time mood: nylon-string flamenco guitar with soft rasgueado strums and melodic picking, gentle cajón and palmas, a distant muted trumpet, candlelit and mysterious but soft, 96 BPM, A minor. Starts straight away with no long intro, stays relaxed and intimate throughout, and ends on a gentle resolved chord. No vocals. |
+| Prize wheel (`wheel`) | One-minute instrumental retro game-show song: playful and upbeat but soft, bouncy walking bass, light brushed swing drums, bright vibraphone and organ melody with a little brass stab now and then, 112 BPM, F major. Starts straight away with no long intro, stays friendly and relaxed throughout, and ends on a gentle resolved chord. No vocals. |
+| Poker (`poker`) | One-minute instrumental smoky jazz lounge song for a late-night card table: soft brushed drums, upright bass, mellow jazz piano chords and a breathy muted trumpet melody, cool and relaxed, 92 BPM, swing feel, D minor. Starts straight away with no long intro, stays soft throughout, and ends on a gentle resolved chord. No vocals. |
+| Ouija (`ouija`) | One-minute instrumental haunting séance song: a slow, detuned music box melody over a cold low drone, ghostly wordless-sounding theremin lead, distant reversed piano swells, soft creaking strings and faint whispery wind, dark and unsettling but quiet, 68 BPM, D minor. Starts straight away with no long intro, stays hushed and eerie throughout, and fades out on an unresolved dissonant chord. No vocals. |
+| Tarot (`tarot`) | One-minute hippy meditative song: warm hang drum melody as the lead, soft frame drum and shaker groove, tanpura drone, gentle singing bowl and chimes, with soft wordless chanting voices humming low in the background like a circle around a campfire. Earthy, mellow and hypnotic, 84 BPM, D minor pentatonic. Starts straight away with no long intro, stays calm throughout, and ends on a gentle ringing hang drum note. No lyrics, no words. |
+| Digital (`digital`) | One-minute instrumental old-school cyberpunk hacker song with late-90s digital-rain vibes: dark pulsing analog synth bassline, crisp breakbeat drums kept low, glitchy arpeggiated square-wave leads, bit-crushed bleeps and data-stream blips, cold and mysterious but steady, 110 BPM, E minor. Starts straight away with no long intro, stays moody and restrained throughout, and ends on a clean synth stab. No vocals. |
+
+Themes without a draw song (Slot machine) play the shared `set.mp3` and `roll.mp3`. Prize wheel's song plays under its own peg clacks; when the wheel stops it adds a thunk, then plays the same win/lose sounds as every theme.

@@ -1,31 +1,31 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import type { ReactNode } from "react";
 import {
   Bolt,
-  Bones,
-  Flame,
   Planet,
   SeeingEye,
   Sparkle,
   TA,
+  TarotCard,
   TarotCloud,
   TarotMoon,
   TarotSun,
   useTurning,
 } from "@/components/scenes/tarot-art";
 import {
-  MOUNTAIN_BACK,
-  MOUNTAIN_FRONT,
-  MOUNTAIN_HATCHING,
+  MOON_FACES,
+  MOON_RAYS,
+  SUN_FACES,
+  SUN_RAYS,
   WHEEL_BAND,
-  WHEEL_RIM,
   WREATH_LEAVES,
   WREATH_RIBBONS,
 } from "@/components/scenes/tarot-svg";
 import type { SceneMood } from "@/components/scenes/types";
 import { frac } from "@/lib/rand";
-import { css, cssA, MAX_RANGE, rampN } from "@/lib/themes";
+import { css, cssA, rampN } from "@/lib/themes";
 
 /**
  * Tarot's background: a vintage tarot card that comes to life as the bet climbs the Major Arcana.
@@ -33,14 +33,15 @@ import { css, cssA, MAX_RANGE, rampN } from "@/lib/themes";
  *   0 min     Temperance: a calm mint sky, the sun asleep, a few stars, clouds drifting by
  *   1–11      The Star: stars come out and twinkle
  *   12–23     Wheel of Fortune: planets drift in, the wheel behind the dial turns faster
- *   24–35     The Devil: the horizon warms to coral and flames rise at the foot of the mountains
+ *   24–35     The Devil: the horizon and the cloud bank along the bottom warm to coral
  *   36–44     The Tower: lightning strikes either side of the dial
- *   45        The Fool: all of it at once, and skulls in the corners
+ *   45        The Fool: all of it at once, and the front cards turn over
  *
- * The sun's face follows the tier; the moon's follows the draw. A snooze calms everything down
- * (the sun drifts back to sleep, the moon's blissful); a late result brings the storm and the
- * bones; a jackpot crowns the dial with The World's laurel wreath. Purely decorative and
- * pointer-transparent.
+ * All the way up, the fans of cards in the bottom corners grow and spread. The sun's face follows
+ * the tier; the moon's follows the draw. A snooze calms everything down (the sun drifts back to
+ * sleep, the moon's blissful, the cards stack up); a late result brings the storm and scatters the
+ * cards, reversed; a jackpot crowns the dial with The World's laurel wreath. Purely decorative
+ * and pointer-transparent.
  */
 
 type Props = {
@@ -88,24 +89,11 @@ const PLANETS = [
 ];
 const PLANETS_AT = [0, 0, 2, 3, 4, 4];
 
-/** Flames along the foot of the mountains, per side, from the edge in (phones keep the outer two). */
-const FLAMES = [
-  { left: 3.5, h: 1, kind: 0 },
-  { left: 10, h: 0.72, kind: 2 },
-  { left: 16, h: 0.86, kind: 1 },
-  { left: 22.5, h: 0.62, kind: 2 },
-].map((f, i) => ({ ...f, dur: +(1 + frac(i, 98) * 0.7).toFixed(2), delay: +(-frac(i, 99) * 1.5).toFixed(2) }));
-const FLAMES_AT = [0, 0, 0, 2, 3, 4];
-
 /** Lightning, per side: a tall bolt and a short one, striking on their own rhythms. */
 const BOLTS = [
   { tall: true, left: 1.5, top: 21, dur: 4.2, delay: 0.3 },
   { tall: false, left: 8.5, top: 29, dur: 5.3, delay: 2.1 },
 ];
-
-/** Colours of the two ridges, ramping with how lively things are. */
-const BACK_RIDGE = [TA.blush, "#F3A794", "#EE9886", "#E9897A"];
-const FRONT_RIDGE = [TA.coral, "#EC725F", "#E36556", "#D8564F"];
 
 export function TarotScene({ p, tier, mood }: Props) {
   // A snooze settles the cards down; a late result brings the whole storm.
@@ -114,10 +102,10 @@ export function TarotScene({ p, tier, mood }: Props) {
   const starsOut =
     mood === "win" ? 0.85 : mood === "jackpot" ? 1 : mood === "loss" ? 0.2 : tier === 0 ? 0.14 : 0.3 + p * 0.7;
   const planets = mood === "jackpot" ? PLANETS.length : mood === "win" ? 1 : PLANETS_AT[tier];
-  const flames = mood === "win" || mood === "jackpot" ? 0 : mood === "loss" ? 4 : FLAMES_AT[tier];
   const storm = mood === "loss" || (mood !== "win" && mood !== "jackpot" && tier >= 4);
   const fast = mood === "loss" || tier === 5;
-  const bones = mood === "loss" || (mood !== "win" && mood !== "jackpot" && tier === 5);
+  // The front cards turn over at The Fool, and for every result
+  const reading = mood === "win" || mood === "loss" || mood === "jackpot" || tier === 5;
   const aura = rampN([TA.gold, TA.coral, "#D2445A"], lively);
   const glow = 0.12 + lively * 0.26 + (mood === "loss" ? 0.12 : 0);
 
@@ -131,18 +119,6 @@ export function TarotScene({ p, tier, mood }: Props) {
           transition: "background 600ms ease-out",
         }}
       />
-
-      {/* A flash across the sky as the first bolt strikes */}
-      {storm && (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "radial-gradient(ellipse 70% 60% at 50% 30%, rgba(255,255,240,0.55), transparent 70%)",
-            opacity: 0,
-            animation: `lc-sky-flash ${fast ? BOLTS[0].dur * 0.6 : BOLTS[0].dur}s linear ${BOLTS[0].delay}s infinite`,
-          }}
-        />
-      )}
 
       {/* Stars come out as the bet grows */}
       {STARS.map((s, i) => (
@@ -245,80 +221,164 @@ export function TarotScene({ p, tier, mood }: Props) {
         </div>
       ))}
 
-      {/* Engraved mountains along the horizon, warming with the bet */}
-      <Mountains back={css(rampN(BACK_RIDGE, lively))} front={css(rampN(FRONT_RIDGE, lively))} />
-
-      {/* A memento mori in each corner: The Fool, or a late result */}
+      {/* Along the bottom: a bank of clouds, with a fan of tarot cards rising out of it in each
+          corner. The back row of clouds sits behind the cards, the front row in front. */}
+      <CloudRow row={BANK_BACK} fill={css(rampN(BANK_BACK_FILL, lively))} raise />
       {[0, 1].map((side) => (
-        <div
+        <CardFan
           key={side}
-          className="absolute bottom-0 w-[clamp(60px,12vw,170px)]"
-          style={{
-            ...(side ? { right: 0, transform: "scaleX(-1)" } : { left: 0 }),
-            opacity: bones ? 1 : 0,
-            translate: bones ? "0 0" : "0 30%",
-            transition: "opacity 450ms ease-out, translate 450ms cubic-bezier(0.2, 0.9, 0.3, 1.2)",
-          }}
-        >
-          <Bones className="block h-auto w-full" />
-        </div>
+          side={side}
+          count={mood === "idle" || mood === "set" ? FAN_AT[tier] : Math.max(3, FAN_AT[tier])}
+          spread={mood === "win" ? 2.5 : 6 + p * 10}
+          scatter={mood === "loss"}
+          flipped={reading}
+          reversed={mood === "loss"}
+          face={side ? <SunCard face={sunFace} /> : <MoonCard mood={mood} />}
+        />
       ))}
-
-      {/* Flames at the foot of the mountains, from The Devil up */}
-      {[0, 1].map((side) =>
-        FLAMES.map((f, i) => {
-          const on = i < flames;
-          return (
-            <div
-              key={`${side}-${i}`}
-              className={`absolute bottom-0 ${i >= 2 ? "max-sm:hidden" : ""}`}
-              style={{
-                [side ? "right" : "left"]: `${f.left}%`,
-                transformOrigin: "50% 100%",
-                transform: `scale(${on ? 1 : 0.2})${side ? " scaleX(-1)" : ""}`,
-                opacity: on ? 1 : 0,
-                transition: "opacity 350ms ease-out, transform 450ms cubic-bezier(0.2, 0.9, 0.3, 1.3)",
-              }}
-            >
-              <Flame
-                kind={f.kind}
-                dur={f.dur}
-                delay={f.delay}
-                className="block"
-                style={{ height: `calc(clamp(36px, 7.5vw, 96px) * ${f.h * (fast ? 1.15 : 1)})`, width: "auto" }}
-              />
-            </div>
-          );
-        }),
-      )}
+      <CloudRow row={BANK_FRONT} fill={css(rampN(BANK_FRONT_FILL, lively))} />
     </div>
   );
 }
 
-/** The mountain strip, cropped (not squashed) to the hero's width. */
-function Mountains({ back, front }: { back: string; front: string }) {
+/**
+ * The cloud bank, on % of the hero's width: lower in the middle so it stays under the tier name
+ * and the Set Alarm button. `x` is the left edge, `w` the width.
+ */
+const BANK_FRONT = [
+  { x: -6, w: 20, kind: 0 },
+  { x: 9, w: 17, kind: 2 },
+  { x: 23, w: 15, kind: 1 },
+  { x: 36, w: 13, kind: 0 },
+  { x: 50, w: 13, kind: 2 },
+  { x: 62, w: 15, kind: 1 },
+  { x: 74, w: 17, kind: 0 },
+  { x: 87, w: 20, kind: 2 },
+];
+const BANK_BACK = [
+  { x: 1, w: 17, kind: 1 },
+  { x: 15, w: 14, kind: 0 },
+  { x: 71, w: 14, kind: 2 },
+  { x: 83, w: 17, kind: 1 },
+];
+/** Cream at rest, blushing coral as the bet climbs; the back row a shade deeper. */
+const BANK_FRONT_FILL = [TA.cream, "#FBEBDF", "#F8DACB", "#F5C7B7"];
+const BANK_BACK_FILL = ["#F3E5D3", "#F6D5C5", "#F2BEAD", "#EEA898"];
+
+function CloudRow({ row, fill, raise }: { row: typeof BANK_FRONT; fill: string; raise?: boolean }) {
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 1600 220"
-      preserveAspectRatio="xMidYMax slice"
-      className="absolute inset-x-0 bottom-0 h-[max(84px,13.75vw)] w-full"
+    <>
+      {row.map((c, i) => (
+        <div
+          key={i}
+          className={`absolute ${raise ? "bottom-[clamp(12px,2.6vw,36px)]" : "bottom-0"}`}
+          style={{
+            left: `${c.x}%`,
+            width: `max(${c.w}%, ${Math.round(c.w * 5.5)}px)`,
+            // The art's flat bottom is at 132 of 160: tuck the rest (and the bob) below the edge
+            translate: "0 calc(17.5% + 8px)",
+          }}
+        >
+          <div style={{ animation: `lc-bob ${(5 + frac(i, 140 + c.kind) * 3).toFixed(1)}s ease-in-out ${(-i * 1.7).toFixed(1)}s infinite` }}>
+            <TarotCloud kind={c.kind} fill={fill} className="block h-auto w-full" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** How many cards are in each fan, by tier. */
+const FAN_AT = [1, 2, 3, 4, 5, 5];
+const FAN_MAX = 5;
+
+/**
+ * A fan of tarot cards in a bottom corner, rising out of the clouds: more of them, and fanned
+ * wider, as the bet grows. When the cards are read (The Fool, or any result) the front one turns
+ * over: upright for a snooze or a jackpot, reversed (upside down) for a late result, when the fan
+ * also scatters. A snooze stacks them back up neatly.
+ */
+function CardFan({
+  side,
+  count,
+  spread,
+  scatter,
+  flipped,
+  reversed,
+  face,
+}: {
+  side: number;
+  count: number;
+  /** Degrees between cards. */
+  spread: number;
+  scatter: boolean;
+  flipped: boolean;
+  reversed: boolean;
+  face: ReactNode;
+}) {
+  const dir = side ? -1 : 1;
+  return (
+    <div
+      // Smaller and nearer the edge on phones, so a full fan stays clear of the tier name
+      className={`absolute bottom-[clamp(10px,2.4vw,34px)] w-[clamp(44px,7vw,92px)] max-sm:scale-[0.78] ${side ? "origin-bottom-right" : "origin-bottom-left"}`}
+      // Isolated, so the cards' stacking order stays inside the fan (the front clouds stay in front)
+      style={{ [side ? "right" : "left"]: "clamp(10px, 9vw - 20px, 110px)", isolation: "isolate" }}
     >
-      <g fill={back} style={{ transition: "fill 600ms" }}>
-        {MOUNTAIN_BACK}
-      </g>
-      <g fill={front} style={{ transition: "fill 600ms" }}>
-        {MOUNTAIN_FRONT}
-      </g>
-      {MOUNTAIN_HATCHING}
-    </svg>
+      {/* Sized by an invisible card, so the fan has the card's shape to pivot in */}
+      <div className="invisible aspect-[140/240] w-full" />
+      {Array.from({ length: FAN_MAX }, (_, i) => {
+        const on = i < count;
+        const front = i === count - 1;
+        const k = i - (count - 1) / 2;
+        const rot =
+          (on ? k * spread * dir : 0) + (scatter ? (frac(i, 150 + side) - 0.5) * 46 : 0) + dir * 4;
+        const dx = scatter ? (frac(i, 160 + side) - 0.5) * 50 : 0;
+        return (
+          <div
+            key={i}
+            className="absolute inset-0"
+            style={{
+              zIndex: i,
+              transformOrigin: "50% 130%",
+              transform: `translate(${dx.toFixed(1)}px, ${on ? 0 : 60}%) rotate(${rot.toFixed(1)}deg)`,
+              opacity: on ? 1 : 0,
+              filter: "drop-shadow(3px 4px 0 rgba(23,56,58,0.18))",
+              transition:
+                "transform 550ms cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 350ms ease-out",
+            }}
+          >
+            <TarotCard flipped={front && flipped} face={front ? face : undefined} reversed={reversed} />
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
 /**
- * The fine engraved rays behind the wheel, on its 400-unit grid: long and short in turn, with a
- * gap at the bottom (they turn, so the gap is a mask) to keep them out from behind the tier label.
+ * The moon and the sun, as the faces of the two front cards (on the card's 140 × 240 grid), set
+ * high on the card since the clouds cover its foot.
  */
+function MoonCard({ mood }: { mood: SceneMood }) {
+  const i = Math.max(0, MOON_MOODS.indexOf(mood));
+  return (
+    <g transform="translate(15 38) scale(0.611)">
+      {MOON_RAYS}
+      {MOON_FACES[i]}
+    </g>
+  );
+}
+function SunCard({ face }: { face: number }) {
+  return (
+    <g transform="translate(15 38) scale(0.611)">
+      {SUN_RAYS}
+      {SUN_FACES[Math.max(0, Math.min(SUN_FACES.length - 1, face))]}
+    </g>
+  );
+}
+const MOON_MOODS: SceneMood[] = ["idle", "set", "win", "loss", "jackpot"];
+
+/** The fine engraved rays behind the wheel, on its 400-unit grid: long and short in turn. */
 const RAYS = Array.from({ length: 72 }, (_, i) => {
   const a = (i * 5 * Math.PI) / 180;
   const r2 = i % 2 ? 152 : 174;
@@ -330,11 +390,6 @@ const RAYS = Array.from({ length: 72 }, (_, i) => {
     y2: r(200 - r2 * Math.cos(a)),
   };
 });
-const RAY_MASK =
-  "conic-gradient(from 180deg at 50% 50%, transparent 0deg 32deg, #000 50deg 310deg, transparent 328deg 360deg)";
-
-/** Fades the rays out where the side labels sit, so the labels never read over them. */
-const SIDE_MASK = "linear-gradient(90deg, transparent 20%, #000 25%, #000 75%, transparent 80%)";
 
 /**
  * Tarot's counterpart to Classic's sun rays: the Wheel of Fortune turning behind the dial. It
@@ -344,44 +399,46 @@ const SIDE_MASK = "linear-gradient(90deg, transparent 20%, #000 25%, #000 75%, t
  */
 export function FortuneWheel({
   p,
-  range,
   visible,
   size,
   mood,
 }: {
   p: number;
-  range: number;
+  /** Bet in minutes (passed to every backdrop; the wheel goes by `p`). */
+  range?: number;
   visible: boolean;
   /** Diameter of the dial it sits behind, in px. */
   size: number;
   mood?: SceneMood;
 }) {
-  // Spins up with the bet; all in, a little faster again.
-  const wheel = useTurning(range === MAX_RANGE ? 50 : 2 + p * p * 34, 200, 200);
-  const rays = useTurning(-(1 + p * 8), 200, 200);
+  // Spins up with the bet, to a steady 24°/s all in
+  const wheel = useTurning(2 + p * p * 22, 200, 200);
+  const rays = useTurning(-(1 + p * 6), 200, 200);
   // The band rises out from behind the dial as the bet grows: its glyphs start half hidden under
-  // the dial's edge, and by 45 the whole band is out with its gold rim round it. Sized from the
-  // dial's own radius so it works at any size. The labels sit ~32px off the dial, so at the
-  // biggest bets the wheel runs under them (on purpose: it's the climax); the rim only fades in
-  // from ~15 min, so at small bets they stay clear.
+  // the dial's edge, and by 45 the whole band is out. Sized from the dial's own radius so it works
+  // at any size. The labels sit ~32px off the dial, so at the biggest bets the wheel runs under
+  // them (on purpose: it's the climax).
   const unit = (size * 1.9) / 400; // px per wheel unit
   const disc = size * (176 / 358); // the dial's disc radius, px
   const from = (disc + 4) / 156 / unit; // glyph centres (r 156) just past the edge
   const to = (disc * 1.24) / 176 / unit; // the band's outer edge (r 176) a quarter out past the dial
   const scale = from + (to - from) * p;
-  const rim = clamp((p - 0.3) / 0.5);
-  // The rays reach further out as the bet grows
-  const reach = 0.86 + p * 0.29;
+  // The rays reach a little further out as the bet grows
+  const reach = 0.86 + p * 0.14;
   const glow = rampN([TA.gold, TA.coral, "#D2445A"], p);
 
   return (
     <>
       <div
         aria-hidden
-        className="pointer-events-none absolute -translate-1/2"
+        className="pointer-events-none absolute"
         style={{
           width: size * 1.9,
           height: size * 1.9,
+          // Centred with margins, not a transform: a transform would isolate the rays' blend
+          // from the sky behind them
+          marginLeft: -size * 0.95,
+          marginTop: -size * 0.95,
           opacity: visible ? 1 : 0,
           transition: "opacity 400ms ease-out",
         }}
@@ -393,16 +450,9 @@ export function FortuneWheel({
             opacity: 0.4 + p * 0.6,
           }}
         />
-        <svg
-          viewBox="0 0 400 400"
-          className="absolute inset-0 h-full w-full"
-          style={{
-            maskImage: `${SIDE_MASK}, ${RAY_MASK}`,
-            WebkitMaskImage: `${SIDE_MASK}, ${RAY_MASK}`,
-            maskComposite: "intersect",
-            WebkitMaskComposite: "source-in",
-          }}
-        >
+        {/* Faint teal engraving. (Not mix-blend-mode: re-blending every frame over the drifting
+            clouds made the sky flicker in Chrome.) */}
+        <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full" style={{ overflow: "visible" }}>
           <g
             style={{
               transformOrigin: "200px 200px",
@@ -412,10 +462,10 @@ export function FortuneWheel({
           >
             <g
               ref={rays}
-              stroke={TA.ink}
+              stroke={TA.teal}
               strokeWidth={1.1}
               strokeLinecap="round"
-              opacity={0.18 + p * 0.27}
+              opacity={0.1 + p * 0.06}
               style={{ transition: "opacity 300ms" }}
             >
               {RAYS.map((r, i) => (
@@ -432,12 +482,7 @@ export function FortuneWheel({
               transition: "transform 300ms ease-out",
             }}
           >
-            <g ref={wheel}>
-              <g opacity={rim} style={{ transition: "opacity 300ms" }}>
-                {WHEEL_RIM}
-              </g>
-              {WHEEL_BAND}
-            </g>
+            <g ref={wheel}>{WHEEL_BAND}</g>
           </g>
         </svg>
       </div>

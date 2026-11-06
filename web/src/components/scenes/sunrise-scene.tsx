@@ -1,19 +1,22 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef } from "react";
-import { Cloud } from "@/components/scenes/sunrise-art";
+import { useEffect, useRef, useState } from "react";
+import { ROLL_MS } from "@/components/alarm-reveal";
+import { Cloud, SunFace } from "@/components/scenes/sunrise-art";
+import { Village, type RoosterPose } from "@/components/scenes/sunrise-village";
 import type { SceneMood } from "@/components/scenes/types";
 import { css, cssA, MAX_RANGE, rampN } from "@/lib/themes";
 
 /**
- * Classic's background: a sunrise that plays out across the bet.
+ * Classic's background: a sunrise that plays out across the bet, over a village that wakes
+ * up with it (see sunrise-village.tsx).
  *
- *   0 min     pre-dawn: a few stars, pale clouds
- *   1–11      first light: the stars fade, the horizon starts to glow
- *   12–23     golden morning: clouds catch the light, the first birds
+ *   0 min     pre-dawn: a few stars, pale clouds, the village asleep
+ *   1–11      first light: the stars fade, the horizon starts to glow, the first lights on
+ *   12–23     golden morning: clouds catch the light, the first birds, chimneys smoking
  *   24–35     warm: more birds, the horizon burns brighter
- *   36–45     blazing: glints across the sky, a full flock
+ *   36–45     blazing: glints across the sky, a full flock, the rooster crowing
  *
  * Purely decorative and pointer-transparent; the hero draws the sky gradient itself.
  */
@@ -93,7 +96,42 @@ export function SunriseScene({ p, tier, mood }: Props) {
   const birds =
     mood === "idle" ? BIRDS_AT[tier] : mood === "win" ? 0 : BIRDS_AT[tier];
   const glints =
-    tier >= 4 && mood !== "win" ? (tier === 5 ? GLINTS.length : 5) : 0;
+    mood === "jackpot"
+      ? GLINTS.length
+      : tier >= 4 && mood !== "win"
+        ? tier === 5
+          ? GLINTS.length
+          : 5
+        : 0;
+
+  // The village: asleep at no bet, up and about as it grows. While the draw rolls the windmill
+  // spins like a loading wheel; a snooze sends everyone back to bed, a late result wakes the lot.
+  const awake =
+    mood === "win" ? 0 : mood === "loss" ? 1 : mood === "jackpot" ? Math.max(0.65, p) : p;
+  const spin =
+    mood === "win"
+      ? 0
+      : mood === "loss"
+        ? 110
+        : mood === "set"
+          ? 85
+          : mood === "jackpot"
+            ? 40
+            : 4 + p * p * 50;
+  const pose: RoosterPose =
+    mood === "win"
+      ? "asleep"
+      : mood === "loss"
+        ? "crow"
+        : mood === "jackpot"
+          ? "proud"
+          : mood === "set"
+            ? "look"
+            : tier === 0
+              ? "asleep"
+              : tier >= 4
+                ? "crow"
+                : "stand";
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -221,7 +259,106 @@ export function SunriseScene({ p, tier, mood }: Props) {
           </motion.svg>
         ))}
       </AnimatePresence>
+
+      <Village
+        sun={sun}
+        awake={Math.round(awake * 50) / 50}
+        cascade={mood === "win" || mood === "loss" || mood === "jackpot"}
+        spin={Math.round(spin)}
+        pose={pose}
+        rainbow={mood === "jackpot"}
+        flush={mood === "loss"}
+      />
     </div>
+  );
+}
+
+/** How long the progress bar takes to fill (the hero starts it after the last group fades). */
+const BAR_S = (ROLL_MS - 250) / 1000;
+
+/**
+ * "Rolling the dice", as a sunrise: the progress bar is the horizon, and the sun mascot comes up
+ * from behind it as the bar fills. It starts out asleep, blinks awake halfway up and is smiling
+ * by the time it clears the horizon; a warm glow spreads along the bar as it rises. Its rays turn
+ * slowly the whole time, its face stays upright.
+ */
+export function SunRoll() {
+  const [face, setFace] = useState(0);
+  useEffect(() => {
+    const wake = setTimeout(() => setFace(1), BAR_S * 450);
+    const smile = setTimeout(() => setFace(2), BAR_S * 850);
+    return () => {
+      clearTimeout(wake);
+      clearTimeout(smile);
+    };
+  }, []);
+  const rise = { duration: BAR_S, ease: "easeInOut" } as const;
+  return (
+    // Clipped only along the bottom (the horizon), so the sun can rise up past the box
+    <div aria-hidden className="relative h-12 w-40" style={{ clipPath: "inset(-90px -70px 0 -70px)" }}>
+      {/* First light along the horizon */}
+      <motion.div
+        className="absolute -inset-x-10 bottom-0 h-[72px]"
+        style={{ background: "radial-gradient(ellipse 50% 75% at 50% 100%, rgba(255,150,70,0.6), rgba(255,180,105,0.25) 55%, transparent 80%)" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={rise}
+      />
+      <motion.div
+        className="absolute bottom-0 left-1/2 -ml-9 h-[72px] w-[72px]"
+        // Starts below the horizon; ends with its disc just clear of the bar
+        initial={{ y: 76 }}
+        animate={{ y: 14 }}
+        transition={rise}
+        // A warm shadow, so the pale sun stands out from the peach sky
+        style={{ filter: "drop-shadow(0 2px 6px rgba(214,96,40,0.35))" }}
+      >
+        {/* Rays: the whole sun, slowly turning (its face is hidden under the still one) */}
+        <div className="absolute inset-0" style={{ animation: "lc-spin 9s linear infinite" }}>
+          <SunFace tier={face} className="block h-full w-full" />
+        </div>
+        {/* Face: the same sun cut down to its disc, kept upright; pops a little as it wakes */}
+        <SunFace
+          key={face}
+          tier={face}
+          className="absolute inset-0 block h-full w-full"
+          style={{
+            maskImage: SUN_DISC,
+            WebkitMaskImage: SUN_DISC,
+            animation: face ? "lc-sun-wake 0.35s ease-out" : undefined,
+          }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
+/** The sun's disc (r 49 of a 180 box), clear of its rays (which start at r 56). */
+const SUN_DISC = "radial-gradient(circle closest-side, #000 57%, transparent 58%)";
+
+/**
+ * The sun mascot beside the result badge, right on time only: it bounces with glee. (A snooze
+ * and a late result get the shared Zs and ring marks, and the village's reaction.)
+ */
+export function SunVerdict({ mood, className }: { mood: SceneMood; className?: string }) {
+  if (mood !== "jackpot") return null;
+  const face = 3;
+  const move = "lc-bob 0.9s ease-in-out 0.45s infinite";
+  return (
+    <span
+      aria-hidden
+      className={`pointer-events-none absolute block max-sm:hidden ${className ?? ""}`}
+      style={{ marginRight: 4 }}
+    >
+      <span
+        className="block"
+        style={{ animation: "lc-mu-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both" }}
+      >
+        <span className="block" style={{ transformOrigin: "50% 75%", animation: move }}>
+          <SunFace tier={face} className="block h-14 w-14" />
+        </span>
+      </span>
+    </span>
   );
 }
 

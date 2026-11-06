@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { AlarmRail } from "@/components/alarm-rail";
+import { AnimatePresence, MotionConfig, motion, type TargetAndTransition } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { AlarmRail, type TickPlacement } from "@/components/alarm-rail";
 import {
   AlarmReveal,
   CLOCK_HEIGHT,
@@ -12,13 +12,26 @@ import {
 } from "@/components/alarm-reveal";
 import { BetDial } from "@/components/bet-dial";
 import { RingMarks, Zzz } from "@/components/scenes/flourishes";
+import { BitFace } from "@/components/scenes/digital-art";
+import { MokaFace } from "@/components/scenes/cafe-art";
 import { CalaveraFace } from "@/components/scenes/muertos-art";
 import { LuckyFace } from "@/components/scenes/wheel-art";
-import { DialBackdrop, RollFlourish, ThemeScene, type SceneMood } from "@/components/scenes";
+import {
+  DialBackdrop,
+  ResultFlourish,
+  RollFlourish,
+  ThemeOverlay,
+  ThemeScene,
+  type SceneMood,
+} from "@/components/scenes";
+import { drawOffset, NO_STREAK, type Streak } from "@/lib/draw";
 import { frac } from "@/lib/rand";
 import { chipStyle, SEE_THROUGH, ThemePicker } from "@/components/theme-picker";
+import { KiroGhost } from "@/components/kiro-ghost";
+import { MAKER_AVATAR, MAKER_LINKS, MAKER_NAME, MAKER_SITE } from "@/components/maker";
+import { ShareModal } from "@/components/share-modal";
 import { TimePicker } from "@/components/time-picker";
-import { setMuted, setSoundTheme, sfx } from "@/lib/sfx";
+import { loadSounds, setMusicOn, setMuted, setSoundTheme, sfx } from "@/lib/sfx";
 import { background, css, cssA, fillCopy, MAX_RANGE, ramp, THEMES, tierIndex, tierLabel } from "@/lib/themes";
 import { formatClock, toMinutes } from "@/lib/time";
 
@@ -37,11 +50,40 @@ const RISE = {
   hidden: { opacity: 0, y: 8 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 30 } },
 } as const;
+/** How the verdict badge arrives: a burst, then a hop (snooze), a head shake (late) or a spin (on the dot). */
+const BADGE: Record<"win" | "loss" | "jackpot", TargetAndTransition> = {
+  win: {
+    opacity: 1,
+    scale: [0.2, 1.2, 0.94, 1.05, 1],
+    rotate: [-12, 4, -2, 0, 0],
+    y: [0, -10, 0, -4, 0],
+    transition: { duration: 0.75, times: [0, 0.35, 0.6, 0.8, 1], ease: "easeOut", opacity: { duration: 0.1 } },
+  },
+  loss: {
+    opacity: 1,
+    scale: [0.2, 1.15, 1, 1, 1, 1, 1],
+    rotate: [12, -3, 0, 0, 0, 0, 0],
+    x: [0, 0, 0, -9, 8, -5, 0],
+    transition: { duration: 0.8, times: [0, 0.3, 0.42, 0.58, 0.72, 0.86, 1], ease: "easeOut", opacity: { duration: 0.1 } },
+  },
+  jackpot: {
+    opacity: 1,
+    scale: [0.2, 1.25, 0.95, 1.04, 1],
+    rotate: [-180, 12, -5, 0, 0],
+    transition: { duration: 0.85, times: [0, 0.4, 0.62, 0.82, 1], ease: "easeOut", opacity: { duration: 0.1 } },
+  },
+};
 /** Stage width; the dial is square, the clock stage is exactly the digits (so they line up with the side labels). */
 const STAGE_W = "min(380px, 82vw)";
 const SANS = "var(--font-geist-sans), sans-serif";
 
 type Phase = "idle" | RevealPhase;
+
+/**
+ * Where the rail's minute ticks sit: "below" the line (under the hero, clear of busy scene
+ * bottoms), "above" it (the original look), or "both" (faint ticks above too).
+ */
+const RAIL_TICKS: TickPlacement = "below";
 
 /** How long each automatic step of the Set alarm sequence lasts. */
 const NEXT: Partial<Record<Phase, [Phase, number]>> = {
@@ -54,8 +96,21 @@ const NEXT: Partial<Record<Phase, [Phase, number]>> = {
 
 const spring = { type: "spring", stiffness: 500, damping: 24 } as const;
 
+/** Header links to the sections below the hero. */
+const NAV = [
+  { label: "The Story", href: "#story" },
+  { label: "Why Would Anyone Want This?", href: "#why" },
+  { label: "The App", href: "#app" },
+];
+
+/** The theme songs and their header button are switched off for now. */
+const SHOW_MUSIC = false;
+
 export function Hero() {
-  const [themeIndex, setThemeIndex] = useState(0);
+  // null until a theme is picked here; until then, the one a shared link asked for (or the first)
+  const [pickedTheme, setThemeIndex] = useState<number | null>(null);
+  const linkedTheme = useSyncExternalStore(noSubscribe, themeFromUrl, () => 0);
+  const themeIndex = pickedTheme ?? linkedTheme;
   const [themeSwaps, setThemeSwaps] = useState(0);
   const [fadeFrom, setFadeFrom] = useState<string | null>(null);
   const [hour, setHour] = useState(7);
@@ -67,11 +122,16 @@ export function Hero() {
   const [rollId, setRollId] = useState(0);
   const [picking, setPicking] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
+  const [musicOn, setMusicOnState] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const t = THEMES[themeIndex];
-  const MascotFace = t.mascot === "lucky" ? LuckyFace : CalaveraFace;
+  const MascotFace =
+    t.mascot === "lucky" ? LuckyFace : t.mascot === "bit" ? BitFace : t.mascot === "moka" ? MokaFace : CalaveraFace;
 
-  // Recorded sounds follow the theme (themes without files keep the synthesized ones).
+  // The same recorded sounds for every theme
+  useEffect(() => loadSounds(), []);
+  // ...though a theme can swap in its own sounds round the draw (Prize wheel)
   useEffect(() => setSoundTheme(t.id), [t.id]);
 
   // Where the dial sits inside the hero, so the sun can be drawn behind everything (in the
@@ -119,7 +179,13 @@ export function Hero() {
     sfx.swap();
   };
 
-  const draw = () => Math.floor(Math.random() * (2 * range + 1)) - range;
+  // Wins and losses so far: no more than two of either in a row (see drawOffset)
+  const streak = useRef<Streak>(NO_STREAK);
+  const draw = () => {
+    const next = drawOffset(range, streak.current);
+    streak.current = next.streak;
+    return next.offset;
+  };
   const setAlarm = () => {
     sfx.latch();
     setOffset(draw());
@@ -135,6 +201,12 @@ export function Hero() {
   const changeBet = () => {
     sfx.unlatch();
     setPhase("idle");
+  };
+
+  const toggleMusic = () => {
+    setMusicOn(!musicOn);
+    setMusicOnState(!musicOn);
+    sfx.click();
   };
 
   const toggleSound = () => {
@@ -165,20 +237,16 @@ export function Hero() {
           : outcome === "late"
             ? "loss"
             : "jackpot";
-  const mins = (m: number) => (m === 1 ? "1 minute" : `${m} minutes`);
   const verdict =
     outcome === "early"
       ? { bg: t.win, ink: t.winInk }
       : outcome === "late"
         ? { bg: t.loss, ink: t.lossInk }
-        : { bg: t.button.face, ink: t.button.ink };
+        : (t.jackpotBadge ?? { bg: t.button.face, ink: t.button.ink });
   // Once the draw lands, the line under the label says what you gained or lost instead of the window.
-  const resultLine =
-    outcome === "early"
-      ? fillCopy(t.copy.winLine, { mins: mins(-offset) })
-      : outcome === "late"
-        ? fillCopy(t.copy.lossLine, { mins: mins(offset) })
-        : fillCopy(t.copy.jackpotLine);
+  const mins = (m: number) => (m === 1 ? "1 minute" : `${m} minutes`);
+  const resultCopy =
+    outcome === "early" ? t.copy.winLine : outcome === "late" ? t.copy.lossLine : t.copy.jackpotLine;
 
   // The tier name's colour: the theme's own ramp if it has one, else the arc colour.
   const tierColor = range === 0 ? t.muted : t.tierInk ? css(ramp(t.tierInk, p)) : arcColor;
@@ -223,7 +291,8 @@ export function Hero() {
     <MotionConfig reducedMotion="user">
       <section
         className="relative transition-colors duration-500"
-        style={{ background: background(t, p), color: t.ink, fontFamily: BODY_FONT }}
+        // --focus: keyboard focus rings take the theme's text colour (globals.css)
+        style={{ background: background(t, p), color: t.ink, fontFamily: BODY_FONT, "--focus": t.ink } as CSSProperties}
       >
         {/* Clipped, so the falling dial disappears at the edge; the rail sits outside this */}
         <div ref={wrapRef} className="relative overflow-hidden">
@@ -308,63 +377,100 @@ export function Hero() {
               LotteryClock
             </a>
 
-            <nav aria-label="Main" className="hidden justify-self-center md:block">
-              <a
-                href="#how"
-                className="rounded-full px-4 py-2 text-base font-semibold transition-colors hover:bg-current/10"
-              >
-                Why Would Anyone Want This?
-              </a>
+            <nav aria-label="Main" className="hidden items-center gap-1 justify-self-center lg:flex">
+              {NAV.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-full px-4 py-2 text-base font-medium whitespace-nowrap transition-colors hover:bg-current/10"
+                >
+                  {item.label}
+                </a>
+              ))}
             </nav>
 
             <span
               className="col-start-3 flex items-center gap-4 justify-self-end text-[15px]"
               style={{ color: t.muted }}
             >
-              <span className="hidden items-center gap-2 sm:inline-flex">
+              <a
+                href="https://kiroween.devpost.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-2 font-medium underline-offset-4 hover:underline sm:inline-flex"
+              >
                 <KiroGhost className="h-[18px] w-auto" />
                 Built for Kiroween
-              </span>
-              <motion.button
-                type="button"
-                onClick={toggleSound}
-                whileTap={{ scale: 0.85 }}
-                transition={spring}
-                aria-pressed={soundOn}
-                aria-label={soundOn ? "Mute sound effects" : "Turn on sound effects"}
-                // Same see-through, theme-tinted chip as the theme controls
-                className={`grid h-10 w-10 cursor-pointer place-items-center rounded-full ${SEE_THROUGH}`}
-                style={chipStyle(t)}
-              >
-                <svg
-                  aria-hidden
-                  viewBox="0 0 24 24"
-                  className="h-[18px] w-[18px]"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+              </a>
+              <span className="flex items-center gap-2">
+                {SHOW_MUSIC && (
+                  <motion.button
+                    type="button"
+                    onClick={toggleMusic}
+                    whileTap={{ scale: 0.85 }}
+                    transition={spring}
+                    aria-pressed={musicOn}
+                    aria-label={musicOn ? "Stop music" : "Play music"}
+                    className={`grid h-10 w-10 cursor-pointer place-items-center rounded-full ${SEE_THROUGH}`}
+                    style={chipStyle(t)}
+                  >
+                    <svg
+                      aria-hidden
+                      viewBox="0 0 24 24"
+                      className="h-[18px] w-[18px]"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {/* A pair of quavers; struck through when off */}
+                      <path d="M9 18V5.5l11-2V16" />
+                      <circle cx="6.5" cy="18" r="2.5" />
+                      <circle cx="17.5" cy="16" r="2.5" />
+                      {!musicOn && <path d="M3.5 3.5l17 17" />}
+                    </svg>
+                  </motion.button>
+                )}
+                <motion.button
+                  type="button"
+                  onClick={toggleSound}
+                  whileTap={{ scale: 0.85 }}
+                  transition={spring}
+                  aria-pressed={soundOn}
+                  aria-label={soundOn ? "Mute sound effects" : "Turn on sound effects"}
+                  // Same see-through, theme-tinted chip as the theme controls
+                  className={`grid h-10 w-10 cursor-pointer place-items-center rounded-full ${SEE_THROUGH}`}
+                  style={chipStyle(t)}
                 >
-                  <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
-                  {soundOn ? (
-                    <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
-                  ) : (
-                    <path d="M16 9.5l5 5M21 9.5l-5 5" />
-                  )}
-                </svg>
-              </motion.button>
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 24 24"
+                    className="h-[18px] w-[18px]"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
+                    {soundOn ? (
+                      <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+                    ) : (
+                      <path d="M16 9.5l5 5M21 9.5l-5 5" />
+                    )}
+                  </svg>
+                </motion.button>
+              </span>
             </span>
           </header>
 
           <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-6 pt-8 pb-16 text-center sm:px-10 sm:pt-12">
+            <BuiltBy theme={t} />
+
             <h1
               className="max-w-3xl text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl md:text-balance"
-              style={{
-                fontFamily: t.titleFont,
-                maskImage: t.titleTexture,
-                WebkitMaskImage: t.titleTexture,
-              }}
+              style={{ fontFamily: t.titleFont }}
             >
               The alarm clock you can&apos;t quite trust
             </h1>
@@ -375,7 +481,15 @@ export function Hero() {
 
             {/* Theme switcher */}
             <div className="relative mt-10">
-              <ThemePicker themes={THEMES} index={themeIndex} onSelect={goTheme} />
+              <ThemePicker
+                themes={THEMES}
+                index={themeIndex}
+                onSelect={goTheme}
+                onShare={() => {
+                  sfx.click();
+                  setSharing(true);
+                }}
+              />
             </div>
 
             {/* 25px extra under the controls once the clock replaces the dial */}
@@ -407,7 +521,7 @@ export function Hero() {
                       className="absolute inset-x-0 top-0 aspect-square"
                       initial={{ y: -70, opacity: 0, scale: 0.85, rotate: -10 }}
                       animate={{ y: 0, opacity: 1, scale: 1, rotate: 0 }}
-                      // Lifts up and away: the mirror of how it springs back in on Reset Alarm
+                      // Lifts up and away, quickly: the mirror of how it springs back in on Reset Alarm
                       exit={{
                         y: -50,
                         rotate: 8,
@@ -564,10 +678,13 @@ export function Hero() {
                       style={{ ...titleStyle, fontSize: 17, color: t.ink }}
                     >
                       {phase === "result" ? (
-                        // The verdict, as a badge in the theme's snooze / late colours
-                        <span
-                          className="relative rounded-full px-4 py-2 text-[15px] leading-none"
+                        // The verdict, as a badge in the theme's snooze / late colours. It bursts in,
+                        // then hops for a snooze, shakes its head at a late one, or spins for on time.
+                        <motion.span
+                          className="relative inline-block rounded-full px-4 py-2 text-[15px] leading-none"
                           style={{ background: verdict.bg, color: verdict.ink }}
+                          initial={{ opacity: 0, scale: 0.2, rotate: mood === "loss" ? 12 : -12 }}
+                          animate={BADGE[mood === "win" || mood === "loss" ? mood : "jackpot"]}
                         >
                           {status.title}
                           {/* Zs drift off a snooze, alarm marks ring either side of a late one */}
@@ -577,9 +694,12 @@ export function Hero() {
                           {t.flourish && mood === "loss" && (
                             <RingMarks color={t.flourish.ring} className="-inset-x-8 top-1/2 -translate-y-1/2" />
                           )}
-                        </span>
+                          {/* Some themes' mascots react beside it */}
+                          <ResultFlourish theme={t} mood={mood} className="top-1/2 right-full -translate-y-1/2" />
+                        </motion.span>
                       ) : (
-                        status.title
+                        // Letters tumble in one by one; while it's being set they keep bobbing in a wave
+                        <Letters text={String(status.title)} wave={phase !== "rolling"} />
                       )}
                     </motion.div>
 
@@ -610,7 +730,8 @@ export function Hero() {
                           className="mt-2 h-6 text-base leading-6 font-medium whitespace-nowrap"
                           style={{ color: `color-mix(in srgb, ${t.ink} 85%, transparent)` }}
                         >
-                          {resultLine}
+                          {/* Plain text: no chip, no count-up */}
+                          {fillCopy(resultCopy, { mins: mins(Math.abs(offset)) })}
                         </motion.div>
                         <motion.div variants={RISE} className="mt-5">
                           <PillButton onClick={rollAgain} ink={t.ink}>
@@ -625,6 +746,8 @@ export function Hero() {
             </div>
           </div>
 
+          {/* Some themes lay an effect over everything, text included (Ouija's old film) */}
+          <ThemeOverlay theme={t} />
         </div>
 
         {/* Timeline divider with the Set alarm button mounted on it */}
@@ -636,7 +759,12 @@ export function Hero() {
           rollId={rollId}
           rangLabel={formatClock(target + offset)}
           onPress={phase === "idle" ? setAlarm : changeBet}
+          ticks={RAIL_TICKS}
         />
+
+        <AnimatePresence>
+          {sharing && <ShareModal key="share" theme={t} onClose={() => setSharing(false)} />}
+        </AnimatePresence>
 
         {picking && (
           <TimePicker
@@ -656,6 +784,48 @@ export function Hero() {
       </section>
     </MotionConfig>
   );
+}
+
+/** Who made it: avatar, name (to the maker's site), and their LinkedIn. */
+function BuiltBy({ theme: t }: { theme: (typeof THEMES)[number] }) {
+  const linkedin = MAKER_LINKS.find((l) => l.id === "linkedin")!;
+  return (
+    <div className="mb-7 flex items-center gap-2 text-sm sm:mb-8 sm:text-[15px]" style={{ color: t.muted }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a 5KB avatar; no need for the image optimiser */}
+      <img src={MAKER_AVATAR} alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover" />
+      <span>
+        Built by{" "}
+        <a
+          href={MAKER_SITE}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold underline-offset-4 hover:underline"
+          style={{ color: t.ink }}
+        >
+          {MAKER_NAME}
+        </a>
+      </span>
+      <a
+        href={linkedin.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={linkedin.label}
+        title={linkedin.label}
+        className="-m-1 grid h-7 w-7 place-items-center rounded-full transition-colors hover:bg-current/10 [&_svg]:h-[15px] [&_svg]:w-[15px]"
+      >
+        {linkedin.icon}
+      </a>
+    </div>
+  );
+}
+
+/** The URL never changes under us, so there's nothing to subscribe to. */
+const noSubscribe = () => () => {};
+
+/** A shared link (?theme=muertos) opens straight into that theme. */
+function themeFromUrl() {
+  const id = new URLSearchParams(window.location.search).get("theme");
+  return Math.max(0, THEMES.findIndex((theme) => theme.id === id));
 }
 
 function SideLabel({
@@ -712,6 +882,40 @@ function PillButton({
   );
 }
 
+/**
+ * A status title whose letters tumble in one at a time. With `wave`, they keep bobbing in a
+ * wave after that, like the clock's waiting for something. Screen readers get the plain text.
+ */
+function Letters({ text, wave }: { text: string; wave: boolean }) {
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden className="inline-flex">
+        {Array.from(text).map((ch, i) => (
+          <motion.span
+            key={i}
+            className="inline-block"
+            initial={{ opacity: 0, y: 14, scale: 0.5, rotate: i % 2 ? 14 : -14 }}
+            animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 520, damping: 15, delay: 0.05 + i * 0.025 }}
+          >
+            <span
+              className="inline-block"
+              style={
+                wave
+                  ? { animation: `lc-letter-wave 1.3s ease-in-out ${(0.6 + i * 0.05).toFixed(2)}s infinite` }
+                  : undefined
+              }
+            >
+              {ch === " " ? "\u00A0" : ch}
+            </span>
+          </motion.span>
+        ))}
+      </span>
+    </>
+  );
+}
+
 /** A tier's line icon, sized to the label and stroked in its colour. Pops in on each tier change. */
 function TierIcon({ paths }: { paths: string[] }) {
   return (
@@ -729,29 +933,6 @@ function TierIcon({ paths }: { paths: string[] }) {
       {paths.map((d) => (
         <path key={d} d={d} />
       ))}
-    </svg>
-  );
-}
-
-/** The Kiro ghost (from kiro.dev's icon), in the current text colour with see-through eyes. */
-function KiroGhost({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="272 202 655 796" className={className} aria-hidden fill="currentColor">
-      <mask id="kiro-ghost-eyes" maskUnits="userSpaceOnUse" x="272" y="202" width="655" height="796">
-        <path
-          fill="#fff"
-          d="M398.554 818.914C316.315 1001.03 491.477 1046.74 620.672 940.156C658.687 1059.66 801.052 970.473 852.234 877.795C964.787 673.567 919.318 465.357 907.64 422.374C827.637 129.443 427.623 128.946 358.8 423.865C342.651 475.544 342.402 534.18 333.458 595.051C328.986 625.86 325.507 645.488 313.83 677.785C306.873 696.424 297.68 712.819 282.773 740.645C259.915 783.881 269.604 867.113 387.87 823.883L399.051 818.914H398.554Z"
-        />
-        <path
-          fill="#000"
-          d="M636.123 549.353C603.328 549.353 598.359 510.097 598.359 486.742C598.359 465.623 602.086 448.977 609.293 438.293C615.504 428.852 624.697 424.131 636.123 424.131C647.555 424.131 657.492 428.852 664.447 438.541C672.398 449.474 676.623 466.12 676.623 486.742C676.623 525.998 661.471 549.353 636.375 549.353H636.123Z"
-        />
-        <path
-          fill="#000"
-          d="M771.24 549.353C738.445 549.353 733.477 510.097 733.477 486.742C733.477 465.623 737.203 448.977 744.41 438.293C750.621 428.852 759.814 424.131 771.24 424.131C782.672 424.131 792.609 428.852 799.564 438.541C807.516 449.474 811.74 466.12 811.74 486.742C811.74 525.998 796.588 549.353 771.492 549.353H771.24Z"
-        />
-      </mask>
-      <rect x="272" y="202" width="655" height="796" mask="url(#kiro-ghost-eyes)" />
     </svg>
   );
 }

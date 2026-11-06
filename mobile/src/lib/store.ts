@@ -20,12 +20,18 @@ export type Settings = {
   haptics: boolean;
   /** Show the hidden ring time on the armed ticket. Developer option. */
   showDebug: boolean;
+  /** The chosen theme's id (see src/themes/themes.ts). */
+  themeId: string;
+  /** Sound effects in the app (the alarm itself always rings). */
+  sound: boolean;
 };
 
 export type ArmedBet = {
   alarmId: string;
   plan: AlarmPlan;
   placedAtMs: number;
+  /** Which alarm system rings it. */
+  kind?: 'alarmkit' | 'notification';
 };
 
 export type AppState = {
@@ -38,10 +44,12 @@ export type AppState = {
 const DEFAULT_SETTINGS: Settings = {
   wakeHour: 7,
   wakeMinute: 30,
-  riskMinutes: 15,
+  riskMinutes: 10,
   outcomeSounds: false,
   haptics: true,
-  showDebug: __DEV__,
+  showDebug: false,
+  themeId: 'classic',
+  sound: true,
 };
 
 let state: AppState = {

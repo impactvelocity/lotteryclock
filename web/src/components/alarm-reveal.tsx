@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useEffect, useEffectEvent, useState } from "react";
 import { SevenSegment } from "@/components/seven-segment";
 import { sfx } from "@/lib/sfx";
@@ -11,8 +10,15 @@ export type RevealPhase = "dropping" | "blink" | "rolling" | "result";
 /** Height of the digits; the hero sizes the stage around it. */
 export const CLOCK_HEIGHT = "calc(min(380px, 82vw) * 0.3)";
 
-/** Gaps between scrambled draws; slowing down like a reel. ~1.7s in all. */
-const ROLL_DELAYS = [60, 60, 65, 70, 80, 90, 105, 125, 150, 180, 220, 270, 330];
+/**
+ * Gaps between scrambled draws: a long fast spin, then slowing down like a reel. ~2.8 s in
+ * all (1.5x the original 1.87 s), so the scramble shows more times and the theme's song
+ * gets a moment before the result.
+ */
+const ROLL_DELAYS = [
+  ...Array<number>(16).fill(60),
+  60, 60, 65, 70, 80, 90, 105, 125, 150, 180, 220, 270, 330,
+];
 /** Total length of the roll, so the hero's progress bar can match it. */
 export const ROLL_MS = ROLL_DELAYS.reduce((a, b) => a + b, 60);
 
@@ -77,19 +83,11 @@ export function AlarmReveal({ theme: t, phase, target, offset, range, rollId, on
   // Digits always use the theme's text colour; the status badge carries the win/lose colour.
   const digitColor = t.ink;
 
-  // The real time lands with a small bump; no shake, so it stays easy to read.
-  const clockAnim = isResult
-    ? { scale: [1.08, 0.98, 1] }
-    : { scale: 1 };
-
-
   return (
     <div className="relative flex w-full flex-col items-center">
-      <motion.div
-        className="relative"
-        animate={clockAnim}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
+      {/* The digits never move: no theme shakes, bounces or otherwise animates them. Only the
+          clock's own behaviour remains (blinking once set, the colon ticking once it rings). */}
+      <div className="relative">
         <SevenSegment
           minutes={shown}
           on={digitColor}
@@ -100,8 +98,7 @@ export function AlarmReveal({ theme: t, phase, target, offset, range, rollId, on
           blink={phase === "blink" || phase === "dropping"}
           running={isResult}
         />
-
-      </motion.div>
+      </div>
 
 
     </div>
