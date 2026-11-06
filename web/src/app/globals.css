@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #432344;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /* Only three fonts, for every theme: Geist, Geist Mono and Geist Serif */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-geist-serif);
+  --font-display: var(--font-geist-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@keyframes lc-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.18); }
+}
+@keyframes lc-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes lc-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+@keyframes lc-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@keyframes lc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotate(-0.5deg); }
+  75% { transform: translateX(2px) rotate(0.5deg); }
+}
+
+@keyframes lc-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1); }
+}
+/* Bell wobbles while you drag it */
+@keyframes lc-ring {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-14deg); }
+  75% { transform: rotate(14deg); }
+}
+/* Hard on/off blink, like a clock that's just been set */
+@keyframes lc-step-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.06; }
+}
+.lc-clock-blink {
+  animation: lc-step-blink 1s steps(1, end) infinite;
+}
+
+/* Set alarm's bell gives an occasional shake while it waits */
+@keyframes lc-bell-nudge {
+  0%, 80%, 100% { transform: rotate(0); }
+  83% { transform: rotate(-18deg); }
+  86% { transform: rotate(15deg); }
+  89% { transform: rotate(-10deg); }
+  92% { transform: rotate(6deg); }
+  95% { transform: rotate(-2deg); }
+}
+/* Ticks on the rail jump in sequence when the alarm is set */
+@keyframes lc-tick-wave {
+  0% { transform: scaleY(var(--k, 1)); }
+  35% { transform: scaleY(calc(var(--k, 1) * 1.5)); }
+  100% { transform: scaleY(var(--k, 1)); }
+}
+
+/* ---- Classic sunrise scene ---- */
+/* Clouds and birds cross the whole hero, starting just off the left edge */
+@keyframes lc-drift {
+  from { transform: translateX(-320px); }
+  to { transform: translateX(calc(100vw + 40px)); }
+}
+@keyframes lc-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+/* Wings sweep down and back up */
+@keyframes lc-flap {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(-0.45); }
+}
+@keyframes lc-glint {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+@keyframes lc-zzz {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6) rotate(-12deg); }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(22px, -48px) scale(1.15) rotate(10deg); }
+}
+@keyframes lc-ring-mark {
+  0% { opacity: 0; transform: translateX(-4px); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(4px); }
+}
+/* Tier icon pops in when the tier changes */
+@keyframes lc-icon-pop {
+  0% { transform: scale(0.4) rotate(-25deg); }
+  60% { transform: scale(1.2) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+  }
+  /* Drifting clouds and birds hold still, spread across the sky */
+  .lc-drifter {
+    left: var(--x, 0) !important;
+  }
+}
