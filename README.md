@@ -71,7 +71,7 @@ Here is every theme in the iPhone app at 22 and 42 minutes of doubt. The scene a
 
 ## The iPhone app
 
-![The iPhone app](web/public/submission/iphone-app.png)
+![React Native Mobile App](web/public/submission/iphone-app.png)
 
 The website is the toy. The iPhone app sets real alarms with Apple's AlarmKit (new in iOS 26), so they show up on the Lock Screen and ring through Silent mode and Focus. An early alarm gets a snooze that ends at your target. A late one gets no snooze button at all.
 

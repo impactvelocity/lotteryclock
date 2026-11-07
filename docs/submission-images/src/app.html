@@ -6,12 +6,11 @@
 <script src="shared.js"></script>
 <style>
   .canvas { height: 610px; }
-  .intro { padding: 30px 40px 0; }
-  .intro .lede { margin-top: 10px; max-width: 760px; }
   .phones { position: absolute; left: 40px; top: 150px; display: flex; gap: 18px; }
   .phones .phone { width: 186px; }
 
-  .stack { position: absolute; left: 680px; right: 40px; top: 208px; display: flex; flex-direction: column; align-items: stretch; }
+  .stack { position: absolute; left: 680px; right: 40px; top: 150px; height: 405px; display: flex; flex-direction: column; justify-content: center; align-items: stretch; }
+  .stack h1 { font-size: 40px; margin-bottom: 22px; white-space: nowrap; }
   .card {
     border-radius: 18px;
     padding: 16px 18px;
@@ -19,13 +18,11 @@
     backdrop-filter: blur(6px);
     box-shadow: 0 0 0 1px var(--faint), 0 14px 30px rgba(0, 0, 0, 0.35);
   }
-  .card .k { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); }
-  .card h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; margin-top: 3px; }
+  .card h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
   .card p { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .chip { font-size: 12.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); color: var(--ink); }
   .card.alarm { background: linear-gradient(135deg, #3b2160, #241b45); box-shadow: 0 0 0 1px rgba(201, 184, 255, 0.35), 0 0 40px rgba(201, 184, 255, 0.18); }
-  .card.alarm .k { color: var(--snooze); }
   .card.alarm p { color: rgba(255, 255, 255, 0.75); }
   .card.alarm .chip { background: rgba(255, 255, 255, 0.12); color: #fff; }
   .link { display: flex; align-items: center; gap: 10px; height: 38px; padding-left: 24px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
@@ -37,10 +34,6 @@
 <div class="canvas">
   <div id="sky"></div>
   <div id="header"></div>
-  <div class="intro">
-    <h1>The iPhone app</h1>
-  </div>
-
   <div class="phones">
     <div class="phone"><img src="../../../web/public/app/play-night.webp"></div>
     <div class="phone"><img src="../../screenshots/full/night-full.png"></div>
@@ -48,8 +41,8 @@
   </div>
 
   <div class="stack">
+    <h1>React Native Mobile App</h1>
     <div class="card">
-      <div class="k">The app</div>
       <h3>Expo SDK 58 · React Native 0.88</h3>
       <div class="chips">
         <span class="chip">Expo Router</span>
@@ -60,7 +53,6 @@
     </div>
     <div class="link">Custom Expo module in Swift: <code>lottery-alarm</code></div>
     <div class="card alarm">
-      <div class="k">Real alarms</div>
       <h3>AlarmKit · iOS 26</h3>
       <div class="chips">
         <span class="chip">Lock Screen</span>

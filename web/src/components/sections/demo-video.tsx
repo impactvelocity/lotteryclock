@@ -4,7 +4,7 @@
  *  - a file in web/public (src: "/demo.mp4", poster: "/demo-poster.jpg").
  * Leave both empty and the frame shows a "coming soon" card instead.
  */
-const DEMO_YOUTUBE_ID = "";
+const DEMO_YOUTUBE_ID = "vNiJPSQzvy0";
 const DEMO_FILE: { src: string; poster?: string } | null = null;
 
 export function DemoVideo() {

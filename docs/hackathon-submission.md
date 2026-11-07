@@ -80,7 +80,7 @@ How a few of them play with the dial:
 
 **Real alarms.** These use Apple's AlarmKit, which is new in iOS 26. I wrote a small Expo module in Swift (`lottery-alarm`) to talk to it.
 
-![The iPhone app](https://www.lotteryclock.app/submission/iphone-app.png)
+![React Native Mobile App](https://www.lotteryclock.app/submission/iphone-app.png)
 
 I designed and wrote it in the Kiro IDE, mainly with Opus 5.5.
 
