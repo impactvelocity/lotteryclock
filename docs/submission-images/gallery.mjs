@@ -17,8 +17,8 @@ const ids = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
 const W = 1200, H = 800; // 3:2, rendered at 2x
 const RANGE = 28;
 const DIAL = 440; // dial width in px (the site's own is 380)
-const TITLE_SIZE = 28; // theme name, px
-const TITLE_TOP = 30; // theme name, centred on the header row (logo and Kiroween sit ~44px down)
+const TITLE_SIZE = 38; // theme name, px
+const TITLE_TOP = 64; // theme name: just below the header row, above the dial and its rings
 const BUTTON_BOTTOM = 28; // Set Alarm button, from the bottom edge
 
 const outDir = path.join(here, "gallery");

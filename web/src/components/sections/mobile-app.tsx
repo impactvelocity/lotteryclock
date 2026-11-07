@@ -1,7 +1,6 @@
 import { SectionHeading } from "@/components/sections/section-heading";
 
-export const REPO_URL = "https://github.com/impactvelocity/lotteryclock";
-const MOBILE_URL = `${REPO_URL}/tree/main/mobile`;
+export const REPO_URL = "https://github.com/impactvelocity/lotteryclock/";
 
 /** Real screenshots from the iPhone app (iPhone 17 Pro simulator), in web/public/app. */
 const SCREENS = {
@@ -62,7 +61,7 @@ export function MobileApp() {
 
         <div className="mt-16 flex justify-center">
           <a
-            href={MOBILE_URL}
+            href={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(180deg,#FFC93C,#FF9F1C)] px-6 py-3 font-semibold text-[#2a1600] shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_12px_24px_-12px_rgba(255,159,28,0.8)] transition-[filter] hover:brightness-105"
