@@ -9,6 +9,8 @@
  * draw song (DRAW_SONGS): a few seconds of music that runs from "Alarm set" through the roll,
  * in place of set.mp3 and roll.mp3; and a dial instrument in its key (THEME_SOUNDS), mostly
  * synthesized: a music box for Good Night, a mandolin for Caffè, a chip blip for Digital.
+ * A theme with a draw song turns its dial into that song's volume knob instead (DIAL_SONGS),
+ * and the song carries on into the draw at that level.
  * Anything not loaded yet falls back to the blips. Sound only starts after the first user
  * interaction, as browsers require.
  * See docs/sound-prompts.md for how the files were made.
@@ -30,7 +32,9 @@ let musicOn = false;
 let soundTheme = "";
 export function setSoundTheme(id: string) {
   if (id !== soundTheme) {
-    stopDraw();
+    // The old theme's song fades out under the new one rather than cutting off.
+    stopDraw(THEME_FADE);
+    stopDialSong(THEME_FADE);
     // A new instrument and scale: start its melody afresh.
     walk = -1;
     lastTake = -1;
@@ -45,6 +49,7 @@ export function setMuted(value: boolean) {
   if (value) {
     stopRoll();
     stopDraw();
+    stopDialSong();
   }
 }
 
@@ -121,6 +126,8 @@ const BLINK_S = 1.4;
 const RESET_FADE = 0.6;
 /** Seconds the draw song takes to fade out under the win/lose sound. */
 const DRAW_FADE = 1.8;
+/** Seconds the song takes to fade out when the theme changes. */
+const THEME_FADE = 1.2;
 
 /** The one sound set every theme plays, in /sfx/<SOUND_SET>/. */
 const SOUND_SET = "classic";
@@ -709,6 +716,71 @@ function dialNote(dial: Dial, range: number, prev: number, grace: boolean) {
   }
 }
 
+/* ---------------- Dial song ---------------- */
+
+/**
+ * Themes whose dial plays their draw song rather than single notes (every theme with one),
+ * the dial acting as its volume knob: silent at 0 min, full from DIAL_SONG_FULL up, with the
+ * Prize wheel's peg clack for each minute. Once started it keeps playing at that level, and
+ * Set Alarm carries it on into the draw (see `sfx.set`) rather than starting it afresh.
+ * Themes without a draw song, or before it has loaded, play their dial instrument instead.
+ */
+const DIAL_SONGS = DRAW_SONGS;
+/** The bet, in minutes, at which the song reaches full volume. */
+const DIAL_SONG_FULL = 25;
+/** How far below full the song sits at 1 min, in dB; it climbs evenly from there. */
+const DIAL_SONG_RANGE_DB = 30;
+
+/** The dial song while it plays, and which theme it belongs to. */
+let dialLoop: (Voice & { theme: string }) | null = null;
+
+/** The dial song's gain for a bet of `range` minutes. */
+function dialSongLevel(range: number) {
+  if (range <= 0) return 0;
+  const p = Math.min(1, (range - 1) / (DIAL_SONG_FULL - 1));
+  return FULL_SONG_GAIN * 10 ** ((DIAL_SONG_RANGE_DB * (p - 1)) / 20);
+}
+
+/** Fade the dial song out and stop it (theme change, muting). */
+function stopDialSong(fade = 0.15) {
+  if (!dialLoop || !ctx) return (dialLoop = null);
+  const { src, amp } = dialLoop;
+  const now = ctx.currentTime;
+  amp.gain.cancelScheduledValues(now);
+  amp.gain.setValueAtTime(amp.gain.value, now);
+  amp.gain.linearRampToValueAtTime(0, now + fade);
+  try {
+    src.stop(now + fade + 0.05);
+  } catch {}
+  dialLoop = null;
+}
+
+/**
+ * The dial moved to `range`: start the theme's song if it isn't playing, set its volume for
+ * the bet and clack a peg (a detent at either end). False if the theme has no dial song (or it hasn't loaded), so the dial plays
+ * its notes instead.
+ */
+function dialSong(range: number): boolean {
+  const song = drawSongs[soundTheme];
+  if (!DIAL_SONGS.includes(soundTheme) || !song) return false;
+  const c = audio();
+  if (!c || muted) return true;
+  if (dialLoop?.theme !== soundTheme) {
+    stopDialSong(0.05);
+    // A draw song already playing (Change bet after a roll) becomes the dial song.
+    const voice = draw ?? play(song, { gain: 0 });
+    if (!voice) return true;
+    draw = null;
+    voice.src.loop = true;
+    voice.src.onended = null;
+    dialLoop = { ...voice, theme: soundTheme };
+  }
+  dialLoop.amp.gain.setTargetAtTime(dialSongLevel(range), c.currentTime, 0.05);
+  if (range === 0 || range === MAX_RANGE) sfx.detent();
+  else wheel.peg();
+  return true;
+}
+
 /** A dial instrument and the decoded files it plays from. */
 type Dial = { kit: DialKit; bank: Record<string, AudioBuffer> };
 
@@ -885,6 +957,7 @@ export const sfx = {
    * (and no grace notes) when quick, always landing on wherever it comes to rest.
    */
   dial: (range: number, prev: number) => {
+    if (dialSong(range)) return;
     const dial = currentDial();
     if (!dial) {
       if (range === 0 || range === MAX_RANGE) sfx.detent();
@@ -950,8 +1023,19 @@ export const sfx = {
    * Once, as the target starts blinking: the theme's draw song if it has one, otherwise
    * the shared "Alarm set… or is it?". Recorded only.
    */
-  set: () => {
+  set: (range: number) => {
     const song = drawSongs[soundTheme];
+    if (song && DIAL_SONGS.includes(soundTheme)) {
+      // The dial song plays on into the draw, at the level the bet left it.
+      if (draw) return;
+      const voice = dialLoop?.theme === soundTheme ? dialLoop : play(song, { gain: dialSongLevel(range) });
+      dialLoop = null;
+      if (!voice) return;
+      voice.src.loop = false;
+      voice.src.onended = () => draw?.src === voice.src && (draw = null);
+      draw = { src: voice.src, amp: voice.amp };
+      return;
+    }
     if (song && fullSong()) {
       if (draw) return; // already playing
       const voice = play(song, { gain: FULL_SONG_GAIN });

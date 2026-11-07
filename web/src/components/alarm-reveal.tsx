@@ -48,11 +48,11 @@ export function AlarmReveal({ theme: t, phase, target, offset, range, rollId, on
   // Beep while the target blinks, like a freshly set clock.
   useEffect(() => {
     if (phase !== "blink") return;
-    sfx.set();
+    sfx.set(range);
     sfx.beep();
     const id = setInterval(sfx.beep, 1000);
     return () => clearInterval(id);
-  }, [phase]);
+  }, [phase, range]);
 
   // Scramble through times inside the window, then land on the real one.
   useEffect(() => {
